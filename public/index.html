@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087ff5">
+  <meta name="description" content="Agenda, clientes, ordens de serviço e financeiro da Hiper Higienizações.">
+  <title>Hiper Higienizações | Gestão</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/assets/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Hiper">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="/css/app.css?v=3">
+</head>
+<body>
+  <div class="auth-screen" id="authScreen" hidden>
+    <div class="auth-loading" id="authLoading"><i class="fa-solid fa-spinner fa-spin"></i><span>Verificando acesso...</span></div>
+    <div class="auth-box" id="authBox" hidden>
+      <div class="auth-brand">
+        <img src="/assets/logo-hiper.png" alt="Logo Hiper Higienizações">
+        <div><strong>Hiper</strong><span>Higienizações</span></div>
+      </div>
+      <h1 id="authTitle">Acesse sua conta</h1>
+      <p id="authText">Entre para ver os dados da Hiper na nuvem.</p>
+
+      <div class="auth-notice aviso" id="configWarning" hidden>
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>O Firebase ainda não foi configurado. Preencha <code>public/js/firebase-config.js</code> seguindo <code>docs/FIREBASE_SETUP.md</code> para habilitar o login.</span>
+      </div>
+
+      <p class="auth-notice" id="authNotice" hidden></p>
+
+      <form id="authForm" class="auth-form" novalidate>
+        <label id="fieldName" hidden>Nome<input name="name" autocomplete="name" placeholder="Como quer ser chamado"></label>
+        <label>E-mail<input name="email" type="email" required autocomplete="email" placeholder="voce@exemplo.com"></label>
+        <label id="fieldPassword">Senha<input name="password" type="password" required autocomplete="current-password" minlength="6" placeholder="Mínimo de 6 caracteres"></label>
+        <button class="primary-button auth-submit" type="submit" id="authSubmit">Entrar</button>
+      </form>
+
+      <div class="auth-switch">
+        <button type="button" class="text-button" data-auth-mode="entrar">Já tenho conta</button>
+        <button type="button" class="text-button" data-auth-mode="criar">Criar uma conta</button>
+        <button type="button" class="text-button" data-auth-mode="recuperar">Esqueci a senha</button>
+      </div>
+
+      <div class="auth-divider" id="cloudDisabled" hidden><span>modo disponível agora</span></div>
+      <div class="auth-demo">
+        <button type="button" class="secondary-button" id="demoButton"><i class="fa-solid fa-flask"></i> Entrar em modo demonstração</button>
+        <small>Dados de exemplo salvos apenas neste navegador, sem enviar nada para a nuvem.</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-shell" hidden>
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <img src="/assets/logo-hiper.png" alt="Logo Hiper Higienizações">
+        <div><strong>Hiper</strong><span>Higienizações</span></div>
+      </div>
+      <nav aria-label="Navegação principal">
+        <button class="nav-item active" data-view="dashboard"><i class="fa-solid fa-chart-pie"></i><span>Visão geral</span></button>
+        <button class="nav-item" data-view="agenda"><i class="fa-regular fa-calendar"></i><span>Agenda</span></button>
+        <button class="nav-item" data-view="clientes"><i class="fa-solid fa-users"></i><span>Clientes</span></button>
+        <button class="nav-item" data-view="servicos"><i class="fa-solid fa-spray-can-sparkles"></i><span>Serviços</span></button>
+        <button class="nav-item" data-view="financeiro"><i class="fa-solid fa-wallet"></i><span>Financeiro</span></button>
+        <button class="nav-item" data-view="ordens"><i class="fa-solid fa-clipboard-check"></i><span>Ordens de serviço</span></button>
+        <button class="nav-item" data-view="configuracoes"><i class="fa-solid fa-gear"></i><span>Configurações</span></button>
+      </nav>
+      <div class="sidebar-contact">
+        <span>Atendimento</span>
+        <strong>Ribeirão Preto e região</strong>
+        <a href="https://wa.me/5516996101500" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> (16) 99610-1500</a>
+      </div>
+      <footer>Desenvolvido por <strong>Lexion Consultoria</strong></footer>
+    </aside>
+
+    <div class="content-shell">
+      <header class="topbar">
+        <button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu"><i class="fa-solid fa-bars"></i></button>
+        <div><p id="eyebrow">Operação de hoje</p><h1 id="pageTitle">Visão geral</h1></div>
+        <div class="top-actions">
+          <span class="sync-badge" id="syncBadge" hidden></span>
+          <span class="mode-badge" id="modeBadge"></span>
+          <button class="icon-button" id="notificationButton" aria-label="Ver alertas"><i class="fa-regular fa-bell"></i><span class="notification-dot" id="notificationCount">0</span></button>
+          <button class="primary-button" data-open="appointment"><i class="fa-solid fa-plus"></i> Novo serviço</button>
+          <div class="avatar" title="Equipe Hiper">HH</div>
+        </div>
+      </header>
+
+      <main>
+        <section class="view active" id="view-dashboard">
+          <div class="hero-panel">
+            <div><span class="overline">PAINEL OPERACIONAL</span><h2 id="welcomeTitle">Bom trabalho, equipe Hiper.</h2><p>Acompanhe a rota, os recebimentos e quem está perto de higienizar novamente.</p></div>
+            <button class="light-button" data-open="appointment"><i class="fa-regular fa-calendar-plus"></i> Agendar atendimento</button>
+          </div>
+          <div class="metric-grid" id="dashboardMetrics"></div>
+          <div class="dashboard-grid">
+            <article class="panel span-2"><div class="panel-heading"><div><span class="overline">ROTA DO DIA</span><h3>Próximos serviços</h3></div><button class="text-button" data-go="agenda">Ver agenda <i class="fa-solid fa-arrow-right"></i></button></div><div id="upcomingList" class="stack-list"></div></article>
+            <article class="panel"><div class="panel-heading"><div><span class="overline">ATENÇÃO</span><h3>Alertas</h3></div></div><div id="alertsList" class="stack-list compact"></div></article>
+            <article class="panel span-2"><div class="panel-heading"><div><span class="overline">DESEMPENHO</span><h3>Faturamento - últimos 6 meses</h3></div><span class="muted">Receitas recebidas</span></div><div id="revenueChart" class="bar-chart"></div></article>
+            <article class="panel"><div class="panel-heading"><div><span class="overline">RECORRÊNCIA</span><h3>Hora de chamar</h3></div></div><div id="recurrenceList" class="stack-list compact"></div></article>
+          </div>
+        </section>
+
+        <section class="view" id="view-agenda">
+          <div class="toolbar">
+            <div class="date-nav"><button class="icon-button" id="agendaPrev"><i class="fa-solid fa-chevron-left"></i></button><button class="secondary-button" id="agendaToday">Hoje</button><button class="icon-button" id="agendaNext"><i class="fa-solid fa-chevron-right"></i></button><strong id="agendaPeriod"></strong></div>
+            <div class="segmented"><button data-mode="day">Dia</button><button class="active" data-mode="week">Semana</button><button data-mode="month">Mês</button></div>
+          </div>
+          <div class="status-legend"><span><i class="dot scheduled"></i> Agendado</span><span><i class="dot confirmed"></i> Confirmado</span><span><i class="dot in_service"></i> Em atendimento</span><span><i class="dot completed"></i> Concluído</span><span><i class="dot canceled"></i> Cancelado</span></div>
+          <div class="calendar panel" id="calendar"></div>
+        </section>
+
+        <section class="view" id="view-clientes">
+          <div class="section-actions"><label class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input id="clientSearch" type="search" placeholder="Buscar por nome, telefone ou bairro"></label><button class="primary-button" data-open="client"><i class="fa-solid fa-user-plus"></i> Novo cliente</button></div>
+          <div class="mini-metrics" id="clientMetrics"></div>
+          <div class="card-grid" id="clientGrid"></div>
+        </section>
+
+        <section class="view" id="view-servicos">
+          <div class="section-intro"><div><span class="overline">CATÁLOGO HIPER</span><h2>Serviços e duração média</h2><p>Referências operacionais para orçamento e agenda. O valor final pode variar conforme tamanho e sujidade.</p></div></div>
+          <div class="service-grid" id="serviceGrid"></div>
+        </section>
+
+        <section class="view" id="view-financeiro">
+          <div class="section-actions"><div class="period-filter"><label>Período <input id="financeMonth" type="month"></label></div><button class="primary-button" data-open="transaction"><i class="fa-solid fa-plus"></i> Novo lançamento</button></div>
+          <div class="metric-grid financial" id="financeMetrics"></div>
+          <div class="dashboard-grid">
+            <article class="panel span-2"><div class="panel-heading"><div><span class="overline">FLUXO DE CAIXA</span><h3>Movimentações do período</h3></div></div><div class="table-wrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Forma</th><th>Status</th><th>Valor</th></tr></thead><tbody id="transactionRows"></tbody></table></div></article>
+            <article class="panel"><div class="panel-heading"><div><span class="overline">POR SERVIÇO</span><h3>Composição da receita</h3></div></div><div id="serviceRevenue" class="progress-list"></div></article>
+          </div>
+        </section>
+
+        <section class="view" id="view-ordens">
+          <div class="section-actions"><label class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input id="orderSearch" type="search" placeholder="Buscar OS, cliente ou endereço"></label><button class="primary-button" data-open="appointment"><i class="fa-solid fa-plus"></i> Nova ordem</button></div>
+          <div class="order-list" id="orderList"></div>
+        </section>
+
+        <section class="view" id="view-configuracoes">
+          <div class="settings-grid">
+            <article class="panel" id="appPanel"><div class="panel-heading"><div><span class="overline">APLICATIVO</span><h3>Instalar no celular</h3></div></div><p class="muted" id="installText">Instale a Hiper no celular da equipe para abrir em tela cheia, com ícone próprio, e continuar funcionando sem sinal na casa do cliente.</p><div class="settings-actions"><button type="button" class="primary-button" id="installButton" hidden><i class="fa-solid fa-download"></i> Instalar aplicativo</button></div><dl class="data-list"><div><dt>Instalação</dt><dd id="installStatus">-</dd></div><div><dt>Uso offline</dt><dd id="offlineStatus">-</dd></div></dl></article>
+            <article class="panel" id="notifyPanel"><div class="panel-heading"><div><span class="overline">LEMBRETES</span><h3>Serviços do dia</h3></div></div><p class="muted">Um aviso no celular com os atendimentos do dia e o horário do primeiro. O lembrete é montado no próprio aparelho, sem servidor.</p><div class="settings-actions"><button type="button" class="primary-button" id="notifyButton"><i class="fa-regular fa-bell"></i> Ativar lembretes</button><button type="button" class="secondary-button" id="notifyTest" hidden><i class="fa-solid fa-vial"></i> Testar agora</button></div><dl class="data-list"><div><dt>Permissão</dt><dd id="notifyStatus">-</dd></div><div><dt>Em segundo plano</dt><dd id="notifyBackground">-</dd></div></dl></article>
+            <article class="panel"><div class="panel-heading"><div><span class="overline">EMPRESA</span><h3>Dados da Hiper</h3></div></div><div class="company-card"><img src="/assets/logo-hiper.png" alt="Logo Hiper"><div><strong>Hiper Higienizações</strong><p>Higienização e impermeabilização de estofados</p></div></div><dl class="data-list"><div><dt>Telefone</dt><dd>(16) 99610-1500</dd></div><div><dt>E-mail</dt><dd>hiperhigienizacoesrp@gmail.com</dd></div><div><dt>Instagram</dt><dd>@hiperhigienizacoesrp</dd></div><div><dt>Região</dt><dd>Ribeirão Preto e região</dd></div><div><dt>Horário</dt><dd>Seg-sex 08h-18h · Sáb 08h-14h</dd></div></dl></article>
+            <article class="panel" id="demoPanel" hidden><div class="panel-heading"><div><span class="overline">DEMONSTRAÇÃO</span><h3>Dados locais</h3></div></div><p class="muted">Você está no modo demonstração: os registros ficam somente neste navegador e nada é enviado para a nuvem. Para trabalhar com dados reais, entre com uma conta do Firebase.</p><p class="auth-notice aviso" id="configHint" hidden><i class="fa-solid fa-triangle-exclamation"></i><span>O Firebase ainda não foi configurado, então só o modo demonstração está disponível. Preencha <code>public/js/firebase-config.js</code> seguindo <code>docs/FIREBASE_SETUP.md</code>.</span></p><div class="settings-actions"><button type="button" class="danger-button" id="resetDemo"><i class="fa-solid fa-rotate-left"></i> Restaurar demonstração</button><button type="button" class="secondary-button" id="goToLogin"><i class="fa-solid fa-right-to-bracket"></i> Entrar com uma conta</button></div></article>
+            <article class="panel" id="cloudPanel" hidden><div class="panel-heading"><div><span class="overline">CONTA</span><h3>Dados na nuvem</h3></div></div><p class="muted">Os registros são gravados no Firestore da sua conta e sincronizam em tempo real entre os dispositivos conectados.</p><dl class="data-list"><div><dt>Nome</dt><dd id="accountName">-</dd></div><div><dt>E-mail</dt><dd id="accountEmail">-</dd></div></dl><div class="settings-actions"><button type="button" class="danger-button" id="signOut"><i class="fa-solid fa-right-from-bracket"></i> Sair da conta</button></div></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <aside class="alert-drawer" id="alertDrawer"><div class="drawer-heading"><h2>Central de alertas</h2><button type="button" class="icon-button" id="closeAlerts" aria-label="Fechar alertas"><i class="fa-solid fa-xmark"></i></button></div><div id="drawerAlerts" class="stack-list"></div></aside>
+
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-heading"><div><span class="overline" id="modalEyebrow">NOVO REGISTRO</span><h2 id="modalTitle">Cadastro</h2></div><button class="icon-button" id="modalClose" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="appointmentForm" class="modal-form" hidden>
+        <div class="form-grid"><label class="span-2">Cliente<select name="clientId" required></select></label><label>Serviço<select name="serviceId" required></select></label><label>Responsável/equipe<input name="team" required placeholder="Ex.: Equipe Rafael"></label><label>Data<input type="date" name="date" required></label><label>Horário<input type="time" name="time" required></label><label>Duração estimada<input type="number" name="duration" min="30" step="30" required></label><label>Valor (R$)<input type="number" name="value" min="0" step="0.01" required></label><label>Status<select name="status"><option value="scheduled">Agendado</option><option value="confirmed">Confirmado</option><option value="in_service">Em atendimento</option><option value="completed">Concluído</option><option value="canceled">Cancelado</option></select></label><label>Pagamento<select name="paymentStatus"><option value="pending">A receber</option><option value="paid">Pago</option></select></label><label>Forma de pagamento<select name="paymentMethod"><option>PIX</option><option>Cartão</option><option>Dinheiro</option><option>Transferência</option></select></label><label class="span-2">Endereço do atendimento<input name="address" required></label><label class="span-2">Observações<textarea name="notes" rows="3" placeholder="Tecido, nível de sujidade, acesso, pets..."></textarea></label></div><div class="form-actions"><button type="button" class="secondary-button" data-close>Cancelar</button><button class="primary-button" type="submit">Salvar agendamento</button></div>
+      </form>
+      <form id="clientForm" class="modal-form" hidden>
+        <div class="form-grid"><label>Nome<input name="firstName" required></label><label>Sobrenome<input name="lastName" required></label><label>Telefone<input name="phone" required placeholder="(16) 99999-9999"></label><label>Data de nascimento<input name="birthDate" type="date"></label><label class="span-2">Endereço com número<input name="address" required></label><label>Bairro<input name="neighborhood" required></label><label>Cidade<input name="city" value="Ribeirão Preto" required></label><label>Próxima recomendação<input name="nextRecommendation" type="date"></label><label class="span-2">Observações<textarea name="notes" rows="3"></textarea></label></div><div class="form-actions"><button type="button" class="secondary-button" data-close>Cancelar</button><button class="primary-button" type="submit">Salvar cliente</button></div>
+      </form>
+      <form id="transactionForm" class="modal-form" hidden>
+        <div class="form-grid"><label>Tipo<select name="type"><option value="income">Receita</option><option value="expense">Despesa</option></select></label><label>Data<input name="date" type="date" required></label><label class="span-2">Descrição<input name="description" required></label><label>Valor (R$)<input name="value" type="number" min="0" step="0.01" required></label><label>Forma<select name="paymentMethod"><option>PIX</option><option>Cartão</option><option>Dinheiro</option><option>Boleto</option><option>Transferência</option></select></label><label>Status<select name="status"><option value="paid">Pago/recebido</option><option value="pending">Pendente</option></select></label><label>Categoria<input name="category" placeholder="Serviço, combustível..."></label></div><div class="form-actions"><button type="button" class="secondary-button" data-close>Cancelar</button><button class="primary-button" type="submit">Salvar lançamento</button></div>
+      </form>
+      <div id="detailContent" hidden></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script type="module" src="/js/app.js?v=3"></script>
+</body>
+</html>

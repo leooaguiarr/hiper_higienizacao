@@ -1,0 +1,7 @@
+# Normaliza quebras de linha: LF no repositório, nativo na cópia de trabalho.
+* text=auto eol=lf
+
+# Binários não devem ser tocados.
+*.png binary
+*.pdf binary
+*.ico binary

@@ -1,0 +1,20 @@
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Segredos
+.env
+.env.*
+
+# Dependências (o projeto não usa npm, mas ferramentas podem criar)
+node_modules/
+
+# Logs
+*.log
+
+# Sistema operacional
+Thumbs.db
+desktop.ini
+.DS_Store
