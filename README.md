@@ -102,6 +102,13 @@ Firestore mantém a cópia local dos dados com as gravações em fila. Na práti
 equipe consulta a agenda e conclui a ordem de serviço na casa do cliente mesmo
 sem sinal, e tudo sobe sozinho quando a conexão volta.
 
+## Continuando o desenvolvimento
+
+[CLAUDE.md](CLAUDE.md) é o documento de continuidade do projeto: decisões e seus
+porquês, estado atual, pendências e armadilhas conhecidas. Leia antes de editar,
+principalmente ao retomar o trabalho em outra máquina, e atualize ao terminar
+uma sessão que mude algo relevante.
+
 ## Histórico
 
 - [INVENTARIO_ARQUITETURA.md](INVENTARIO_ARQUITETURA.md): inventário do sistema
