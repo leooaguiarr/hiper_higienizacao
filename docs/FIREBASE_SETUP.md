@@ -55,8 +55,9 @@ demonstração e a tela de login fica desativada — sem erros.
 3. Em **Settings > Domínios autorizados**, confirme que `localhost` está na
    lista. Após o primeiro deploy, adicione também o domínio do Hosting.
 
-Não crie usuários pela mão: a própria tela de acesso do app tem a opção
-**Criar uma conta**.
+Para o primeiro acesso, use a opção **Criar uma conta** da própria tela do app.
+Depois de criar as contas da equipe, feche o cadastro público — veja
+[Proteger o projeto](#proteger-o-projeto).
 
 ## 5. Criar o Firestore e publicar as regras
 
@@ -80,7 +81,7 @@ Não crie usuários pela mão: a própria tela de acesso do app tem a opção
 Cada conta guarda tudo sob o próprio UID, então o isolamento é garantido pelo
 caminho do documento:
 
-```
+```text
 usuarios/{uid}/clientes/{id}       nome, telefone, endereço, recorrência
 usuarios/{uid}/servicos/{id}       catálogo, duração e preço base
 usuarios/{uid}/agendamentos/{id}   data, hora, equipe, valor, status, pagamento
@@ -127,6 +128,45 @@ Eles sobem em `localhost:5000` (Hosting), `9099` (Auth) e `8080` (Firestore),
 conforme o bloco `emulators` do `firebase.json`.
 
 ---
+
+## Proteger o projeto
+
+O código está num repositório público, então a configuração do passo 3 fica
+visível para qualquer pessoa. Isso **não** é um vazamento — a chave de API do
+Firebase Web é pública por design e sozinha não dá acesso a nada. Mas ela
+identifica o seu projeto, e é isso que torna os três itens abaixo obrigatórios
+antes de colocar clientes reais no sistema.
+
+### 1. Feche o cadastro de contas
+
+Este é o ponto mais importante. Com o sistema publicado, o botão **Criar uma
+conta** da tela de acesso fica disponível para qualquer visitante. Os dados da
+Hiper continuam isolados (cada conta só enxerga o próprio caminho no Firestore),
+mas estranhos consumiriam a cota do seu projeto.
+
+Para a operação da Hiper, o certo é criar as contas da equipe você mesmo:
+
+1. **Authentication > Settings > User actions**.
+2. Desmarque **Enable create (sign-up)**.
+3. Cadastre a equipe em **Authentication > Users > Adicionar usuário**.
+
+Feito isso, quem tentar criar conta recebe a mensagem
+"Ative o login por e-mail/senha no console do Firebase" — sinal de que o
+bloqueio está valendo.
+
+### 2. Restrinja a chave de API
+
+No **Google Cloud Console > APIs e serviços > Credenciais**, abra a chave do
+navegador e, em **Restrições de aplicativo**, escolha **Sites**. Adicione apenas
+`localhost` e o domínio do seu Hosting. Assim a chave não funciona a partir de
+outros sites.
+
+### 3. Confirme as regras antes de usar
+
+As regras do passo 5 são o que impede uma conta de ler os dados de outra. Sem
+elas publicadas, um banco em modo de teste fica aberto. Verifique na aba
+**Regras** do Firestore que o conteúdo é o de `firestore.rules`, e que a data de
+publicação é posterior à criação do banco.
 
 ## Limites do plano Spark
 
