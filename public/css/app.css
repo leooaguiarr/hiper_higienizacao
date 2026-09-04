@@ -335,5 +335,23 @@ td.expense { color: var(--danger); font-weight: 800; }
   .sync-badge i { font-size: 12px; }
 }
 
+/* --------------------------------------------- Acoes de editar/excluir -- */
+.detail-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+/* Editar ocupa o espaco; excluir fica compacto, para a acao destrutiva nao
+   competir em peso com a acao comum. */
+.detail-actions .secondary-button { flex: 1; min-width: 140px; }
+.detail-actions .danger-button { flex: 0 0 auto; margin-top: 0; color: var(--danger); background: #fdeced; }
+.detail-actions .danger-button:hover { color: #fff; background: var(--danger); }
+/* .icon-button e display:grid, entao sem flex os botoes empilhariam. */
+.row-actions { display: flex; justify-content: flex-end; gap: 4px; }
+.row-actions .icon-button { width: 32px; height: 32px; padding: 0; color: var(--muted); background: transparent; border: 1px solid transparent; font-size: 12px; }
+.row-actions .icon-button:hover { color: var(--blue); background: var(--blue-soft); transform: none; }
+.row-actions .icon-button.danger:hover { color: var(--danger); background: #fdeced; }
+
+@media (max-width: 560px) {
+  .detail-actions { flex-direction: column; }
+  .detail-actions button { width: 100%; }
+}
+
 /* O atributo hidden precisa vencer os display: grid/flex declarados acima. */
 [hidden] { display: none !important; }

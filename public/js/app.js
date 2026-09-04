@@ -181,7 +181,7 @@ function renderFinance() {
     ['fa-receipt', brl.format(paidServices?income/paidServices:0), 'Ticket médio recebido']
   ];
   document.getElementById('financeMetrics').innerHTML = metrics.map(([icon,value,label]) => `<article class="metric-card"><div class="metric-icon"><i class="fa-solid ${icon}"></i></div><strong>${value}</strong><span>${label}</span></article>`).join('');
-  document.getElementById('transactionRows').innerHTML = transactions.length ? transactions.map(item => `<tr><td>${dateFmt.format(parseDate(item.date))}</td><td><strong>${esc(item.description)}</strong><br><span class="muted">${esc(item.category || 'Geral')}</span></td><td>${esc(item.paymentMethod)}</td><td><span class="badge" style="--status:${item.status==='paid'?'var(--success)':'var(--warning)'}">${item.status==='paid'?'Pago':'Pendente'}</span></td><td class="${item.type}">${item.type==='expense'?'- ':'+ '}${brl.format(item.value)}</td></tr>`).join('') : `<tr><td colspan="5">${empty('Nenhuma movimentação no período.')}</td></tr>`;
+  document.getElementById('transactionRows').innerHTML = transactions.length ? transactions.map(item => `<tr><td>${dateFmt.format(parseDate(item.date))}</td><td><strong>${esc(item.description)}</strong><br><span class="muted">${esc(item.category || 'Geral')}</span></td><td>${esc(item.paymentMethod)}</td><td><span class="badge" style="--status:${item.status==='paid'?'var(--success)':'var(--warning)'}">${item.status==='paid'?'Pago':'Pendente'}</span></td><td class="${item.type}">${item.type==='expense'?'- ':'+ '}${brl.format(item.value)}</td><td class="row-actions"><button type="button" class="icon-button" data-edit-transaction="${item.id}" aria-label="Editar lançamento" title="Editar"><i class="fa-solid fa-pen"></i></button><button type="button" class="icon-button danger" data-delete-transaction="${item.id}" aria-label="Excluir lançamento" title="Excluir"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : `<tr><td colspan="6">${empty('Nenhuma movimentação no período.')}</td></tr>`;
   renderServiceRevenue(month);
 }
 function renderServiceRevenue(month) {
@@ -212,18 +212,24 @@ function renderAll() {
 function bindDynamicActions() {
   document.querySelectorAll('[data-detail]').forEach(button => button.onclick = () => showAppointmentDetail(button.dataset.detail));
   document.querySelectorAll('[data-client-detail]').forEach(button => button.onclick = () => showClientDetail(button.dataset.clientDetail));
+  document.querySelectorAll('[data-edit-transaction]').forEach(button => button.onclick = () => openForm('transaction', button.dataset.editTransaction));
+  document.querySelectorAll('[data-delete-transaction]').forEach(button => button.onclick = () => excluirLancamento(button.dataset.deleteTransaction));
 }
 
 function showAppointmentDetail(id) {
   const item = state().appointments.find(appointment => appointment.id === id); if (!item) return;
   const client = getClient(item.clientId), service = getService(item.serviceId);
-  openDetail('ORDEM DE SERVIÇO', `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>Data e horário</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div><div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || '')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" ${item.status===key?'disabled':''}>${label}</button>`).join('')}</div>`);
+  openDetail('ORDEM DE SERVIÇO', `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>Data e horário</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div><div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || '')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" ${item.status===key?'disabled':''}>${label}</button>`).join('')}</div><div class="detail-actions"><button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
   document.querySelectorAll('[data-set-status]').forEach(button => button.onclick = () => updateAppointmentStatus(item.id, button.dataset.setStatus));
+  document.querySelector('[data-edit-appointment]').onclick = () => openForm('appointment', item.id);
+  document.querySelector('[data-delete-appointment]').onclick = () => excluirAgendamento(item.id);
 }
 function showClientDetail(id) {
   const client = getClient(id); if (!client) return;
   const history = clientHistory(id), total = history.reduce((sum,item) => sum + Number(item.value),0);
-  openDetail('FICHA DO CLIENTE', clientName(client), `<div class="detail-hero"><span class="initials">${esc((client.firstName?.[0]||'')+(client.lastName?.[0]||''))}</span><div><strong>${esc(clientName(client))}</strong><p>${esc(client.phone)}</p></div></div><div class="detail-grid"><div><span>Total gasto</span><strong>${brl.format(total)}</strong></div><div><span>Serviços concluídos</span><strong>${history.length}</strong></div><div><span>Última higienização</span><strong>${history[0]?dateFmt.format(parseDate(history[0].date)):'-'}</strong></div><div><span>Próxima recomendação</span><strong>${client.nextRecommendation?dateFmt.format(parseDate(client.nextRecommendation)):'Não definida'}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(`${client.address}, ${client.neighborhood} - ${client.city}`)}</strong></div></div><h3>Histórico</h3><div class="stack-list" style="margin-top:10px">${history.length?history.map(item => `<div class="list-item"><span class="list-time">${dateFmt.format(parseDate(item.date))}</span><span class="list-main"><strong>${esc(getService(item.serviceId)?.name || '')}</strong><span>${esc(item.team || '')}</span></span><span class="list-value">${brl.format(item.value)}</span></div>`).join(''):empty('Ainda não há serviços concluídos.')}</div>`);
+  openDetail('FICHA DO CLIENTE', clientName(client), `<div class="detail-hero"><span class="initials">${esc((client.firstName?.[0]||'')+(client.lastName?.[0]||''))}</span><div><strong>${esc(clientName(client))}</strong><p>${esc(client.phone)}</p></div></div><div class="detail-grid"><div><span>Total gasto</span><strong>${brl.format(total)}</strong></div><div><span>Serviços concluídos</span><strong>${history.length}</strong></div><div><span>Última higienização</span><strong>${history[0]?dateFmt.format(parseDate(history[0].date)):'-'}</strong></div><div><span>Próxima recomendação</span><strong>${client.nextRecommendation?dateFmt.format(parseDate(client.nextRecommendation)):'Não definida'}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(`${client.address}, ${client.neighborhood} - ${client.city}`)}</strong></div></div><h3>Histórico</h3><div class="stack-list" style="margin-top:10px">${history.length?history.map(item => `<div class="list-item"><span class="list-time">${dateFmt.format(parseDate(item.date))}</span><span class="list-main"><strong>${esc(getService(item.serviceId)?.name || '')}</strong><span>${esc(item.team || '')}</span></span><span class="list-value">${brl.format(item.value)}</span></div>`).join(''):empty('Ainda não há serviços concluídos.')}</div><div class="detail-actions"><button type="button" class="secondary-button" data-edit-client="${client.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-client="${client.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
+  document.querySelector('[data-edit-client]').onclick = () => openForm('client', client.id);
+  document.querySelector('[data-delete-client]').onclick = () => excluirCliente(client.id);
 }
 
 // Concluir um serviço move três registros de uma vez: o agendamento, a
@@ -246,29 +252,59 @@ function incomeFromAppointment(item) {
   return { id:uid('tx'), appointmentId:item.id, type:'income', date:item.date, description:`${getService(item.serviceId)?.name || 'Serviço'} - ${clientName(getClient(item.clientId))}`, value:Number(item.value), paymentMethod:item.paymentMethod, status:'paid', category:'Serviços' };
 }
 
-function openForm(type) {
+// Guarda o registro em edição. Nulo significa que o formulário está criando.
+let editando = null;
+
+const CHAVE_DE = { appointment:'appointments', client:'clients', transaction:'transactions' };
+
+function buscarRegistro(type, id) { return state()[CHAVE_DE[type]].find(item => item.id === id); }
+
+// Os names dos campos batem com as chaves do registro, então o preenchimento
+// é direto. Campos ausentes no registro ficam como estão.
+function preencherForm(form, registro) {
+  Object.entries(registro).forEach(([chave, valor]) => {
+    const campo = form.elements[chave];
+    if (campo && valor !== undefined && valor !== null) campo.value = valor;
+  });
+}
+
+function openForm(type, id = null) {
+  const registro = id ? buscarRegistro(type, id) : null;
+  if (id && !registro) { toast('Registro não encontrado.'); return; }
+  editando = registro ? { type, id } : null;
+
   const configs = {
-    appointment:['NOVO SERVIÇO','Agendar atendimento','appointmentForm'],
-    client:['NOVO CADASTRO','Adicionar cliente','clientForm'],
-    transaction:['FINANCEIRO','Novo lançamento','transactionForm']
+    appointment: { formId:'appointmentForm', criar:['NOVO SERVIÇO','Agendar atendimento','Salvar agendamento'], editar:['EDITAR SERVIÇO','Editar atendimento','Salvar alterações'] },
+    client:      { formId:'clientForm',      criar:['NOVO CADASTRO','Adicionar cliente','Salvar cliente'],      editar:['EDITAR CADASTRO','Editar cliente','Salvar alterações'] },
+    transaction: { formId:'transactionForm', criar:['FINANCEIRO','Novo lançamento','Salvar lançamento'],        editar:['FINANCEIRO','Editar lançamento','Salvar alterações'] }
   };
-  const [eyebrow,title,formId] = configs[type];
+  const { formId } = configs[type];
+  const [eyebrow, titulo, rotuloBotao] = registro ? configs[type].editar : configs[type].criar;
   document.getElementById('modalEyebrow').textContent = eyebrow;
-  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalTitle').textContent = titulo;
   document.querySelectorAll('.modal-form,#detailContent').forEach(element => element.hidden = true);
   const form = document.getElementById(formId); form.hidden = false; form.reset();
+  form.querySelector('button[type="submit"]').textContent = rotuloBotao;
+
   if (type === 'appointment') {
     if (!state().clients.length) { toast('Cadastre um cliente antes de agendar.'); navigate('clientes'); return; }
     if (!state().services.some(service => service.active)) { toast('Nenhum serviço ativo no catálogo.'); navigate('servicos'); return; }
+    // Na edição o serviço pode estar inativo hoje: garante que ele apareça.
+    const servicos = state().services.filter(service => service.active || service.id === registro?.serviceId);
     form.elements.clientId.innerHTML = state().clients.map(client => `<option value="${client.id}">${esc(clientName(client))}</option>`).join('');
-    form.elements.serviceId.innerHTML = state().services.filter(service => service.active).map(service => `<option value="${service.id}">${esc(service.name)}</option>`).join('');
-    form.elements.date.value = localISO(new Date()); form.elements.time.value = '08:00'; form.elements.duration.value = 180; form.elements.value.value = getService(form.elements.serviceId.value)?.basePrice || 0;
-    const syncService = () => { const service = getService(form.elements.serviceId.value); if (service) { form.elements.duration.value = service.duration; form.elements.value.value = service.basePrice; } };
-    form.elements.serviceId.onchange = syncService;
+    form.elements.serviceId.innerHTML = servicos.map(service => `<option value="${service.id}">${esc(service.name)}</option>`).join('');
+    // Ao trocar o serviço, sugere duração e preço; ao trocar o cliente, o
+    // endereço. Só na criação, para não sobrescrever o que já foi ajustado.
+    form.elements.serviceId.onchange = () => { const service = getService(form.elements.serviceId.value); if (service) { form.elements.duration.value = service.duration; form.elements.value.value = service.basePrice; } };
     form.elements.clientId.onchange = () => { const client = getClient(form.elements.clientId.value); if (client) form.elements.address.value = `${client.address} - ${client.neighborhood}, ${client.city}`; };
-    form.elements.clientId.onchange();
+    if (!registro) {
+      form.elements.date.value = localISO(new Date()); form.elements.time.value = '08:00'; form.elements.duration.value = 180;
+      form.elements.serviceId.onchange();
+      form.elements.clientId.onchange();
+    }
   }
-  if (type === 'transaction') form.elements.date.value = localISO(new Date());
+  if (type === 'transaction' && !registro) form.elements.date.value = localISO(new Date());
+  if (registro) preencherForm(form, registro);
   openModal();
 }
 function openDetail(eyebrow,title,html) {
@@ -289,10 +325,29 @@ async function comFeedback(operacao, mensagemOk) {
 
 async function handleAppointmentSubmit(event) {
   event.preventDefault();
-  const form = event.currentTarget;
-  const values = Object.fromEntries(new FormData(form));
-  const appointment = { id:uid('apt'), ...values, duration:Number(values.duration), value:Number(values.value) };
+  const values = Object.fromEntries(new FormData(event.currentTarget));
+  const dados = { ...values, duration:Number(values.duration), value:Number(values.value) };
+  const emEdicao = editando;
   closeModal();
+
+  if (emEdicao) {
+    const receita = state().transactions.find(tx => tx.appointmentId === emEdicao.id);
+    await comFeedback(async () => {
+      const operacoes = [{ tipo:'atualizar', chave:'appointments', id:emEdicao.id, dados }];
+      // Mantém o financeiro coerente com o pagamento informado aqui.
+      if (dados.paymentStatus === 'paid' && !receita) {
+        const nova = incomeFromAppointment({ ...dados, id:emEdicao.id });
+        operacoes.push({ tipo:'criar', chave:'transactions', id:nova.id, dados:nova });
+      } else if (dados.paymentStatus === 'pending' && receita) {
+        operacoes.push({ tipo:'remover', chave:'transactions', id:receita.id });
+      }
+      await gravarLote(operacoes);
+    }, 'Atendimento atualizado.');
+    agendaDate = parseDate(dados.date); renderAgenda(); bindDynamicActions();
+    return;
+  }
+
+  const appointment = { id:uid('apt'), ...dados };
   await comFeedback(async () => {
     const operacoes = [{ tipo:'criar', chave:'appointments', id:appointment.id, dados:appointment }];
     if (appointment.paymentStatus === 'paid') {
@@ -306,16 +361,60 @@ async function handleAppointmentSubmit(event) {
 async function handleClientSubmit(event) {
   event.preventDefault();
   const values = Object.fromEntries(new FormData(event.currentTarget));
+  const emEdicao = editando;
   closeModal();
-  await comFeedback(() => criar('clients', values), 'Cliente cadastrado com sucesso.');
+  if (emEdicao) await comFeedback(() => atualizar('clients', emEdicao.id, values), 'Cliente atualizado.');
+  else await comFeedback(() => criar('clients', values), 'Cliente cadastrado com sucesso.');
   navigate('clientes');
 }
 async function handleTransactionSubmit(event) {
   event.preventDefault();
   const values = Object.fromEntries(new FormData(event.currentTarget));
+  const dados = { ...values, value:Number(values.value) };
+  const emEdicao = editando;
   closeModal();
-  await comFeedback(() => criar('transactions', { ...values, value:Number(values.value) }), 'Lançamento registrado.');
+  if (emEdicao) await comFeedback(() => atualizar('transactions', emEdicao.id, dados), 'Lançamento atualizado.');
+  else await comFeedback(() => criar('transactions', dados), 'Lançamento registrado.');
   navigate('financeiro');
+}
+
+/* ------------------------------------------------------------ Exclusão -- */
+
+async function excluirAgendamento(id) {
+  const item = state().appointments.find(appointment => appointment.id === id); if (!item) return;
+  const receita = state().transactions.find(tx => tx.appointmentId === id);
+  const numero = id.split('-').pop().toUpperCase();
+  const aviso = receita
+    ? `\n\nA receita de ${brl.format(receita.value)} gerada por este atendimento também será excluída.`
+    : '';
+  if (!confirm(`Excluir a OS #${numero}, de ${clientName(getClient(item.clientId))}?${aviso}\n\nEsta ação não pode ser desfeita.`)) return;
+  closeModal();
+  const operacoes = [{ tipo:'remover', chave:'appointments', id }];
+  if (receita) operacoes.push({ tipo:'remover', chave:'transactions', id:receita.id });
+  await comFeedback(() => gravarLote(operacoes), 'Atendimento excluído.');
+}
+
+async function excluirCliente(id) {
+  const client = getClient(id); if (!client) return;
+  const atendimentos = state().appointments.filter(item => item.clientId === id);
+  // O histórico é preservado de propósito: apagar junto tiraria do financeiro
+  // receitas que de fato aconteceram.
+  const aviso = atendimentos.length
+    ? `\n\nOs ${atendimentos.length} atendimento(s) deste cliente serão mantidos no histórico e passarão a aparecer como "Cliente removido".`
+    : '';
+  if (!confirm(`Excluir o cadastro de ${clientName(client)}?${aviso}\n\nEsta ação não pode ser desfeita.`)) return;
+  closeModal();
+  await comFeedback(() => remover('clients', id), 'Cliente excluído.');
+}
+
+async function excluirLancamento(id) {
+  const item = state().transactions.find(tx => tx.id === id); if (!item) return;
+  const vinculo = item.appointmentId
+    ? '\n\nEste lançamento veio de um atendimento concluído. Excluí-lo altera o faturamento do período.'
+    : '';
+  if (!confirm(`Excluir o lançamento "${item.description}" de ${brl.format(item.value)}?${vinculo}\n\nEsta ação não pode ser desfeita.`)) return;
+  closeModal();
+  await comFeedback(() => remover('transactions', id), 'Lançamento excluído.');
 }
 
 function navigate(view) {

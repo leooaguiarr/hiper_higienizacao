@@ -8,7 +8,7 @@ o que já foi entregue, o que falta e as armadilhas que já custaram tempo.
 principalmente as seções *Estado atual*, *O que vem a seguir* e *Histórico*.
 
 - Repositório: <https://github.com/leooaguiarr/hiper_higienizacao> (público)
-- Última atualização deste documento: 01/09/2026
+- Última atualização deste documento: 04/09/2026
 
 ---
 
@@ -34,6 +34,7 @@ se reaproveitou a arquitetura, não o conteúdo. O histórico está em
 ```powershell
 node server.js          # http://localhost:8000
 node tests/smoke.js     # modo demonstração, ponta a ponta
+node tests/crud.js      # editar e excluir, com as regras de vínculo
 node tests/pwa.js       # manifest, service worker e uso offline real
 ```
 
@@ -73,7 +74,7 @@ public/
 firestore.rules         isolamento por conta
 firebase.json           Hosting, regras e emuladores
 server.js               servidor local, só com módulos nativos do Node
-tests/                  smoke.js e pwa.js, headless por CDP
+tests/                  smoke.js, crud.js e pwa.js, headless por CDP
 ```
 
 ### A regra central
@@ -110,6 +111,21 @@ usuarios/{uid}/clientes|servicos|agendamentos|lancamentos|equipes/{id}
 Conta nova recebe automaticamente os oito serviços de `SERVICOS_PADRAO`, para a
 agenda já nascer utilizável.
 
+### Regras que ligam as coleções
+
+Editar e excluir não mexem num registro só. Três vínculos são mantidos pelo
+`app.js`, sempre via `gravarLote` para não deixar estado pela metade:
+
+- Marcar um atendimento como **pago** cria a receita correspondente; voltar
+  para **a receber** remove essa receita.
+- **Excluir um atendimento** exclui junto a receita que ele gerou — senão o
+  financeiro mostraria dinheiro de um serviço que não existe mais.
+- **Excluir um cliente** preserva os atendimentos dele. Apagar em cascata
+  tiraria do faturamento receitas que de fato aconteceram; as ordens antigas
+  passam a exibir "Cliente removido", que `clientName()` já trata.
+
+O `tests/crud.js` cobre os três, incluindo o caminho de volta.
+
 ### Offline
 
 Duas camadas independentes: o **service worker** guarda a interface e o
@@ -122,13 +138,12 @@ sozinho depois. O indicador no topo mostra *Sem conexão*, *Sincronizando* ou
 
 **Funciona e está testado:** as sete telas, agenda em dia/semana/mês, ficha do
 cliente com histórico, ordens de serviço com os cinco estados, financeiro por
-período, criação de cliente/agendamento/lançamento, conclusão de serviço em
-lote (status + recorrência + receita), login e recuperação de senha, instalação
-como app, operação offline e lembretes locais.
+período, **criar, editar e excluir** cliente/agendamento/lançamento, conclusão
+de serviço em lote (status + recorrência + receita), login e recuperação de
+senha, instalação como app, operação offline e lembretes locais.
 
 **Não existe ainda:**
 
-- **Editar e excluir** qualquer registro — só há criação. É a maior falta.
 - **Cadastro de equipes** — a coleção `equipes` está reservada nas regras, mas
   no formulário a equipe é texto livre.
 - **Cadastro/edição de serviços** — o catálogo é somente leitura na interface,
@@ -146,9 +161,8 @@ erro, não a gravação.
 
 1. **Configurar o Firebase** (`docs/FIREBASE_SETUP.md`) — destrava a nuvem e a
    instalação como app, que exige HTTPS e portanto o deploy.
-2. **Editar e excluir** registros.
-3. **Cadastro de equipes**, substituindo o campo de texto livre.
-4. **Tela de serviços** editável.
+2. **Cadastro de equipes**, substituindo o campo de texto livre.
+3. **Tela de serviços** editável.
 
 Ao configurar o Firebase, não esqueça de **fechar o cadastro público de contas**
 (Authentication > Settings > User actions). Com o sistema publicado, qualquer
@@ -202,3 +216,4 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 01/09/2026 | **Backend definido como Firebase**, no lugar do Supabase que estava planejado. Código modularizado em `utils/seed/store/app`, login e regras de isolamento. Testes headless. |
 | 01/09/2026 | **PWA**: app instalável, operação offline completa e lembretes locais. Ícones gerados do logo. |
 | 01/09/2026 | Repositório publicado no GitHub e documentação de proteção do projeto Firebase. |
+| 04/09/2026 | **Editar e excluir** cliente, atendimento e lançamento, com as regras de vínculo entre as coleções. Teste `tests/crud.js`. |
