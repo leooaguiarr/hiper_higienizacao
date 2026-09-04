@@ -36,11 +36,15 @@ node server.js          # http://localhost:8000
 node tests/smoke.js     # modo demonstração, ponta a ponta
 node tests/crud.js      # editar e excluir, com as regras de vínculo
 node tests/pwa.js       # manifest, service worker e uso offline real
+node tests/regras.js    # segurança do Firestore (não precisa do servidor)
 ```
 
-Os testes sobem o Chrome headless por CDP e **precisam do servidor rodando em
-outro terminal**. Não há npm, nem build, nem `package.json` — e essa ausência é
-proposital: mantenha assim.
+Os três primeiros sobem o Chrome headless por CDP e **precisam do servidor
+rodando em outro terminal**. O `regras.js` não precisa: fala com a API de teste
+do Firebase e só exige o `gcloud` autenticado.
+
+Não há npm, nem build, nem `package.json` — e essa ausência é proposital:
+mantenha assim.
 
 ## 3. As três restrições que explicam quase tudo
 
@@ -65,16 +69,16 @@ public/
   manifest.webmanifest  identidade do app instalável
   sw.js                 cache offline + periodicsync dos lembretes
   css/app.css           identidade visual e responsividade
-  js/firebase-config.js credenciais (placeholder até alguém preencher)
+  js/firebase-config.js credenciais do projeto (públicas por design)
   js/utils.js           formatação BR de data, moeda e texto
   js/seed.js            SERVICOS_PADRAO + dados demonstrativos
   js/store.js           camada de dados: decide entre localStorage e Firestore
   js/notificacoes.js    permissão, resumo de lembretes e background sync
   js/app.js             renderização, eventos e controle de sessão
-firestore.rules         isolamento por conta
+firestore.rules         autorização por lista e isolamento por conta
 firebase.json           Hosting, regras e emuladores
 server.js               servidor local, só com módulos nativos do Node
-tests/                  smoke.js, crud.js e pwa.js, headless por CDP
+tests/                  smoke.js, crud.js, pwa.js e regras.js
 ```
 
 ### A regra central
@@ -89,27 +93,53 @@ tela — não quebre essa fronteira.
 | Modo | Quando | Dados |
 | --- | --- | --- |
 | `demo` | Sem login, ou `firebase-config.js` não preenchido | `localStorage` |
-| `nuvem` | Após autenticar | Firestore, tempo real, com cache offline |
+| `nuvem` | Autenticado **e** autorizado | Firestore, tempo real, com cache offline |
+| `sem-acesso` | Autenticado, mas fora da lista de autorizados | Nenhum |
 | `deslogado` | Sessão ausente | Tela de acesso |
 | `carregando` | Enquanto o SDK carrega | Spinner |
 
-O `store.js` expõe: `iniciar`, `iniciarDemo`, `entrar`, `criarConta`,
-`recuperarSenha`, `sair`, `irParaLogin`, `criar`, `atualizar`, `remover`,
-`gravarLote`, `restaurarDemo`, `aoMudar`, `aoErro`, `mensagemErro`.
+O `store.js` expõe: `iniciar`, `iniciarDemo`, `entrarComGoogle`, `sair`,
+`irParaLogin`, `criar`, `atualizar`, `remover`, `gravarLote`, `restaurarDemo`,
+`aoMudar`, `aoErro`, `mensagemErro`.
 
 `window.__store` está exposto para inspeção no console e é usado pelos testes.
+
+### Acesso: duas travas independentes
+
+**Autenticar não é ter acesso.** O login é só com Google, e qualquer pessoa com
+conta Google consegue se autenticar no projeto. A liberação vem da coleção
+`autorizados/{email}`, que as regras consultam com `exists()`. Quem não consta
+não lê nem grava nada, e o app mostra a tela de acesso não liberado.
+
+A lista fica no banco, **não escrita nas regras**, porque o repositório é
+público e exporia os e-mails da equipe. O app nunca a escreve: cada pessoa só
+lê o próprio registro, para saber se entra. Liberar ou revogar é criar ou
+apagar o documento pelo console — o passo a passo está em
+`docs/FIREBASE_SETUP.md`.
+
+`tests/regras.js` cobre isso com 22 casos, pela API de teste do Firebase Rules
+(sem emulador, sem Java, sem tocar no banco real).
 
 ### Dados no Firestore
 
 Tudo sob `usuarios/{uid}`, então **o isolamento vem do caminho do documento** —
-é o substituto do RLS que existiria no Postgres. As regras só liberam o dono.
+é o substituto do RLS que existiria no Postgres.
 
 ```text
+autorizados/{email}
 usuarios/{uid}/clientes|servicos|agendamentos|lancamentos|equipes/{id}
 ```
 
 Conta nova recebe automaticamente os oito serviços de `SERVICOS_PADRAO`, para a
 agenda já nascer utilizável.
+
+> **Antes de autorizar uma segunda pessoa, leia isto.** Como cada conta tem sua
+> própria base, quem entrar depois vê um sistema **vazio**, não a agenda da
+> Hiper. Para a equipe compartilhar os dados, é preciso mover os documentos
+> para um caminho da empresa (algo como `empresa/hiper/...`), ajustar o
+> `COLECOES`/caminho no `store.js` e trocar a checagem de dono nas regras por
+> uma de pertencimento. Foi decidido em 04/09/2026 não fazer isso ainda, porque
+> só há um usuário.
 
 ### Regras que ligam as coleções
 
@@ -139,8 +169,9 @@ sozinho depois. O indicador no topo mostra *Sem conexão*, *Sincronizando* ou
 **Funciona e está testado:** as sete telas, agenda em dia/semana/mês, ficha do
 cliente com histórico, ordens de serviço com os cinco estados, financeiro por
 período, **criar, editar e excluir** cliente/agendamento/lançamento, conclusão
-de serviço em lote (status + recorrência + receita), login e recuperação de
-senha, instalação como app, operação offline e lembretes locais.
+de serviço em lote (status + recorrência + receita), login com Google e o
+bloqueio de quem não está autorizado, instalação como app, operação offline e
+lembretes locais.
 
 **Não existe ainda:**
 
@@ -150,23 +181,21 @@ senha, instalação como app, operação offline e lembretes locais.
   embora o modelo tenha o campo `active`.
 - **Fotos antes/depois** — bloqueado pelo Spark.
 
-**Pendência de configuração:** `public/js/firebase-config.js` ainda está com o
-placeholder, e `.firebaserc` com `SEU-PROJECT-ID`. Enquanto isso, o app abre
-direto em demonstração e o login fica desativado — de propósito, sem erro. O
-fluxo autenticado nunca foi validado contra um projeto Firebase real; só contra
-credenciais fictícias, o que confirmou o carregamento do SDK e o tratamento de
-erro, não a gravação.
+**Firebase configurado** no projeto `hiper-higienizacoes`, publicado em
+<https://hiper-higienizacoes.web.app>. Firestore em `southamerica-east1`, login
+com Google ativo, regras publicadas e testadas.
+
+**Ainda não validado com login real:** o fluxo autenticado ponta a ponta
+(entrar, gravar, semear o catálogo) depende de um login humano com Google, que
+os testes headless não conseguem fazer. As regras estão cobertas por
+`tests/regras.js`; o que falta é a confirmação em uso.
 
 ## 6. O que vem a seguir
 
-1. **Configurar o Firebase** (`docs/FIREBASE_SETUP.md`) — destrava a nuvem e a
-   instalação como app, que exige HTTPS e portanto o deploy.
-2. **Cadastro de equipes**, substituindo o campo de texto livre.
-3. **Tela de serviços** editável.
-
-Ao configurar o Firebase, não esqueça de **fechar o cadastro público de contas**
-(Authentication > Settings > User actions). Com o sistema publicado, qualquer
-visitante criaria conta no projeto e consumiria a cota.
+1. **Cadastro de equipes**, substituindo o campo de texto livre.
+2. **Tela de serviços** editável.
+3. **Restringir a chave de API** por domínio no Google Cloud Console
+   (`docs/FIREBASE_SETUP.md`, seção *Proteger o projeto*).
 
 ## 7. Armadilhas conhecidas
 
@@ -193,6 +222,16 @@ Cada uma destas já custou tempo. Leia antes de repetir.
   vazio, porque quase todos os lançamentos caem no mês anterior. Não é bug.
 - **A versão do SDK do Firebase está fixada em 12.9.0** nas URLs do `gstatic`,
   dentro de `store.js`. Ao mudar, confirme antes que a versão existe no CDN.
+- **`firebase emulators:start` exige Java 21**, e a máquina tem o Java 8. Por
+  isso o teste de regras usa a API do Firebase Rules, e não o emulador. Não
+  perca tempo tentando subir o emulador sem instalar um JDK novo.
+- **Ativar provedores do Auth só pelo console.** A API `initializeAuth` é do
+  Identity Platform e recusa projetos no Spark com `BILLING_NOT_ENABLED`. Todo
+  o resto do Firebase (projeto, app web, Firestore, regras, deploy) foi feito
+  pela linha de comando.
+- **Testes headless não conseguem fazer login com Google.** O popup é do
+  domínio do Google, com senha e 2FA. O fluxo autenticado precisa de
+  verificação humana; o que dá para automatizar são as regras.
 
 ## 8. Convenções
 
@@ -217,3 +256,5 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 01/09/2026 | **PWA**: app instalável, operação offline completa e lembretes locais. Ícones gerados do logo. |
 | 01/09/2026 | Repositório publicado no GitHub e documentação de proteção do projeto Firebase. |
 | 04/09/2026 | **Editar e excluir** cliente, atendimento e lançamento, com as regras de vínculo entre as coleções. Teste `tests/crud.js`. |
+| 04/09/2026 | **Firebase configurado e publicado**: projeto `hiper-higienizacoes`, Firestore em São Paulo, Hosting no ar. |
+| 04/09/2026 | **Login trocado para conta Google**, com liberação por lista `autorizados/{email}` nas regras. Teste `tests/regras.js`, 22 casos. |

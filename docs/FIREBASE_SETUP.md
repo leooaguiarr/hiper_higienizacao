@@ -47,17 +47,16 @@ Depois abra `.firebaserc` e troque `SEU-PROJECT-ID` pelo mesmo ID do projeto.
 Enquanto esse arquivo não for preenchido, o app abre direto em modo
 demonstração e a tela de login fica desativada — sem erros.
 
-## 4. Ativar o login por e-mail e senha
+## 4. Ativar o login com Google
 
 1. Menu lateral: **Criação > Authentication > Vamos começar**.
-2. Aba **Sign-in method** > **E-mail/senha** > ative a primeira chave
-   (deixe "Link do e-mail" desativado) > **Salvar**.
+2. Aba **Sign-in method** > **Google** > ative, escolha o **e-mail de suporte
+   do projeto** > **Salvar**.
 3. Em **Settings > Domínios autorizados**, confirme que `localhost` está na
    lista. Após o primeiro deploy, adicione também o domínio do Hosting.
 
-Para o primeiro acesso, use a opção **Criar uma conta** da própria tela do app.
-Depois de criar as contas da equipe, feche o cadastro público — veja
-[Proteger o projeto](#proteger-o-projeto).
+Não há login por senha: ninguém cria conta, esquece senha ou precisa de
+recuperação. Quem entra é controlado pela lista de autorizados do passo 5.
 
 ## 5. Criar o Firestore e publicar as regras
 
@@ -82,6 +81,7 @@ Cada conta guarda tudo sob o próprio UID, então o isolamento é garantido pelo
 caminho do documento:
 
 ```text
+autorizados/{email}                quem pode entrar no sistema
 usuarios/{uid}/clientes/{id}       nome, telefone, endereço, recorrência
 usuarios/{uid}/servicos/{id}       catálogo, duração e preço base
 usuarios/{uid}/agendamentos/{id}   data, hora, equipe, valor, status, pagamento
@@ -91,6 +91,27 @@ usuarios/{uid}/equipes/{id}        reservado para o cadastro de equipes
 
 No primeiro acesso de uma conta nova, o app publica sozinho os oito serviços
 do catálogo da Hiper, para que a agenda já nasça utilizável.
+
+### Liberar quem pode entrar
+
+Entrar com Google não dá acesso a nada: qualquer pessoa com conta Google
+consegue se autenticar, então a liberação vem da coleção `autorizados`, que as
+regras consultam. Quem não consta nela vê a tela de **acesso não liberado**.
+
+Para liberar alguém, crie um documento cujo **ID é o e-mail** da pessoa:
+
+1. Console > **Firestore Database** > coleção `autorizados`.
+2. **Adicionar documento**, com o ID sendo o e-mail exato da conta Google.
+3. Campos livres, só para você se organizar — por exemplo `nome` e `papel`.
+
+Para revogar o acesso, exclua o documento. O app nunca escreve nessa coleção:
+cada pessoa só consegue ler o próprio registro, e apenas para saber se entra.
+
+> **Atenção ao adicionar a segunda pessoa.** Hoje os dados vivem sob
+> `usuarios/{uid}`, ou seja, cada conta tem a própria base. Uma segunda pessoa
+> autorizada entraria num sistema vazio, não na agenda da Hiper. Para a equipe
+> compartilhar os mesmos dados, os documentos precisam ser movidos para um
+> caminho da empresa e as regras ajustadas.
 
 ## 6. Publicar no Firebase Hosting
 
@@ -118,14 +139,24 @@ Para o dia a dia, o servidor local sem dependências continua valendo:
 node server.js
 ```
 
-Para testar login e banco sem tocar nos dados reais, use os emuladores:
+As regras de acesso têm teste próprio, que não toca no banco real nem precisa
+do emulador — ele usa a API de teste do Firebase Rules:
+
+```powershell
+node tests/regras.js
+```
+
+Para testar login e banco sem tocar nos dados reais, existem os emuladores:
 
 ```powershell
 firebase emulators:start
 ```
 
 Eles sobem em `localhost:5000` (Hosting), `9099` (Auth) e `8080` (Firestore),
-conforme o bloco `emulators` do `firebase.json`.
+conforme o bloco `emulators` do `firebase.json`. **Exigem Java 21 ou superior** —
+versões do `firebase-tools` a partir de 2025 recusam JDKs anteriores. Se o
+comando reclamar da versão do Java, instale um JDK novo ou fique com
+`tests/regras.js`, que cobre a parte crítica sem essa dependência.
 
 ---
 
@@ -137,22 +168,14 @@ Firebase Web é pública por design e sozinha não dá acesso a nada. Mas ela
 identifica o seu projeto, e é isso que torna os três itens abaixo obrigatórios
 antes de colocar clientes reais no sistema.
 
-### 1. Feche o cadastro de contas
+### 1. Mantenha a lista de autorizados enxuta
 
-Este é o ponto mais importante. Com o sistema publicado, o botão **Criar uma
-conta** da tela de acesso fica disponível para qualquer visitante. Os dados da
-Hiper continuam isolados (cada conta só enxerga o próprio caminho no Firestore),
-mas estranhos consumiriam a cota do seu projeto.
+É ela que controla o acesso. Qualquer pessoa com conta Google consegue se
+autenticar no seu projeto, mas sem constar em `autorizados` não lê nem grava
+nada — o que as regras garantem, e `node tests/regras.js` verifica.
 
-Para a operação da Hiper, o certo é criar as contas da equipe você mesmo:
-
-1. **Authentication > Settings > User actions**.
-2. Desmarque **Enable create (sign-up)**.
-3. Cadastre a equipe em **Authentication > Users > Adicionar usuário**.
-
-Feito isso, quem tentar criar conta recebe a mensagem
-"Ative o login por e-mail/senha no console do Firebase" — sinal de que o
-bloqueio está valendo.
+Revise a lista de tempos em tempos e remova quem saiu da equipe. Não é preciso
+fechar o cadastro no console: sem login por senha, não há cadastro a fechar.
 
 ### 2. Restrinja a chave de API
 
@@ -177,7 +200,7 @@ publicação é posterior à criação do banco.
 | Exclusões no Firestore | 20.000 |
 | Armazenamento no Firestore | 1 GiB |
 | Hosting (transferência) | 360 MB/dia, 10 GB armazenados |
-| Authentication (e-mail/senha) | ilimitado |
+| Authentication (login com Google) | ilimitado |
 
 O app assina as coleções com `onSnapshot`, então a carga inicial custa uma
 leitura por documento e, depois disso, só as alterações consomem cota. Para a
@@ -191,8 +214,9 @@ e o envio de SMS pelo Authentication.
 
 | Mensagem | O que fazer |
 | --- | --- |
-| "Ative o login por e-mail/senha no console" | Passo 4 não concluído. |
+| "Ative o login com Google no console" | Passo 4 não concluído. |
 | "Domínio não autorizado" | Adicione o domínio em Authentication > Settings. |
+| "Acesso não liberado" após entrar | O e-mail não está em `autorizados`. Veja *Liberar quem pode entrar*. |
 | "Sem permissão. Confira as regras do Firestore." | Publique `firestore.rules` (passo 5). |
 | A tela de login não aparece | `firebase-config.js` ainda está com o placeholder. |
-| "Missing or insufficient permissions" no console | O banco foi criado em modo produção sem as regras publicadas. |
+| O navegador bloqueou a janela de login | O app tenta o redirecionamento sozinho; libere os pop-ups se insistir. |
