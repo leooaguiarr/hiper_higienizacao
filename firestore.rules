@@ -1,26 +1,47 @@
 rules_version = '2';
 
 // Hiper Higienizações - regras de acesso do Firestore.
-// Modelo: todo dado da empresa vive sob usuarios/{uid}, então o isolamento
-// é garantido pelo próprio caminho do documento. Nada fora dessa árvore é
-// legível ou gravável, e o acesso anônimo é sempre negado.
+//
+// Duas travas independentes:
+//
+//   1. Autorização. Entrar com Google não basta: qualquer pessoa com conta
+//      Google consegue se autenticar, então o acesso depende de constar em
+//      autorizados/{email}. Essa lista é mantida fora do app.
+//   2. Isolamento. Os dados vivem sob usuarios/{uid}, então o caminho do
+//      documento garante que ninguém alcance a base de outra conta.
+//
+// Sem Cloud Functions (plano Spark) não há como bloquear o login em si; o que
+// se bloqueia é o acesso aos dados, e o app trata isso mostrando uma tela de
+// acesso não liberado.
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function ehDono(uid) {
-      return request.auth != null && request.auth.uid == uid;
+    function autenticado() {
+      return request.auth != null && request.auth.token.email != null;
     }
 
-    // Perfil da empresa: usuarios/{uid}
+    function autorizado() {
+      return autenticado()
+        && exists(/databases/$(database)/documents/autorizados/$(request.auth.token.email));
+    }
+
+    // Cada pessoa lê apenas o próprio registro, e só para o app saber se
+    // libera a entrada. A lista nunca é gravada pelo app.
+    match /autorizados/{email} {
+      allow read: if autenticado() && request.auth.token.email == email;
+      allow write: if false;
+    }
+
+    // Dados da conta: usuarios/{uid}
     match /usuarios/{uid} {
-      allow read, write: if ehDono(uid);
+      allow read, write: if autorizado() && request.auth.uid == uid;
 
       // Coleções operacionais: clientes, servicos, equipes,
       // agendamentos e lancamentos.
       match /{colecao}/{documento} {
-        allow read, delete: if ehDono(uid);
-        allow create, update: if ehDono(uid)
+        allow read, delete: if autorizado() && request.auth.uid == uid;
+        allow create, update: if autorizado() && request.auth.uid == uid
           && colecao in ['clientes', 'servicos', 'equipes', 'agendamentos', 'lancamentos']
           && request.resource.data.keys().size() <= 40;
       }

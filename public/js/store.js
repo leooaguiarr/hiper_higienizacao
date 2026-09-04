@@ -74,18 +74,17 @@ async function carregarSDK() {
 
 const ERROS = {
   'auth/invalid-email': 'E-mail inválido.',
-  'auth/user-not-found': 'Não encontramos uma conta com este e-mail.',
-  'auth/wrong-password': 'E-mail ou senha incorretos.',
-  'auth/invalid-credential': 'E-mail ou senha incorretos.',
-  'auth/email-already-in-use': 'Este e-mail já possui uma conta.',
-  'auth/weak-password': 'A senha precisa ter ao menos 6 caracteres.',
+  'auth/invalid-credential': 'Não foi possível validar esta conta Google.',
   'auth/too-many-requests': 'Muitas tentativas. Aguarde alguns minutos.',
   'auth/network-request-failed': 'Sem conexão com a internet.',
-  'auth/operation-not-allowed': 'Ative o login por e-mail/senha no console do Firebase.',
+  'auth/operation-not-allowed': 'Ative o login com Google no console do Firebase.',
+  'auth/configuration-not-found': 'Ative o login com Google no console do Firebase.',
   'auth/unauthorized-domain': 'Domínio não autorizado no Firebase Authentication.',
   'auth/user-disabled': 'Esta conta está desativada.',
-  'auth/missing-password': 'Informe a senha.',
-  'auth/missing-email': 'Informe o e-mail.',
+  'auth/popup-closed-by-user': 'Login cancelado.',
+  'auth/cancelled-popup-request': 'Login cancelado.',
+  'auth/popup-blocked': 'O navegador bloqueou a janela de login.',
+  'auth/account-exists-with-different-credential': 'Este e-mail já entrou por outro método.',
   'auth/requires-recent-login': 'Por segurança, entre novamente para concluir.',
   'auth/invalid-api-key': 'Chave de API inválida. Revise o firebase-config.js.',
   'auth/api-key-not-valid.-please-pass-a-valid-api-key.': 'Chave de API inválida. Revise o firebase-config.js.',
@@ -116,6 +115,21 @@ export async function iniciar() {
   authApi.onAuthStateChanged(auth, async usuario => {
     if (usuario) {
       store.usuario = usuario;
+      let liberado = false;
+      try {
+        liberado = await verificarAutorizacao(usuario.email);
+      } catch (error) {
+        notificarErro(mensagemErro(error));
+      }
+      if (!liberado) {
+        // Conta válida, mas fora da lista: nada é lido nem gravado.
+        pararEscuta();
+        store.modo = 'sem-acesso';
+        store.state = estadoVazio();
+        localStorage.removeItem(MODO_KEY);
+        notificar();
+        return;
+      }
       store.modo = 'nuvem';
       localStorage.setItem(MODO_KEY, 'nuvem');
       await escutarColecoes(usuario.uid);
@@ -140,18 +154,30 @@ export function iniciarDemo() {
   notificar();
 }
 
-export async function entrar(email, senha) {
+export async function entrarComGoogle() {
   const { auth, authApi } = await carregarSDK();
-  await authApi.signInWithEmailAndPassword(auth, email, senha);
+  const provedor = new authApi.GoogleAuthProvider();
+  // Sempre perguntar a conta: o aparelho pode ser compartilhado pela equipe.
+  provedor.setCustomParameters({ prompt: 'select_account' });
+  try {
+    await authApi.signInWithPopup(auth, provedor);
+  } catch (error) {
+    // Em alguns navegadores de celular o popup é bloqueado; o redirecionamento
+    // é o caminho confiável nesses casos.
+    if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
+      await authApi.signInWithRedirect(auth, provedor);
+      return;
+    }
+    throw error;
+  }
 }
-export async function criarConta(email, senha, nome) {
-  const { auth, authApi } = await carregarSDK();
-  const credencial = await authApi.createUserWithEmailAndPassword(auth, email, senha);
-  if (nome) await authApi.updateProfile(credencial.user, { displayName: nome });
-}
-export async function recuperarSenha(email) {
-  const { auth, authApi } = await carregarSDK();
-  await authApi.sendPasswordResetEmail(auth, email);
+
+// Autenticar não é o mesmo que ter acesso: a liberação vem da lista
+// autorizados/{email}, que só o dono do projeto mantém.
+async function verificarAutorizacao(email) {
+  const { db, dbApi } = await carregarSDK();
+  const registro = await dbApi.getDoc(dbApi.doc(db, 'autorizados', email));
+  return registro.exists();
 }
 export async function sair() {
   localStorage.removeItem(MODO_KEY);

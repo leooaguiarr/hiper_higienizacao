@@ -353,5 +353,17 @@ td.expense { color: var(--danger); font-weight: 800; }
   .detail-actions button { width: 100%; }
 }
 
+/* ------------------------------------------------- Entrar com Google -- */
+.google-button { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 13px; color: #1f1f1f; background: #fff; border: 1px solid #dadce0; border-radius: 11px; font-size: 14px; font-weight: 600; transition: .2s ease; }
+.google-button:hover { background: #f8f9fa; border-color: #c8ccd0; box-shadow: 0 1px 3px rgba(60,64,67,.15); }
+.google-button:disabled { opacity: .6; cursor: progress; }
+.google-button svg { width: 18px; height: 18px; flex: 0 0 18px; }
+.auth-hint { display: block; margin-top: 11px; color: var(--muted); font-size: 11px; line-height: 1.45; text-align: center; }
+.denied-icon { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 16px; color: var(--danger); background: #fdeced; border-radius: 50%; font-size: 20px; }
+#deniedBox h1 { margin-bottom: 8px; }
+#deniedBox p { margin-bottom: 10px; font-size: 13px; line-height: 1.5; }
+#deniedBox .settings-actions { flex-direction: column; }
+#deniedBox .settings-actions button { width: 100%; }
+
 /* O atributo hidden precisa vencer os display: grid/flex declarados acima. */
 [hidden] { display: none !important; }

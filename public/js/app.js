@@ -4,7 +4,7 @@
 
 import { brl, dateFmt, fullDateFmt, monthFmt, localISO, parseDate, addDays, addMonths, startOfWeek, startOfMonth, uid, esc, phoneDigits, cap } from './utils.js';
 import {
-  store, iniciar, iniciarDemo, entrar, criarConta, recuperarSenha, sair, irParaLogin,
+  store, iniciar, iniciarDemo, entrarComGoogle, sair, irParaLogin,
   criar, atualizar, remover, gravarLote, restaurarDemo, aoMudar, aoErro, mensagemErro
 } from './store.js';
 import {
@@ -429,17 +429,18 @@ function navigate(view) {
 
 /* ------------------------------------------------------- Tela de acesso -- */
 
-let modoAuth = 'entrar';
-
 function renderAuth() {
   const tela = document.getElementById('authScreen');
   const app = document.querySelector('.app-shell');
   const carregando = store.modo === 'carregando';
+  const semAcesso = store.modo === 'sem-acesso';
   const logado = store.modo === 'demo' || store.modo === 'nuvem';
   tela.hidden = logado;
   app.hidden = !logado;
   document.getElementById('authLoading').hidden = !carregando;
-  document.getElementById('authBox').hidden = carregando;
+  document.getElementById('authBox').hidden = carregando || semAcesso;
+  document.getElementById('deniedBox').hidden = !semAcesso;
+  if (semAcesso) document.getElementById('deniedEmail').textContent = store.usuario?.email || '-';
   if (!logado) return;
 
   // Cabeçalho e configurações refletem o modo em uso.
@@ -454,25 +455,6 @@ function renderAuth() {
   document.getElementById('accountName').textContent = store.usuario?.displayName || 'Sem nome definido';
 }
 
-function trocarModoAuth(modo) {
-  modoAuth = modo;
-  const titulos = {
-    entrar:['Acesse sua conta','Entre para ver os dados da Hiper na nuvem.','Entrar'],
-    criar:['Criar conta','Uma conta nova começa com o catálogo de serviços da Hiper.','Criar conta'],
-    recuperar:['Recuperar senha','Enviaremos um link de redefinição para o seu e-mail.','Enviar link']
-  };
-  const [titulo, texto, botao] = titulos[modo];
-  document.getElementById('authTitle').textContent = titulo;
-  document.getElementById('authText').textContent = texto;
-  document.getElementById('authSubmit').textContent = botao;
-  document.getElementById('fieldName').hidden = modo !== 'criar';
-  document.getElementById('fieldPassword').hidden = modo === 'recuperar';
-  document.getElementById('authForm').elements.password.required = modo !== 'recuperar';
-  document.getElementById('authForm').elements.name.required = modo === 'criar';
-  document.querySelectorAll('[data-auth-mode]').forEach(link => link.hidden = link.dataset.authMode === modo);
-  mostrarAvisoAuth('');
-}
-
 function mostrarAvisoAuth(mensagem, tom = 'erro') {
   const aviso = document.getElementById('authNotice');
   aviso.textContent = mensagem;
@@ -480,19 +462,17 @@ function mostrarAvisoAuth(mensagem, tom = 'erro') {
   aviso.className = `auth-notice ${tom}`;
 }
 
-async function handleAuthSubmit(event) {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const { email, password, name } = Object.fromEntries(new FormData(form));
-  const botao = document.getElementById('authSubmit');
+async function handleGoogleLogin() {
+  const botao = document.getElementById('googleButton');
   botao.disabled = true;
   mostrarAvisoAuth('');
   try {
-    if (modoAuth === 'entrar') await entrar(email, password);
-    else if (modoAuth === 'criar') await criarConta(email, password, name);
-    else { await recuperarSenha(email); mostrarAvisoAuth('Link enviado. Confira sua caixa de entrada.', 'ok'); trocarModoAuth('entrar'); }
+    await entrarComGoogle();
   } catch (error) {
-    mostrarAvisoAuth(mensagemErro(error));
+    // Fechar a janela do Google é desistência, não erro para exibir.
+    if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+      mostrarAvisoAuth(mensagemErro(error));
+    }
   } finally {
     botao.disabled = false;
   }
@@ -597,9 +577,10 @@ document.getElementById('goToLogin').addEventListener('click', irParaLogin);
 document.getElementById('signOut').addEventListener('click', async () => {
   if (confirm('Sair da conta?')) await comFeedback(() => sair());
 });
-document.getElementById('authForm').addEventListener('submit', handleAuthSubmit);
-document.querySelectorAll('[data-auth-mode]').forEach(link => link.addEventListener('click', () => trocarModoAuth(link.dataset.authMode)));
+document.getElementById('googleButton').addEventListener('click', handleGoogleLogin);
 document.getElementById('demoButton').addEventListener('click', iniciarDemo);
+document.getElementById('deniedSignOut').addEventListener('click', () => comFeedback(() => sair()));
+document.getElementById('deniedDemo').addEventListener('click', async () => { await sair(); iniciarDemo(); });
 
 // O navegador avisa quando a instalação é possível; guardamos o evento para
 // disparar no clique do usuário, que é a única forma aceita.
@@ -647,17 +628,14 @@ aoMudar(() => {
   }
 });
 aoErro(mensagem => toast(mensagem));
-trocarModoAuth('entrar');
 
 // Sem firebase-config.js preenchido não existe nuvem: some com o que leva ao
-// login e explica o porquê, na tela de acesso e nas configurações. Precisa vir
-// depois de trocarModoAuth(), que mexe nos mesmos elementos.
+// login e explica o porquê, na tela de acesso e nas configurações.
 if (store.configPendente) {
   document.getElementById('configWarning').hidden = false;
   document.getElementById('configHint').hidden = false;
   document.getElementById('cloudDisabled').hidden = false;
-  document.getElementById('authForm').hidden = true;
-  document.querySelector('.auth-switch').hidden = true;
+  document.getElementById('authEntrar').hidden = true;
   document.getElementById('goToLogin').hidden = true;
 }
 

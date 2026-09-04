@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="/css/app.css?v=5">
+  <link rel="stylesheet" href="/css/app.css?v=6">
 </head>
 <body>
   <div class="auth-screen" id="authScreen" hidden>
@@ -26,8 +26,8 @@
         <img src="/assets/logo-hiper.png" alt="Logo Hiper Higienizações">
         <div><strong>Hiper</strong><span>Higienizações</span></div>
       </div>
-      <h1 id="authTitle">Acesse sua conta</h1>
-      <p id="authText">Entre para ver os dados da Hiper na nuvem.</p>
+      <h1 id="authTitle">Acesse o sistema</h1>
+      <p id="authText">Entre com a conta Google autorizada para ver os dados da Hiper.</p>
 
       <div class="auth-notice aviso" id="configWarning" hidden>
         <i class="fa-solid fa-triangle-exclamation"></i>
@@ -36,23 +36,33 @@
 
       <p class="auth-notice" id="authNotice" hidden></p>
 
-      <form id="authForm" class="auth-form" novalidate>
-        <label id="fieldName" hidden>Nome<input name="name" autocomplete="name" placeholder="Como quer ser chamado"></label>
-        <label>E-mail<input name="email" type="email" required autocomplete="email" placeholder="voce@exemplo.com"></label>
-        <label id="fieldPassword">Senha<input name="password" type="password" required autocomplete="current-password" minlength="6" placeholder="Mínimo de 6 caracteres"></label>
-        <button class="primary-button auth-submit" type="submit" id="authSubmit">Entrar</button>
-      </form>
-
-      <div class="auth-switch">
-        <button type="button" class="text-button" data-auth-mode="entrar">Já tenho conta</button>
-        <button type="button" class="text-button" data-auth-mode="criar">Criar uma conta</button>
-        <button type="button" class="text-button" data-auth-mode="recuperar">Esqueci a senha</button>
+      <div id="authEntrar">
+        <button type="button" class="google-button" id="googleButton">
+          <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+          Entrar com Google
+        </button>
+        <small class="auth-hint">O acesso é liberado apenas para contas autorizadas pela Hiper.</small>
       </div>
 
       <div class="auth-divider" id="cloudDisabled" hidden><span>modo disponível agora</span></div>
       <div class="auth-demo">
         <button type="button" class="secondary-button" id="demoButton"><i class="fa-solid fa-flask"></i> Entrar em modo demonstração</button>
         <small>Dados de exemplo salvos apenas neste navegador, sem enviar nada para a nuvem.</small>
+      </div>
+    </div>
+
+    <div class="auth-box" id="deniedBox" hidden>
+      <div class="auth-brand">
+        <img src="/assets/logo-hiper.png" alt="Logo Hiper Higienizações">
+        <div><strong>Hiper</strong><span>Higienizações</span></div>
+      </div>
+      <div class="denied-icon"><i class="fa-solid fa-lock"></i></div>
+      <h1>Acesso não liberado</h1>
+      <p>A conta <strong id="deniedEmail">-</strong> não está autorizada a usar o sistema da Hiper.</p>
+      <p class="muted">Se você faz parte da equipe, peça a liberação do seu e-mail ao responsável pelo sistema.</p>
+      <div class="settings-actions">
+        <button type="button" class="secondary-button" id="deniedSignOut"><i class="fa-solid fa-right-from-bracket"></i> Sair e tentar outra conta</button>
+        <button type="button" class="secondary-button" id="deniedDemo"><i class="fa-solid fa-flask"></i> Ver a demonstração</button>
       </div>
     </div>
   </div>
@@ -174,6 +184,6 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
-  <script type="module" src="/js/app.js?v=5"></script>
+  <script type="module" src="/js/app.js?v=6"></script>
 </body>
 </html>
