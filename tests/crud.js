@@ -99,6 +99,16 @@ async function main() {
   // confirm() bloquearia o headless: aqui toda confirmação é aceita.
   await avaliar('window.confirm = () => true; true');
 
+  // Com o Firebase configurado o app abre na tela de acesso; este teste é do
+  // modo demonstração, então entra nele quando não há sessão.
+  await avaliar(`(async () => {
+    if (window.__store.modo === 'deslogado') {
+      document.getElementById('demoButton').click();
+      await new Promise(r => setTimeout(r, 1200));
+    }
+    return true;
+  })()`);
+
   // --- Editar cliente ---
   const edicaoCliente = await avaliar(`(async () => {
     const alvo = window.__store.state.clients[0];

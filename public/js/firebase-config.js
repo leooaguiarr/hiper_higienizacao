@@ -12,12 +12,12 @@
 // demonstração (dados locais no navegador) e a tela de login fica desativada.
 
 export const firebaseConfig = {
-  apiKey: 'COLE-SUA-API-KEY',
-  authDomain: 'SEU-PROJECT-ID.firebaseapp.com',
-  projectId: 'SEU-PROJECT-ID',
-  storageBucket: 'SEU-PROJECT-ID.firebasestorage.app',
-  messagingSenderId: 'COLE-SEU-SENDER-ID',
-  appId: 'COLE-SEU-APP-ID'
+  apiKey: 'AIzaSyCHu0gEkDHA3tso5HSzURFLlcCF-6L6O9g',
+  authDomain: 'hiper-higienizacoes.firebaseapp.com',
+  projectId: 'hiper-higienizacoes',
+  storageBucket: 'hiper-higienizacoes.firebasestorage.app',
+  messagingSenderId: '54668400740',
+  appId: '1:54668400740:web:48a444d13930e7233ba771'
 };
 
 // true quando a configuração ainda não foi preenchida.

@@ -95,6 +95,20 @@ async function main() {
   await enviar('Page.navigate', { url: ALVO });
   await esperar(4000);
 
+  // Com o Firebase configurado, o app abre na tela de acesso em vez de entrar
+  // direto na demonstração. Os testes de offline precisam de dados na tela,
+  // então aqui escolhemos a demonstração quando não há sessão.
+  const entrada = await avaliar(`(async () => {
+    const modo = window.__store.modo;
+    if (modo === 'deslogado') {
+      document.getElementById('demoButton').click();
+      await new Promise(r => setTimeout(r, 1200));
+    }
+    return { modoInicial: modo, modoAgora: window.__store.modo };
+  })()`);
+  console.log(`\n=== ENTRADA === modo inicial: ${entrada.modoInicial}` +
+    (entrada.modoInicial !== entrada.modoAgora ? ` -> ${entrada.modoAgora} (demonstração)` : ''));
+
   const sw = await avaliar(`(async () => {
     const registro = await navigator.serviceWorker.ready;
     return {

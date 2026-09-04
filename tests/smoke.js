@@ -107,6 +107,16 @@ async function main() {
     return r.result.value;
   };
 
+  // Com o Firebase configurado o app abre na tela de acesso; este teste é do
+  // modo demonstração, então entra nele quando não há sessão.
+  await avaliar(`(async () => {
+    if (window.__store.modo === 'deslogado') {
+      document.getElementById('demoButton').click();
+      await new Promise(r => setTimeout(r, 1200));
+    }
+    return true;
+  })()`);
+
   const relatorio = await avaliar(`(() => {
     const visivel = sel => { const el = document.querySelector(sel); return !!el && !el.hidden && getComputedStyle(el).display !== 'none'; };
     return {
