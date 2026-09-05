@@ -185,17 +185,25 @@ lembretes locais.
 <https://hiper-higienizacoes.web.app>. Firestore em `southamerica-east1`, login
 com Google ativo, regras publicadas e testadas.
 
-**Ainda não validado com login real:** o fluxo autenticado ponta a ponta
-(entrar, gravar, semear o catálogo) depende de um login humano com Google, que
-os testes headless não conseguem fazer. As regras estão cobertas por
-`tests/regras.js`; o que falta é a confirmação em uso.
+**Login real validado em 04/09/2026.** Entrar com Google funciona e o catálogo
+de oito serviços foi semeado sozinho na primeira entrada. Estado do projeto
+naquele dia: 1 autorizado (`leooaguiarr@gmail.com`, uid
+`pFfNUp3yU2PsQhbnIvNa5f1Y0q83`), 1 conta autenticada, 8 serviços e nenhum
+cliente ou agendamento na nuvem.
+
+**Não testado com um segundo usuário real:** o bloqueio de quem não está na
+lista está provado pelas regras (`tests/regras.js`), mas ninguém tentou entrar
+com outra conta Google de verdade.
 
 ## 6. O que vem a seguir
 
-1. **Cadastro de equipes**, substituindo o campo de texto livre.
-2. **Tela de serviços** editável.
-3. **Restringir a chave de API** por domínio no Google Cloud Console
-   (`docs/FIREBASE_SETUP.md`, seção *Proteger o projeto*).
+1. **Restringir a chave de API** por domínio no Google Cloud Console
+   (`docs/FIREBASE_SETUP.md`, seção *Proteger o projeto*). É rápido e ficou
+   pendente: hoje a chave está num repositório público e funciona a partir de
+   qualquer site. Não expõe dados, porque as regras seguem valendo, mas permite
+   usar o projeto como fachada.
+2. **Cadastro de equipes**, substituindo o campo de texto livre.
+3. **Tela de serviços** editável.
 
 ## 7. Armadilhas conhecidas
 
@@ -258,3 +266,4 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 04/09/2026 | **Editar e excluir** cliente, atendimento e lançamento, com as regras de vínculo entre as coleções. Teste `tests/crud.js`. |
 | 04/09/2026 | **Firebase configurado e publicado**: projeto `hiper-higienizacoes`, Firestore em São Paulo, Hosting no ar. |
 | 04/09/2026 | **Login trocado para conta Google**, com liberação por lista `autorizados/{email}` nas regras. Teste `tests/regras.js`, 22 casos. |
+| 04/09/2026 | Login com Google validado em uso real: entrada funciona e o catálogo é semeado sozinho na primeira vez. |
