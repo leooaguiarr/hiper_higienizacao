@@ -50,6 +50,10 @@ h3 { margin-bottom: 0; font-size: 16px; letter-spacing: -.02em; }
 .sidebar-contact strong { display: block; margin: 5px 0 10px; color: #fff; font-size: 12px; }
 .sidebar-contact a { color: #b9cff0; font-size: 11px; text-decoration: none; }
 .sidebar-contact a i { color: #35d786; font-size: 15px; }
+.sidebar-footer-actions { margin-top: 10px; }
+.sidebar-action { width: 100%; display: flex; align-items: center; gap: 10px; padding: 11px 14px; color: #6ce8ee; background: rgba(255,255,255,.06); border: 1px solid rgba(108,232,238,.2); border-radius: 11px; font-size: 11px; font-weight: 700; cursor: pointer; transition: .2s ease; }
+.sidebar-action:hover { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(108,232,238,.4); }
+.sidebar-action i { font-size: 14px; width: 18px; text-align: center; }
 .sidebar footer { padding: 18px 7px 0; color: #6f87a7; font-size: 9px; text-align: center; }
 
 .content-shell { margin-left: var(--sidebar); min-height: 100vh; }

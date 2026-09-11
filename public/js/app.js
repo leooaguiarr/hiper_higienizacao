@@ -553,7 +553,17 @@ const instalado = () => window.matchMedia('(display-mode: standalone)').matches 
 
 async function registrarServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
-  try { await navigator.serviceWorker.register('/sw.js'); }
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    reg.addEventListener('updatefound', () => {
+      const novoWorker = reg.installing;
+      novoWorker?.addEventListener('statechange', () => {
+        if (novoWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          toast('Nova versão disponível! Toque em Mais > Atualizar para aplicar.');
+        }
+      });
+    });
+  }
   catch { /* sem service worker o app segue funcionando, só não abre offline */ }
 }
 
@@ -671,6 +681,18 @@ function toggleSidebar(abrir) {
   sidebar?.classList.toggle('open', estado);
   backdrop?.classList.toggle('open', estado);
 }
+async function recarregarApp() {
+  toast('Atualizando aplicativo...');
+  try {
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg) await reg.update();
+    }
+  } catch {}
+  setTimeout(() => window.location.reload(true), 250);
+}
+document.getElementById('sidebarReload')?.addEventListener('click', recarregarApp);
+document.getElementById('reloadAppButton')?.addEventListener('click', recarregarApp);
 
 document.getElementById('resetDemo').addEventListener('click', () => {
   if (confirm('Restaurar os dados demonstrativos e apagar alterações locais?')) { restaurarDemo(); toast('Demonstração restaurada.'); }
