@@ -619,10 +619,29 @@ function renderAppPanel() {
     }
   }
 
+  const bloqueado = permissao === 'denied';
+  const avisoBloqueado = document.getElementById('notifyDeniedAlert');
+  if (avisoBloqueado) avisoBloqueado.hidden = !bloqueado;
+
   document.getElementById('notifyStatus').textContent = rotulos[permissao] || permissao;
-  document.getElementById('notifyButton').hidden = !suporta || permissao === 'granted';
+  const botaoNotify = document.getElementById('notifyButton');
+  if (botaoNotify) {
+    botaoNotify.hidden = !suporta || permissao === 'granted';
+    if (bloqueado) {
+      botaoNotify.disabled = false;
+      botaoNotify.className = 'secondary-button';
+      botaoNotify.innerHTML = '<i class="fa-solid fa-circle-question"></i> Como desbloquear';
+      botaoNotify.onclick = () => {
+        alert('Para desbloquear as notificações no iPhone:\n\n1. Abra o app "Ajustes" do iPhone\n2. Toque em "Notificações"\n3. Procure por "Hiper" (ou "Safari")\n4. Ative "Permitir Notificações"\n\nAo voltar para o app da Hiper, os lembretes serão ativados automaticamente!');
+      };
+    } else {
+      botaoNotify.disabled = false;
+      botaoNotify.className = 'primary-button';
+      botaoNotify.innerHTML = '<i class="fa-regular fa-bell"></i> Ativar lembretes';
+      botaoNotify.onclick = ativarLembretes;
+    }
+  }
   document.getElementById('notifyTest').hidden = permissao !== 'granted';
-  document.getElementById('notifyButton').disabled = permissao === 'denied';
 }
 
 async function atualizarStatusSegundoPlano() {
@@ -691,8 +710,15 @@ async function recarregarApp() {
   } catch {}
   setTimeout(() => window.location.reload(true), 250);
 }
-document.getElementById('sidebarReload')?.addEventListener('click', recarregarApp);
 document.getElementById('reloadAppButton')?.addEventListener('click', recarregarApp);
+window.addEventListener('focus', () => {
+  renderAppPanel();
+  atualizarStatusSegundoPlano();
+  if (permissaoAtual() === 'granted') {
+    publicarLembretes(state(), id => clientName(getClient(id)));
+    verificarAgora();
+  }
+});
 
 document.getElementById('resetDemo').addEventListener('click', () => {
   if (confirm('Restaurar os dados demonstrativos e apagar alterações locais?')) { restaurarDemo(); toast('Demonstração restaurada.'); }
