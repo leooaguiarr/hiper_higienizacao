@@ -8,7 +8,7 @@ o que já foi entregue, o que falta e as armadilhas que já custaram tempo.
 principalmente as seções *Estado atual*, *O que vem a seguir* e *Histórico*.
 
 - Repositório: <https://github.com/leooaguiarr/hiper_higienizacao> (público)
-- Última atualização deste documento: 04/09/2026
+- Última atualização deste documento: 11/09/2026
 
 ---
 
@@ -168,17 +168,20 @@ sozinho depois. O indicador no topo mostra *Sem conexão*, *Sincronizando* ou
 
 **Funciona e está testado:** as sete telas, agenda em dia/semana/mês, ficha do
 cliente com histórico, ordens de serviço com os cinco estados, financeiro por
-período, **criar, editar e excluir** cliente/agendamento/lançamento, conclusão
-de serviço em lote (status + recorrência + receita), login com Google e o
+período, **criar, editar e excluir** cliente/agendamento/lançamento/serviço, conclusão
+de serviço em lote (status + recorrência + receita), catálogo de serviços gerenciável
+(com ativação/desativação e proteção de histórico), login com Google e o
 bloqueio de quem não está autorizado, instalação como app, operação offline e
-lembretes locais.
+lembretes locais. Equipe opcional e flexibilizada.
+
+**Chave de API protegida:** restrição ativa de HTTP referrers no Google Cloud
+para localhost, 127.0.0.1, e domínios do Hosting (.web.app e .firebaseapp.com).
 
 **Não existe ainda:**
 
-- **Cadastro de equipes** — a coleção `equipes` está reservada nas regras, mas
-  no formulário a equipe é texto livre.
-- **Cadastro/edição de serviços** — o catálogo é somente leitura na interface,
-  embora o modelo tenha o campo `active`.
+- **Cadastro dedicado de equipes** — a coleção `equipes` está reservada nas regras
+  e o campo `team` é opcional, preparado para receber o cadastro formal caso a
+  operação passe a ter múltiplos colaboradores.
 - **Fotos antes/depois** — bloqueado pelo Spark.
 
 **Firebase configurado** no projeto `hiper-higienizacoes`, publicado em
@@ -197,13 +200,12 @@ com outra conta Google de verdade.
 
 ## 6. O que vem a seguir
 
-1. **Restringir a chave de API** por domínio no Google Cloud Console
-   (`docs/FIREBASE_SETUP.md`, seção *Proteger o projeto*). É rápido e ficou
-   pendente: hoje a chave está num repositório público e funciona a partir de
-   qualquer site. Não expõe dados, porque as regras seguem valendo, mas permite
-   usar o projeto como fachada.
-2. **Cadastro de equipes**, substituindo o campo de texto livre.
-3. **Tela de serviços** editável.
+1. **Mensagens inteligentes no WhatsApp:** pré-preenchimento de confirmação de
+   agendamento e lembrete com 1 clique a partir da OS e ficha do cliente.
+2. **Máscaras de entrada:** formatação automática de telefone e moeda nos formulários.
+3. **Comprovante/Garantia pós-serviço:** envio de orientações de secagem e termo de
+   garantia via WhatsApp após conclusão.
+4. **Cadastro formal de equipes:** ativado somente se a empresa expandir para mais equipes.
 
 ## 7. Armadilhas conhecidas
 
@@ -267,3 +269,4 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 04/09/2026 | **Firebase configurado e publicado**: projeto `hiper-higienizacoes`, Firestore em São Paulo, Hosting no ar. |
 | 04/09/2026 | **Login trocado para conta Google**, com liberação por lista `autorizados/{email}` nas regras. Teste `tests/regras.js`, 22 casos. |
 | 04/09/2026 | Login com Google validado em uso real: entrada funciona e o catálogo é semeado sozinho na primeira vez. |
+| 11/09/2026 | **CRUD de serviços** implementado, campo de equipe flexibilizado (opcional), chave de API restrita por domínio no Google Cloud e testes headless expandidos. |

@@ -177,12 +177,16 @@ nada — o que as regras garantem, e `node tests/regras.js` verifica.
 Revise a lista de tempos em tempos e remova quem saiu da equipe. Não é preciso
 fechar o cadastro no console: sem login por senha, não há cadastro a fechar.
 
-### 2. Restrinja a chave de API
+### 2. Restrinja a chave de API (Concluído)
 
-No **Google Cloud Console > APIs e serviços > Credenciais**, abra a chave do
-navegador e, em **Restrições de aplicativo**, escolha **Sites**. Adicione apenas
-`localhost` e o domínio do seu Hosting. Assim a chave não funciona a partir de
-outros sites.
+A chave de API está restrita por HTTP referrers aos domínios autorizados
+(`http://localhost:*`, `http://127.0.0.1:*`, `https://hiper-higienizacoes.web.app/*` e
+`https://hiper-higienizacoes.firebaseapp.com/*`). Caso adicione um domínio próprio
+futuro no Hosting, lembre-se de incluí-lo na chave via Google Cloud Console ou gcloud:
+
+```powershell
+gcloud services api-keys update 46cd5ff7-4f88-43d0-867f-634f4375e2cd --project=hiper-higienizacoes --allowed-referrers="..."
+```
 
 ### 3. Confirme as regras antes de usar
 

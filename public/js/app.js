@@ -31,7 +31,7 @@ let agendaDate = new Date();
 const state = () => store.state;
 
 function getClient(id) { return state().clients.find(item => item.id === id); }
-function getService(id) { return state().services.find(item => item.id === id); }
+function getService(id) { return state().services.find(item => item.id === id) || { id, name: 'Serviço desativado/removido', icon: 'sparkles', duration: 120, basePrice: 0, active: false }; }
 function clientName(client) { return client ? `${client.firstName} ${client.lastName}`.trim() : 'Cliente removido'; }
 function clientHistory(id) { return state().appointments.filter(item => item.clientId === id && item.status === 'completed').sort((a,b) => b.date.localeCompare(a.date)); }
 function statusBadge(status) { const config = STATUS[status]; return `<span class="badge" style="--status:var(--${config?.[1] || 'muted'})">${esc(config?.[0] || status)}</span>`; }
@@ -71,7 +71,8 @@ function renderDashboard() {
     .slice(0,5);
   document.getElementById('upcomingList').innerHTML = upcoming.length ? upcoming.map(item => {
     const client = getClient(item.clientId), service = getService(item.serviceId);
-    return `<button class="list-item" data-detail="${item.id}"><span class="list-time"><strong>${item.time}</strong><span>${dateFmt.format(parseDate(item.date))}</span></span><span class="list-main"><strong>${esc(clientName(client))}</strong><span>${esc(service?.name || '')} · ${esc(item.team || '')}</span></span><span class="list-value">${brl.format(item.value)}${statusBadge(item.status)}</span></button>`;
+    const subtexto = [service?.name, item.team].filter(Boolean).map(esc).join(' · ');
+    return `<button class="list-item" data-detail="${item.id}"><span class="list-time"><strong>${item.time}</strong><span>${dateFmt.format(parseDate(item.date))}</span></span><span class="list-main"><strong>${esc(clientName(client))}</strong><span>${subtexto}</span></span><span class="list-value">${brl.format(item.value)}${statusBadge(item.status)}</span></button>`;
   }).join('') : empty('Nenhum serviço à frente. Aproveite para prospectar.');
 
   const alerts = buildAlerts();
@@ -161,7 +162,33 @@ function renderClients() {
 }
 
 function renderServices() {
-  document.getElementById('serviceGrid').innerHTML = state().services.filter(service => service.active).map(service => `<article class="service-card"><div class="service-icon"><i class="fa-solid ${ICONS[service.icon] || 'fa-sparkles'}"></i></div><h3>${esc(service.name)}</h3><p>${esc(service.description)}</p><div class="service-meta"><span><i class="fa-regular fa-clock"></i> ${Math.floor(service.duration/60)}h${service.duration%60?` ${service.duration%60}min`:''}</span><span>A partir de ${brl.format(service.basePrice)}</span></div></article>`).join('') || empty('Nenhum serviço no catálogo.');
+  const servicos = state().services;
+  document.getElementById('serviceGrid').innerHTML = servicos.map(service => {
+    const duracaoH = Math.floor(service.duration / 60);
+    const duracaoMin = service.duration % 60 ? ` ${service.duration % 60}min` : '';
+    const duracaoTexto = `${duracaoH}h${duracaoMin}`;
+    const badgeHtml = service.active !== false
+      ? '<span class="badge" style="color:var(--success);background:rgba(16,185,129,0.1)">Ativo</span>'
+      : '<span class="badge" style="color:var(--danger);background:rgba(239,68,68,0.1)">Inativo</span>';
+
+    return `<article class="service-card ${service.active === false ? 'is-inactive' : ''}">
+      <div class="service-header">
+        <div class="service-icon"><i class="fa-solid ${ICONS[service.icon] || 'fa-sparkles'}"></i></div>
+        ${badgeHtml}
+      </div>
+      <h3>${esc(service.name)}</h3>
+      <p>${esc(service.description || 'Sem descrição operacional cadastrada.')}</p>
+      <div class="service-meta">
+        <span><i class="fa-regular fa-clock"></i> ${duracaoTexto}</span>
+        <span>A partir de ${brl.format(service.basePrice)}</span>
+      </div>
+      <div class="service-actions">
+        <button type="button" class="secondary-button" data-edit-service="${service.id}"><i class="fa-solid fa-pen"></i> Editar</button>
+        <button type="button" class="danger-button" data-delete-service="${service.id}"><i class="fa-solid fa-trash"></i> Excluir</button>
+      </div>
+    </article>`;
+  }).join('') || empty('Nenhum serviço no catálogo.');
+  bindDynamicActions();
 }
 
 function renderFinance() {
@@ -199,7 +226,7 @@ function renderOrders() {
   });
   document.getElementById('orderList').innerHTML = orders.length ? orders.map(item => {
     const client = getClient(item.clientId), service = getService(item.serviceId);
-    return `<article class="order-card"><div><strong>#${item.id.split('-').pop().toUpperCase()}</strong><span>${dateFmt.format(parseDate(item.date))} · ${item.time}</span></div><div><strong>${esc(clientName(client))}</strong><span>${esc(service?.name || '')}</span></div><div><strong>${esc(item.team || '')}</strong><span>${esc(item.address)}</span></div><div>${statusBadge(item.status)}</div><button data-detail="${item.id}">Abrir OS</button></article>`;
+    return `<article class="order-card"><div><strong>#${item.id.split('-').pop().toUpperCase()}</strong><span>${dateFmt.format(parseDate(item.date))} · ${item.time}</span></div><div><strong>${esc(clientName(client))}</strong><span>${esc(service?.name || '')}</span></div><div><strong>${esc(item.team || 'Atendimento')}</strong><span>${esc(item.address)}</span></div><div>${statusBadge(item.status)}</div><button data-detail="${item.id}">Abrir OS</button></article>`;
   }).join('') : empty('Nenhuma ordem de serviço encontrada.');
 }
 
@@ -214,12 +241,14 @@ function bindDynamicActions() {
   document.querySelectorAll('[data-client-detail]').forEach(button => button.onclick = () => showClientDetail(button.dataset.clientDetail));
   document.querySelectorAll('[data-edit-transaction]').forEach(button => button.onclick = () => openForm('transaction', button.dataset.editTransaction));
   document.querySelectorAll('[data-delete-transaction]').forEach(button => button.onclick = () => excluirLancamento(button.dataset.deleteTransaction));
+  document.querySelectorAll('[data-edit-service]').forEach(button => button.onclick = () => openForm('service', button.dataset.editService));
+  document.querySelectorAll('[data-delete-service]').forEach(button => button.onclick = () => excluirServico(button.dataset.deleteService));
 }
 
 function showAppointmentDetail(id) {
   const item = state().appointments.find(appointment => appointment.id === id); if (!item) return;
   const client = getClient(item.clientId), service = getService(item.serviceId);
-  openDetail('ORDEM DE SERVIÇO', `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>Data e horário</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div><div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || '')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" ${item.status===key?'disabled':''}>${label}</button>`).join('')}</div><div class="detail-actions"><button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
+  openDetail('ORDEM DE SERVIÇO', `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>Data e horário</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div><div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || 'Não informado')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" ${item.status===key?'disabled':''}>${label}</button>`).join('')}</div><div class="detail-actions"><button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
   document.querySelectorAll('[data-set-status]').forEach(button => button.onclick = () => updateAppointmentStatus(item.id, button.dataset.setStatus));
   document.querySelector('[data-edit-appointment]').onclick = () => openForm('appointment', item.id);
   document.querySelector('[data-delete-appointment]').onclick = () => excluirAgendamento(item.id);
@@ -255,7 +284,7 @@ function incomeFromAppointment(item) {
 // Guarda o registro em edição. Nulo significa que o formulário está criando.
 let editando = null;
 
-const CHAVE_DE = { appointment:'appointments', client:'clients', transaction:'transactions' };
+const CHAVE_DE = { appointment:'appointments', client:'clients', transaction:'transactions', service:'services' };
 
 function buscarRegistro(type, id) { return state()[CHAVE_DE[type]].find(item => item.id === id); }
 
@@ -276,7 +305,8 @@ function openForm(type, id = null) {
   const configs = {
     appointment: { formId:'appointmentForm', criar:['NOVO SERVIÇO','Agendar atendimento','Salvar agendamento'], editar:['EDITAR SERVIÇO','Editar atendimento','Salvar alterações'] },
     client:      { formId:'clientForm',      criar:['NOVO CADASTRO','Adicionar cliente','Salvar cliente'],      editar:['EDITAR CADASTRO','Editar cliente','Salvar alterações'] },
-    transaction: { formId:'transactionForm', criar:['FINANCEIRO','Novo lançamento','Salvar lançamento'],        editar:['FINANCEIRO','Editar lançamento','Salvar alterações'] }
+    transaction: { formId:'transactionForm', criar:['FINANCEIRO','Novo lançamento','Salvar lançamento'],        editar:['FINANCEIRO','Editar lançamento','Salvar alterações'] },
+    service:     { formId:'serviceForm',     criar:['CATÁLOGO','Novo serviço','Salvar serviço'],                editar:['CATÁLOGO','Editar serviço','Salvar alterações'] }
   };
   const { formId } = configs[type];
   const [eyebrow, titulo, rotuloBotao] = registro ? configs[type].editar : configs[type].criar;
@@ -304,7 +334,18 @@ function openForm(type, id = null) {
     }
   }
   if (type === 'transaction' && !registro) form.elements.date.value = localISO(new Date());
-  if (registro) preencherForm(form, registro);
+  if (type === 'service') {
+    if (!registro) {
+      form.elements.icon.value = 'sofa';
+      form.elements.duration.value = 120;
+      form.elements.basePrice.value = 150;
+      form.elements.active.value = 'true';
+    }
+  }
+  if (registro) {
+    preencherForm(form, registro);
+    if (type === 'service') form.elements.active.value = String(registro.active !== false);
+  }
   openModal();
 }
 function openDetail(eyebrow,title,html) {
@@ -377,6 +418,21 @@ async function handleTransactionSubmit(event) {
   else await comFeedback(() => criar('transactions', dados), 'Lançamento registrado.');
   navigate('financeiro');
 }
+async function handleServiceSubmit(event) {
+  event.preventDefault();
+  const values = Object.fromEntries(new FormData(event.currentTarget));
+  const dados = {
+    ...values,
+    duration: Number(values.duration) || 60,
+    basePrice: Number(values.basePrice) || 0,
+    active: values.active === 'true' || values.active === true
+  };
+  const emEdicao = editando;
+  closeModal();
+  if (emEdicao) await comFeedback(() => atualizar('services', emEdicao.id, dados), 'Serviço atualizado.');
+  else await comFeedback(() => criar('services', dados), 'Serviço cadastrado com sucesso.');
+  navigate('servicos');
+}
 
 /* ------------------------------------------------------------ Exclusão -- */
 
@@ -415,6 +471,17 @@ async function excluirLancamento(id) {
   if (!confirm(`Excluir o lançamento "${item.description}" de ${brl.format(item.value)}?${vinculo}\n\nEsta ação não pode ser desfeita.`)) return;
   closeModal();
   await comFeedback(() => remover('transactions', id), 'Lançamento excluído.');
+}
+
+async function excluirServico(id) {
+  const service = state().services.find(s => s.id === id); if (!service) return;
+  const vinculados = state().appointments.filter(a => a.serviceId === id);
+  const aviso = vinculados.length
+    ? `\n\nATENÇÃO: Existem ${vinculados.length} atendimento(s) vinculados a este serviço no histórico.\nRecomendamos editar e marcá-lo como "Inativo" em vez de excluir.`
+    : '';
+  if (!confirm(`Excluir o serviço "${service.name}"?${aviso}\n\nEsta ação não pode ser desfeita.`)) return;
+  closeModal();
+  await comFeedback(() => remover('services', id), 'Serviço excluído.');
 }
 
 function navigate(view) {
@@ -557,6 +624,7 @@ document.addEventListener('keydown', event => { if (event.key === 'Escape') { cl
 document.getElementById('appointmentForm').addEventListener('submit', handleAppointmentSubmit);
 document.getElementById('clientForm').addEventListener('submit', handleClientSubmit);
 document.getElementById('transactionForm').addEventListener('submit', handleTransactionSubmit);
+document.getElementById('serviceForm').addEventListener('submit', handleServiceSubmit);
 document.getElementById('clientSearch').addEventListener('input', renderClients);
 document.getElementById('orderSearch').addEventListener('input', renderOrders);
 document.getElementById('financeMonth').addEventListener('change', renderFinance);

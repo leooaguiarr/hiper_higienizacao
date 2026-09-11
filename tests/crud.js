@@ -326,6 +326,54 @@ async function main() {
   conferir('botão volta a "Salvar cliente"', criacao.rotulo === 'Salvar cliente', criacao.rotulo);
   conferir('cliente criado', criacao.depois === criacao.antes + 1, `${criacao.antes} -> ${criacao.depois}`);
 
+  // --- CRUD de Serviços no Catálogo ---
+  const servicoTeste = await avaliar(`(async () => {
+    document.querySelector('.nav-item[data-view="servicos"]').click();
+    const antes = window.__store.state.services.length;
+    document.querySelector('[data-open="service"]').click();
+    await new Promise(r => setTimeout(r, 300));
+    const form = document.getElementById('serviceForm');
+    form.elements.name.value = 'Higienização de Cortinas';
+    form.elements.icon.value = 'sparkles';
+    form.elements.duration.value = 90;
+    form.elements.basePrice.value = 180;
+    form.elements.active.value = 'true';
+    form.elements.description.value = 'Remoção de poeira e ácaros sem desmontar o trilho.';
+    form.requestSubmit();
+    await new Promise(r => setTimeout(r, 700));
+    const criado = window.__store.state.services.find(s => s.name === 'Higienização de Cortinas');
+    if (!criado) return { criado: false };
+
+    // Edita o serviço para inativo e altera o valor
+    document.querySelector('[data-edit-service="' + criado.id + '"]').click();
+    await new Promise(r => setTimeout(r, 300));
+    form.elements.basePrice.value = 210;
+    form.elements.active.value = 'false';
+    form.requestSubmit();
+    await new Promise(r => setTimeout(r, 700));
+    const editado = window.__store.state.services.find(s => s.id === criado.id);
+
+    // Exclui o serviço
+    document.querySelector('[data-delete-service="' + criado.id + '"]').click();
+    await new Promise(r => setTimeout(r, 700));
+    const depois = window.__store.state.services.length;
+    const excluido = !window.__store.state.services.some(s => s.id === criado.id);
+
+    return {
+      criado: true,
+      adicionou: window.__store.state.services.length >= antes,
+      editouPreco: editado && Number(editado.basePrice) === 210,
+      editouInativo: editado && editado.active === false,
+      excluido,
+      depoisIgualAntes: depois === antes
+    };
+  })()`);
+  console.log('\n=== CRUD DE SERVIÇOS ===');
+  conferir('serviço criado no catálogo', servicoTeste.criado === true);
+  conferir('serviço editado (preço)', servicoTeste.editouPreco === true);
+  conferir('serviço editado (inativo)', servicoTeste.editouInativo === true);
+  conferir('serviço excluído', servicoTeste.excluido === true);
+
   console.log('\n=== ERROS DE CONSOLE ===');
   console.log(erros.length ? erros.join('\n') : 'nenhum');
   if (erros.length) falhas.push('erros de console');
