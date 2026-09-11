@@ -8,23 +8,18 @@ versão que fique para trás — todo deploy atualiza os dois de uma vez.
 
 ## Para a equipe: instalar no Android
 
-1. Abra o endereço do sistema no **Chrome** do celular.
-2. Toque no menu (três pontos) e em **Instalar aplicativo** (ou
-   "Adicionar à tela inicial").
+1. Abra o endereço do sistema no **Chrome** do celular (`https://hiper-higienizacoes.web.app`).
+2. O sistema mostra automaticamente um banner no topo: toque em **Instalar agora**.
+   *(Caso não apareça, toque no menu de três pontos do Chrome e em **Instalar aplicativo**).*
 3. Confirme. O ícone da Hiper aparece na tela inicial do aparelho.
 
-O aplicativo também pode ser instalado pela própria tela de **Configurações >
-Instalar no celular**, quando o botão estiver disponível.
+O aplicativo também pode ser instalado pela tela de **Configurações > Instalar no celular**.
 
-Depois de instalado, ele abre em tela cheia, sem a barra de endereço, e se
-comporta como qualquer outro aplicativo do aparelho. Segurando o ícone, os
-atalhos levam direto para **Agenda**, **Ordens de serviço** e **Clientes**.
+Depois de instalado, ele abre em tela cheia (standalone), sem barras do navegador, com **barra de navegação inferior por toque** (Início, Agenda, Ordens, Clientes e Mais) e funciona 100% offline. Segurando o ícone na tela inicial, os atalhos rápidos levam direto para **Agenda**, **Ordens de serviço** e **Clientes**.
 
 ### No iPhone
 
-Funciona também, pelo **Safari**: botão de compartilhar e depois **Adicionar à
-Tela de Início**. A instalação pelo Chrome do iPhone não é oferecida pelo
-sistema da Apple, e as notificações são mais limitadas.
+Pelo **Safari**: o app exibe uma barra orientando a tocar no botão de compartilhar (<i class="fa-solid fa-arrow-up-from-bracket"></i>) e em **Adicionar à Tela de Início**. A partir daí, o app funciona em tela cheia com a mesma barra inferior nativa.
 
 ### No computador
 

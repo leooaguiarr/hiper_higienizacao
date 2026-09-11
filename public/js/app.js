@@ -487,7 +487,7 @@ async function excluirServico(id) {
 function navigate(view) {
   currentView = view;
   document.querySelectorAll('.view').forEach(section => section.classList.toggle('active', section.id === `view-${view}`));
-  document.querySelectorAll('.nav-item').forEach(button => button.classList.toggle('active', button.dataset.view === view));
+  document.querySelectorAll('.nav-item, .bottom-nav-item[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === view));
   const titles = { dashboard:['Operação de hoje','Visão geral'], agenda:['Planejamento de equipes','Agenda de serviços'], clientes:['Relacionamento e recorrência','Clientes'], servicos:['Padrões de atendimento','Catálogo de serviços'], financeiro:['Entradas, despesas e recebimentos','Controle financeiro'], ordens:['Execução em campo','Ordens de serviço'], configuracoes:['Dados e preferências','Configurações'] };
   document.getElementById('eyebrow').textContent = titles[view][0]; document.getElementById('pageTitle').textContent = titles[view][1];
   document.getElementById('sidebar').classList.remove('open');
@@ -585,6 +585,30 @@ function renderAppPanel() {
     ? (navigator.onLine ? 'Pronto para uso offline' : 'Em uso offline agora')
     : 'Não suportado neste navegador';
 
+  // Banner no topo para instalação proativa no celular
+  const banner = document.getElementById('installBanner');
+  const dispensou = sessionStorage.getItem('hiper-dispensou-instalacao');
+  const jaInstalado = instalado();
+  const ehIos = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  if (banner) {
+    if (jaInstalado || dispensou) {
+      banner.hidden = true;
+    } else if (promptInstalacao) {
+      banner.hidden = false;
+      document.getElementById('installBannerTitle').textContent = 'Instalar aplicativo Hiper';
+      document.getElementById('installBannerText').textContent = 'Acesso rápido na tela inicial e funciona sem sinal em campo.';
+      document.getElementById('bannerInstallButton').hidden = false;
+    } else if (ehIos) {
+      banner.hidden = false;
+      document.getElementById('installBannerTitle').textContent = 'Instalar no iPhone';
+      document.getElementById('installBannerText').innerHTML = 'Toque em <i class="fa-solid fa-arrow-up-from-bracket"></i> e <strong>Adicionar à Tela de Início</strong>.';
+      document.getElementById('bannerInstallButton').hidden = true;
+    } else {
+      banner.hidden = true;
+    }
+  }
+
   document.getElementById('notifyStatus').textContent = rotulos[permissao] || permissao;
   document.getElementById('notifyButton').hidden = !suporta || permissao === 'granted';
   document.getElementById('notifyTest').hidden = permissao !== 'granted';
@@ -614,7 +638,8 @@ async function ativarLembretes() {
 
 /* ------------------------------------------------------------- Eventos -- */
 
-document.querySelectorAll('.nav-item').forEach(button => button.addEventListener('click', () => navigate(button.dataset.view)));
+document.querySelectorAll('.nav-item, .bottom-nav-item[data-view]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.view)));
+document.getElementById('bottomNavMenu')?.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
 document.querySelectorAll('[data-open]').forEach(button => button.addEventListener('click', () => openForm(button.dataset.open)));
 document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.go)));
 document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', closeModal));
@@ -659,6 +684,8 @@ window.addEventListener('beforeinstallprompt', evento => {
 });
 window.addEventListener('appinstalled', () => {
   promptInstalacao = null;
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.hidden = true;
   renderAppPanel();
   toast('Aplicativo instalado no aparelho.');
 });
@@ -668,6 +695,18 @@ document.getElementById('installButton').addEventListener('click', async () => {
   await promptInstalacao.userChoice;
   promptInstalacao = null;
   renderAppPanel();
+});
+document.getElementById('bannerInstallButton')?.addEventListener('click', async () => {
+  if (!promptInstalacao) return;
+  promptInstalacao.prompt();
+  await promptInstalacao.userChoice;
+  promptInstalacao = null;
+  renderAppPanel();
+});
+document.getElementById('dismissInstallBanner')?.addEventListener('click', () => {
+  sessionStorage.setItem('hiper-dispensou-instalacao', '1');
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.hidden = true;
 });
 document.getElementById('notifyButton').addEventListener('click', ativarLembretes);
 document.getElementById('notifyTest').addEventListener('click', async () => {

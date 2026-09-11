@@ -370,5 +370,128 @@ td.expense { color: var(--danger); font-weight: 800; }
 #deniedBox .settings-actions { flex-direction: column; }
 #deniedBox .settings-actions button { width: 100%; }
 
+/* ------------------------------------------- Navegação Mobile & PWA -- */
+.bottom-nav { display: none; }
+.install-banner { display: none; }
+
+@media (max-width: 800px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
+    padding: 0 8px env(safe-area-inset-bottom, 0px);
+    background: #ffffff;
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, .07);
+    z-index: 50;
+    align-items: center;
+    justify-content: space-around;
+    box-sizing: border-box;
+  }
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 100%;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color .15s ease;
+    text-decoration: none;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .bottom-nav-item i {
+    font-size: 16px;
+  }
+  .bottom-nav-item.active {
+    color: var(--blue);
+  }
+  main {
+    padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .install-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 13px 16px;
+    background: linear-gradient(135deg, #0e294f 0%, #087ff5 100%);
+    color: #fff;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(8, 127, 245, .25);
+    box-sizing: border-box;
+  }
+  .install-banner-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+  .install-banner-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    background: rgba(255, 255, 255, .2);
+    border-radius: 10px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .install-banner-info strong {
+    display: block;
+    font-size: 13px;
+    letter-spacing: -.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .install-banner-info p {
+    margin: 2px 0 0;
+    color: #d1e5ff;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+  .install-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .install-banner-actions .primary-button {
+    padding: 8px 14px;
+    font-size: 11px;
+    background: #fff;
+    color: var(--blue-dark);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+  }
+  .install-banner-actions .icon-button {
+    color: rgba(255, 255, 255, .75);
+    background: transparent;
+    border: 0;
+  }
+  .install-banner-actions .icon-button:hover {
+    color: #fff;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Evita zoom automático no Safari ao focar inputs */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* O atributo hidden precisa vencer os display: grid/flex declarados acima. */
 [hidden] { display: none !important; }
