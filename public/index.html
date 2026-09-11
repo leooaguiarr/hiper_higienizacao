@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="/css/app.css?v=8">
+  <link rel="stylesheet" href="/css/app.css?v=9">
 </head>
 <body>
   <div class="auth-screen" id="authScreen" hidden>
@@ -73,6 +73,7 @@
       <div class="brand">
         <img src="/assets/logo-hiper.png" alt="Logo Hiper Higienizações">
         <div><strong>Hiper</strong><span>Higienizações</span></div>
+        <button type="button" class="sidebar-close" id="sidebarClose" aria-label="Fechar menu"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <nav aria-label="Navegação principal">
         <button class="nav-item active" data-view="dashboard"><i class="fa-solid fa-chart-pie"></i><span>Visão geral</span></button>
@@ -90,10 +91,11 @@
       </div>
       <footer>Desenvolvido por <strong>Lexion Consultoria</strong></footer>
     </aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
 
     <div class="content-shell">
       <header class="topbar">
-        <button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu"><i class="fa-solid fa-bars"></i></button>
+        <button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu" hidden><i class="fa-solid fa-bars"></i></button>
         <div><p id="eyebrow">Operação de hoje</p><h1 id="pageTitle">Visão geral</h1></div>
         <div class="top-actions">
           <span class="sync-badge" id="syncBadge" hidden></span>
@@ -208,6 +210,6 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
-  <script type="module" src="/js/app.js?v=8"></script>
+  <script type="module" src="/js/app.js?v=9"></script>
 </body>
 </html>

@@ -490,7 +490,7 @@ function navigate(view) {
   document.querySelectorAll('.nav-item, .bottom-nav-item[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === view));
   const titles = { dashboard:['Operação de hoje','Visão geral'], agenda:['Planejamento de equipes','Agenda de serviços'], clientes:['Relacionamento e recorrência','Clientes'], servicos:['Padrões de atendimento','Catálogo de serviços'], financeiro:['Entradas, despesas e recebimentos','Controle financeiro'], ordens:['Execução em campo','Ordens de serviço'], configuracoes:['Dados e preferências','Configurações'] };
   document.getElementById('eyebrow').textContent = titles[view][0]; document.getElementById('pageTitle').textContent = titles[view][1];
-  document.getElementById('sidebar').classList.remove('open');
+  toggleSidebar(false);
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 
@@ -639,13 +639,15 @@ async function ativarLembretes() {
 /* ------------------------------------------------------------- Eventos -- */
 
 document.querySelectorAll('.nav-item, .bottom-nav-item[data-view]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.view)));
-document.getElementById('bottomNavMenu')?.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+document.getElementById('bottomNavMenu')?.addEventListener('click', () => toggleSidebar());
+document.getElementById('sidebarClose')?.addEventListener('click', () => toggleSidebar(false));
+document.getElementById('sidebarBackdrop')?.addEventListener('click', () => toggleSidebar(false));
 document.querySelectorAll('[data-open]').forEach(button => button.addEventListener('click', () => openForm(button.dataset.open)));
 document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.go)));
 document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', closeModal));
 document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('modalBackdrop').addEventListener('click', event => { if (event.target === event.currentTarget) closeModal(); });
-document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeModal(); closeAlerts(); } });
+document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeModal(); closeAlerts(); toggleSidebar(false); } });
 document.getElementById('appointmentForm').addEventListener('submit', handleAppointmentSubmit);
 document.getElementById('clientForm').addEventListener('submit', handleClientSubmit);
 document.getElementById('transactionForm').addEventListener('submit', handleTransactionSubmit);
@@ -657,11 +659,18 @@ document.querySelectorAll('[data-mode]').forEach(button => button.addEventListen
 document.getElementById('agendaPrev').addEventListener('click', () => { agendaDate = agendaMode === 'day' ? addDays(agendaDate,-1) : agendaMode === 'week' ? addDays(agendaDate,-7) : addMonths(agendaDate,-1); renderAgenda(); bindDynamicActions(); });
 document.getElementById('agendaNext').addEventListener('click', () => { agendaDate = agendaMode === 'day' ? addDays(agendaDate,1) : agendaMode === 'week' ? addDays(agendaDate,7) : addMonths(agendaDate,1); renderAgenda(); bindDynamicActions(); });
 document.getElementById('agendaToday').addEventListener('click', () => { agendaDate = new Date(); renderAgenda(); bindDynamicActions(); });
-document.getElementById('menuButton').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+document.getElementById('menuButton')?.addEventListener('click', () => toggleSidebar());
 document.getElementById('notificationButton').addEventListener('click', () => { document.getElementById('alertDrawer').classList.add('open'); document.getElementById('drawerBackdrop').classList.add('open'); });
 document.getElementById('closeAlerts').addEventListener('click', closeAlerts);
 document.getElementById('drawerBackdrop').addEventListener('click', closeAlerts);
 function closeAlerts() { document.getElementById('alertDrawer').classList.remove('open'); document.getElementById('drawerBackdrop').classList.remove('open'); }
+function toggleSidebar(abrir) {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  const estado = typeof abrir === 'boolean' ? abrir : !sidebar?.classList.contains('open');
+  sidebar?.classList.toggle('open', estado);
+  backdrop?.classList.toggle('open', estado);
+}
 
 document.getElementById('resetDemo').addEventListener('click', () => {
   if (confirm('Restaurar os dados demonstrativos e apagar alterações locais?')) { restaurarDemo(); toast('Demonstração restaurada.'); }

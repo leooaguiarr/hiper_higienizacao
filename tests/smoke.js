@@ -231,7 +231,8 @@ async function main() {
     scrollHorizontal: document.documentElement.scrollWidth > window.innerWidth + 1,
     larguraDoc: document.documentElement.scrollWidth,
     janela: window.innerWidth,
-    menuVisivel: getComputedStyle(document.getElementById('menuButton')).display !== 'none'
+    bottomNavVisivel: getComputedStyle(document.querySelector('.bottom-nav')).display === 'flex',
+    menuOculto: getComputedStyle(document.getElementById('menuButton')).display === 'none'
   }))()`);
   console.log('\n=== MOBILE 390px ===');
   console.log(JSON.stringify(mobile, null, 2));
