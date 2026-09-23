@@ -289,6 +289,16 @@ td.expense { color: var(--danger); font-weight: 800; }
   .form-grid label.span-2 { grid-column: auto; }
   .modal { padding: 18px; }
   .date-nav strong { max-width: 145px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .week-grid { min-width: 0; grid-template-columns: repeat(2, 1fr); }
+  .week-day { min-height: auto; border-bottom: 1px solid var(--line); }
+  .week-day:nth-child(even) { border-right: 0; }
+  .month-grid { min-width: 0; }
+  .month-weekday { padding: 8px 2px; font-size: 8px; }
+  .month-day { min-height: 85px; padding: 4px; }
+  .month-day .day-number { font-size: 10px; margin-bottom: 4px; }
+  .month-day.today .day-number { width: 18px; height: 18px; }
+  .month-event { padding: 3px; font-size: 7px; letter-spacing: -0.2px; }
 }
 
 /* ----------------------------------------------------- Tela de acesso -- */
