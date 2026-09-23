@@ -51,12 +51,12 @@
         </label>
         <label class="span-2">
           WhatsApp
-          <input type="tel" id="clientPhone" required placeholder="(00) 00000-0000" maxlength="15">
+          <input type="tel" id="clientPhone" inputmode="numeric" required placeholder="(00) 00000-0000" maxlength="15">
         </label>
         
         <label class="span-2">
-          CPF ou CNPJ (Opcional, para nota fiscal)
-          <input type="text" id="clientDoc" placeholder="000.000.000-00" maxlength="18">
+          CPF ou CNPJ (Opcional)
+          <input type="tel" id="clientDoc" inputmode="numeric" placeholder="000.000.000-00" maxlength="18">
         </label>
         
         <label class="span-2">Endereço</label>
@@ -64,23 +64,23 @@
         <label>
           CEP
           <div style="display:flex; gap:8px;">
-            <input type="text" id="clientZip" placeholder="00000-000" maxlength="9" style="flex:1">
+            <input type="tel" id="clientZip" inputmode="numeric" required placeholder="00000-000" maxlength="9" style="flex:1">
             <button type="button" class="secondary-button" id="btnSearchZip" style="padding:0 12px;" aria-label="Buscar CEP"><i class="fa-solid fa-magnifying-glass"></i></button>
           </div>
         </label>
         <label>
           Bairro
-          <input type="text" id="clientNeighborhood" placeholder="Bairro">
+          <input type="text" id="clientNeighborhood" required placeholder="Bairro">
         </label>
         
         <label class="span-2">
           Rua / Avenida
-          <input type="text" id="clientStreet" placeholder="Nome da rua">
+          <input type="text" id="clientStreet" required placeholder="Nome da rua">
         </label>
         
         <label>
           Número
-          <input type="text" id="clientNumber" placeholder="Ex: 123">
+          <input type="text" id="clientNumber" inputmode="numeric" required placeholder="Ex: 123">
         </label>
         <label>
           Complemento
@@ -89,7 +89,7 @@
         
         <label class="span-2">
           Cidade
-          <input type="text" id="clientCity" placeholder="Cidade">
+          <input type="text" id="clientCity" required placeholder="Cidade">
         </label>
       </div>
 

@@ -41,6 +41,24 @@ document.addEventListener('DOMContentLoaded', () => {
   zipInput.addEventListener('input', e => {
     e.target.value = maskCep(e.target.value);
   });
+
+  zipInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      btnSearchZip.click();
+    }
+  });
+
+  document.getElementById('clientNumber').addEventListener('input', e => {
+    e.target.value = e.target.value.replace(/\D/g, '');
+  });
+
+  const textFields = ['clientFirstName', 'clientLastName', 'clientCity'];
+  textFields.forEach(id => {
+    document.getElementById(id).addEventListener('input', e => {
+      e.target.value = e.target.value.replace(/[0-9]/g, '');
+    });
+  });
   
   btnSearchZip.addEventListener('click', async () => {
     const cep = zipInput.value.replace(/\D/g, '');
