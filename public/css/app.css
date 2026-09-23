@@ -290,9 +290,8 @@ td.expense { color: var(--danger); font-weight: 800; }
   .modal { padding: 18px; }
   .date-nav strong { max-width: 145px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  .week-grid { min-width: 0; grid-template-columns: repeat(2, 1fr); }
-  .week-day { min-height: auto; border-bottom: 1px solid var(--line); }
-  .week-day:nth-child(even) { border-right: 0; }
+  .week-grid { min-width: 0; grid-template-columns: 1fr; }
+  .week-day { min-height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
   .month-grid { min-width: 0; }
   .month-weekday { padding: 8px 2px; font-size: 8px; }
   .month-day { min-height: 85px; padding: 4px; }
