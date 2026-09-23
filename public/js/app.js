@@ -2,7 +2,7 @@
 // Toda leitura vem de store.state e toda escrita passa pelas funções do
 // store.js, que decidem entre localStorage (demonstração) e Firestore (nuvem).
 
-import { brl, dateFmt, fullDateFmt, monthFmt, localISO, parseDate, addDays, addMonths, startOfWeek, startOfMonth, uid, esc, phoneDigits, cap, whatsappLink, maskPhone, maskCep, maskCurrency, parseCurrency } from './utils.js';
+import { brl, dateFmt, fullDateFmt, monthFmt, localISO, parseDate, addDays, addMonths, startOfWeek, startOfMonth, uid, esc, phoneDigits, cap, whatsappLink, maskPhone, maskCep, maskCpfCnpj, maskCurrency, parseCurrency } from './utils.js';
 import {
   store, iniciar, iniciarDemo, entrarComGoogle, sair, irParaLogin,
   criar, atualizar, remover, gravarLote, restaurarDemo, aoMudar, aoErro, mensagemErro
@@ -301,7 +301,9 @@ function showClientDetail(id) {
   const compStr = client.complement ? ` - ${client.complement}` : '';
   const fullAddress = `${client.address}${numStr}${compStr}, ${client.neighborhood} - ${client.city}`;
 
-  openDetail('FICHA DO CLIENTE', clientName(client), `<div class="detail-hero"><span class="initials">${esc((client.firstName?.[0]||'')+(client.lastName?.[0]||''))}</span><div><strong>${esc(clientName(client))}</strong><p>${esc(client.phone)}</p></div></div><div class="detail-grid"><div><span>Total gasto</span><strong>${brl.format(total)}</strong></div><div><span>Serviços concluídos</span><strong>${history.length}</strong></div><div><span>Última higienização</span><strong>${history[0]?dateFmt.format(parseDate(history[0].date)):'-'}</strong></div><div><span>Próxima recomendação</span><strong>${client.nextRecommendation?dateFmt.format(parseDate(client.nextRecommendation)):'Não definida'}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(fullAddress)}</strong></div></div><h3>Histórico</h3><div class="stack-list" style="margin-top:10px">${history.length?history.map(item => `<div class="list-item"><span class="list-time">${dateFmt.format(parseDate(item.date))}</span><span class="list-main"><strong>${esc(getService(item.serviceId)?.name || '')}</strong><span>${esc(item.team || '')}</span></span><span class="list-value">${brl.format(item.value)}</span></div>`).join(''):empty('Ainda não há serviços concluídos.')}</div><div class="detail-actions">${whatsButton}<button type="button" class="secondary-button" data-edit-client="${client.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-client="${client.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
+  const docStr = client.document ? `<div style="grid-column:1/-1"><span>CPF / CNPJ</span><strong>${esc(client.document)}</strong></div>` : '';
+
+  openDetail('FICHA DO CLIENTE', clientName(client), `<div class="detail-hero"><span class="initials">${esc((client.firstName?.[0]||'')+(client.lastName?.[0]||''))}</span><div><strong>${esc(clientName(client))}</strong><p>${esc(client.phone)}</p></div></div><div class="detail-grid"><div><span>Total gasto</span><strong>${brl.format(total)}</strong></div><div><span>Serviços concluídos</span><strong>${history.length}</strong></div><div><span>Última higienização</span><strong>${history[0]?dateFmt.format(parseDate(history[0].date)):'-'}</strong></div><div><span>Próxima recomendação</span><strong>${client.nextRecommendation?dateFmt.format(parseDate(client.nextRecommendation)):'Não definida'}</strong></div>${docStr}<div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(fullAddress)}</strong></div></div><h3>Histórico</h3><div class="stack-list" style="margin-top:10px">${history.length?history.map(item => `<div class="list-item"><span class="list-time">${dateFmt.format(parseDate(item.date))}</span><span class="list-main"><strong>${esc(getService(item.serviceId)?.name || '')}</strong><span>${esc(item.team || '')}</span></span><span class="list-value">${brl.format(item.value)}</span></div>`).join(''):empty('Ainda não há serviços concluídos.')}</div><div class="detail-actions">${whatsButton}<button type="button" class="secondary-button" data-edit-client="${client.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-client="${client.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
   document.querySelector('[data-edit-client]').onclick = () => openForm('client', client.id);
   document.querySelector('[data-delete-client]').onclick = () => excluirCliente(client.id);
 }
@@ -787,6 +789,8 @@ function toggleSidebar(abrir) {
 document.addEventListener('input', e => {
   if (e.target.classList.contains('mask-phone')) {
     e.target.value = maskPhone(e.target.value);
+  } else if (e.target.classList.contains('mask-cpf')) {
+    e.target.value = maskCpfCnpj(e.target.value);
   } else if (e.target.classList.contains('mask-currency')) {
     e.target.value = maskCurrency(e.target.value);
   } else if (e.target.classList.contains('mask-cep')) {

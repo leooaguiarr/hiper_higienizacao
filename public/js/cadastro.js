@@ -1,38 +1,38 @@
 import { firebaseConfig } from './firebase-config.js';
-import { maskPhone, maskCep } from './utils.js';
+import { maskPhone, maskCep, maskCpfCnpj } from './utils.js';
 
 const SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
-let db = null;
 
-async function init() {
+function showError(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show error';
+  setTimeout(() => toast.className = 'toast', 4000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const adminUid = urlParams.get('u');
   
+  const form = document.getElementById('cadastroForm');
+  
   if (!adminUid) {
     showError("Link de cadastro inválido. Falta a identificação do sistema.");
-    document.getElementById('cadastroForm').style.display = 'none';
+    form.style.display = 'none';
     return;
   }
 
-  try {
-    const { initializeApp } = await import(`${SDK}/firebase-app.js`);
-    const { getFirestore, collection, addDoc, serverTimestamp } = await import(`${SDK}/firebase-firestore.js`);
-
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-
-    setupForm(adminUid, addDoc, collection, serverTimestamp);
-  } catch (err) {
-    console.error("Erro ao carregar SDK:", err);
-    showError("Erro interno ao carregar a página.");
-  }
-}
-
-function setupForm(adminUid, addDoc, collection, serverTimestamp) {
-  const form = document.getElementById('cadastroForm');
+  // Bind events immediately (UI does not depend on Firebase)
   const zipInput = document.getElementById('clientZip');
   const btnSearchZip = document.getElementById('btnSearchZip');
   const phoneInput = document.getElementById('clientPhone');
+  const docInput = document.getElementById('clientDoc');
+  
+  if (docInput) {
+    docInput.addEventListener('input', e => {
+      e.target.value = maskCpfCnpj(e.target.value);
+    });
+  }
   
   phoneInput.addEventListener('input', e => {
     e.target.value = maskPhone(e.target.value);
@@ -68,14 +68,21 @@ function setupForm(adminUid, addDoc, collection, serverTimestamp) {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     document.getElementById('loadingOverlay').style.display = 'flex';
     
     try {
+      // Lazy load Firebase ONLY on submit
+      const { initializeApp } = await import(`${SDK}/firebase-app.js`);
+      const { getFirestore, collection, addDoc, serverTimestamp } = await import(`${SDK}/firebase-firestore.js`);
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
       const clientData = {
         firstName: document.getElementById('clientFirstName').value.trim(),
         lastName: document.getElementById('clientLastName').value.trim(),
         phone: document.getElementById('clientPhone').value.trim(),
+        document: docInput ? docInput.value.trim() : '',
         zip: document.getElementById('clientZip').value.trim(),
         street: document.getElementById('clientStreet').value.trim(),
         number: document.getElementById('clientNumber').value.trim(),
@@ -93,18 +100,9 @@ function setupForm(adminUid, addDoc, collection, serverTimestamp) {
       
     } catch (err) {
       console.error("Erro ao salvar cadastro:", err);
-      showError("Não foi possível enviar seu cadastro. Tente novamente.");
+      showError("Não foi possível enviar seu cadastro. Verifique sua conexão.");
     } finally {
       document.getElementById('loadingOverlay').style.display = 'none';
     }
   });
-}
-
-function showError(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.className = 'toast show error';
-  setTimeout(() => toast.className = 'toast', 4000);
-}
-
-document.addEventListener('DOMContentLoaded', init);
+});
