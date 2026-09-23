@@ -891,7 +891,7 @@ window.addEventListener('offline', () => { renderSync(); renderAppPanel(); });
 
 /* ------------------------------------------------------------- Arranque -- */
 
-document.getElementById('welcomeTitle').textContent = `${new Date().getHours() < 12 ? 'Bom dia' : new Date().getHours() < 18 ? 'Boa tarde' : 'Boa noite'}, equipe Hiper.`;
+
 
 // Exposto para inspeção no console do navegador e para os testes headless.
 window.__store = store;
