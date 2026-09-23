@@ -7,7 +7,7 @@
 // Suba a VERSAO a cada alteração de arquivo estático: o cache antigo é
 // descartado no activate.
 
-const VERSAO = 'hiper-v14';
+const VERSAO = 'hiper-v15';
 const CACHE_APP = `${VERSAO}-app`;
 const CACHE_EXTERNO = `${VERSAO}-externo`;
 const CACHE_DADOS = 'hiper-dados';
@@ -24,6 +24,8 @@ const APP_SHELL = [
   '/js/utils.js',
   '/js/notificacoes.js',
   '/js/firebase-config.js',
+  '/cadastro.html',
+  '/js/cadastro.js',
   '/manifest.webmanifest',
   '/assets/logo-hiper.png',
   '/assets/icon-192.png',

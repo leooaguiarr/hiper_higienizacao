@@ -847,6 +847,17 @@ document.getElementById('demoButton').addEventListener('click', iniciarDemo);
 document.getElementById('deniedSignOut').addEventListener('click', () => comFeedback(() => sair()));
 document.getElementById('deniedDemo').addEventListener('click', async () => { await sair(); iniciarDemo(); });
 
+document.getElementById('copyClientLink')?.addEventListener('click', () => {
+  const adminUid = store.usuario?.uid;
+  if (!adminUid) {
+    toast('É preciso estar logado para gerar o link.');
+    return;
+  }
+  const url = `${window.location.origin}/cadastro.html?u=${adminUid}`;
+  navigator.clipboard.writeText(url)
+    .then(() => toast('Link de cadastro copiado!'))
+    .catch(() => toast('Erro ao copiar link.'));
+});
 // O navegador avisa quando a instalação é possível; guardamos o evento para
 // disparar no clique do usuário, que é a única forma aceita.
 window.addEventListener('beforeinstallprompt', evento => {

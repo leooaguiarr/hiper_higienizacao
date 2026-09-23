@@ -44,6 +44,12 @@ service cloud.firestore {
         allow create, update: if autorizado() && request.auth.uid == uid
           && colecao in ['clientes', 'servicos', 'equipes', 'agendamentos', 'lancamentos']
           && request.resource.data.keys().size() <= 40;
+          
+        // Permite o auto-cadastro público de clientes (via link sem login)
+        allow create: if colecao == 'clientes' 
+          && request.auth == null
+          && request.resource.data.keys().hasAll(['firstName', 'phone'])
+          && request.resource.data.keys().size() <= 20;
       }
     }
   }

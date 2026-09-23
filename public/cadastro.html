@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Cadastro - Hiper Higienizações</title>
+  <meta name="theme-color" content="#0e294f">
+  
+  <link rel="icon" href="/assets/icon-192.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    body { background: #f4f7fa; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .public-form-container { width: 100%; max-width: 480px; background: #fff; border-radius: 24px; padding: 32px 24px; box-shadow: 0 10px 40px rgba(8,24,46,0.06); }
+    .brand-header { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 24px; }
+    .brand-header img { width: 64px; height: 64px; border-radius: 50%; border: 3px solid #f4f7fa; margin-bottom: 12px; }
+    .brand-header h1 { font-size: 20px; color: #0b2346; }
+    .brand-header p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    
+    .success-message { display: none; text-align: center; padding: 40px 20px; }
+    .success-message i { font-size: 48px; color: var(--success); margin-bottom: 16px; }
+    .success-message h2 { font-size: 22px; color: var(--ink); margin-bottom: 8px; }
+    .success-message p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    
+    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; display: none; }
+    .loading-spinner { border: 3px solid rgba(8,127,245,0.2); border-top-color: var(--blue); border-radius: 50%; width: 32px; height: 32px; animation: spin 1s linear infinite; margin-bottom: 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div class="public-form-container">
+    <div class="brand-header" id="brandHeader">
+      <img src="/assets/logo-hiper.png" alt="Hiper Higienizações">
+      <h1>Ficha de Cadastro</h1>
+      <p>Preencha seus dados para agilizarmos seu atendimento.</p>
+    </div>
+
+    <form id="cadastroForm">
+      <div class="form-grid">
+        <label>
+          Nome
+          <input type="text" id="clientFirstName" required placeholder="Primeiro nome">
+        </label>
+        <label>
+          Sobrenome
+          <input type="text" id="clientLastName" required placeholder="Sobrenome">
+        </label>
+        <label class="span-2">
+          WhatsApp
+          <input type="tel" id="clientPhone" required placeholder="(00) 00000-0000" maxlength="15">
+        </label>
+        
+        <label class="span-2">Endereço</label>
+        
+        <label>
+          CEP
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="clientZip" placeholder="00000-000" maxlength="9" style="flex:1">
+            <button type="button" class="secondary-button" id="btnSearchZip" style="padding:0 12px;" aria-label="Buscar CEP"><i class="fa-solid fa-magnifying-glass"></i></button>
+          </div>
+        </label>
+        <label>
+          Bairro
+          <input type="text" id="clientNeighborhood" placeholder="Bairro">
+        </label>
+        
+        <label class="span-2">
+          Rua / Avenida
+          <input type="text" id="clientStreet" placeholder="Nome da rua">
+        </label>
+        
+        <label>
+          Número
+          <input type="text" id="clientNumber" placeholder="Ex: 123">
+        </label>
+        <label>
+          Complemento
+          <input type="text" id="clientComplement" placeholder="Apto, Casa 2...">
+        </label>
+        
+        <label class="span-2">
+          Cidade
+          <input type="text" id="clientCity" placeholder="Cidade">
+        </label>
+      </div>
+
+      <div class="form-actions" style="margin-top: 24px;">
+        <button type="submit" class="primary-button" style="width:100%; justify-content:center;">Enviar Cadastro</button>
+      </div>
+    </form>
+    
+    <div class="success-message" id="successMessage">
+      <i class="fa-solid fa-circle-check"></i>
+      <h2>Cadastro recebido!</h2>
+      <p>Obrigado por preencher seus dados. Nossa equipe já tem todas as informações para continuar o seu atendimento.</p>
+    </div>
+  </div>
+  
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <span style="color:var(--ink); font-weight:600; font-size:14px;">Salvando dados...</span>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="/js/cadastro.js"></script>
+</body>
+</html>
