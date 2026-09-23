@@ -47,20 +47,29 @@ export function maskCep(value) {
   return v;
 }
 
+export function maskCpf(value) {
+  let v = String(value).replace(/\D/g, '');
+  if (v.length > 11) v = v.slice(0, 11);
+  if (v.length > 9) v = `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6, 9)}-${v.slice(9)}`;
+  else if (v.length > 6) v = `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6)}`;
+  else if (v.length > 3) v = `${v.slice(0, 3)}.${v.slice(3)}`;
+  return v;
+}
+
+export function maskCnpj(value) {
+  let v = String(value).replace(/\D/g, '');
+  if (v.length > 14) v = v.slice(0, 14);
+  if (v.length > 12) v = `${v.slice(0, 2)}.${v.slice(2, 5)}.${v.slice(5, 8)}/${v.slice(8, 12)}-${v.slice(12)}`;
+  else if (v.length > 8) v = `${v.slice(0, 2)}.${v.slice(2, 5)}.${v.slice(5, 8)}/${v.slice(8)}`;
+  else if (v.length > 5) v = `${v.slice(0, 2)}.${v.slice(2, 5)}.${v.slice(5)}`;
+  else if (v.length > 2) v = `${v.slice(0, 2)}.${v.slice(2)}`;
+  return v;
+}
+
 export function maskCpfCnpj(value) {
   let v = String(value).replace(/\D/g, '');
-  if (v.length <= 11) {
-    if (v.length > 9) v = `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6, 9)}-${v.slice(9)}`;
-    else if (v.length > 6) v = `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6)}`;
-    else if (v.length > 3) v = `${v.slice(0, 3)}.${v.slice(3)}`;
-  } else {
-    if (v.length > 14) v = v.slice(0, 14);
-    if (v.length > 12) v = `${v.slice(0, 2)}.${v.slice(2, 5)}.${v.slice(5, 8)}/${v.slice(8, 12)}-${v.slice(12)}`;
-    else if (v.length > 8) v = `${v.slice(0, 2)}.${v.slice(2, 5)}.${v.slice(5, 8)}/${v.slice(8)}`;
-    else if (v.length > 5) v = `${v.slice(0, 2)}.${v.slice(2, 5)}.${v.slice(5)}`;
-    else if (v.length > 2) v = `${v.slice(0, 2)}.${v.slice(2)}`;
-  }
-  return v;
+  if (v.length <= 11) return maskCpf(v);
+  return maskCnpj(v);
 }
 
 export function maskCurrency(value) {

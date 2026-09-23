@@ -54,9 +54,16 @@
           <input type="tel" id="clientPhone" inputmode="numeric" required placeholder="(00) 00000-0000" maxlength="15">
         </label>
         
-        <label class="span-2">
-          CPF ou CNPJ (Opcional)
-          <input type="tel" id="clientDoc" inputmode="numeric" placeholder="000.000.000-00" maxlength="18">
+        <label>
+          Tipo de Pessoa
+          <select id="docType">
+            <option value="cpf">Pessoa Física (CPF)</option>
+            <option value="cnpj">Pessoa Jurídica (CNPJ)</option>
+          </select>
+        </label>
+        <label>
+          Documento (Opcional)
+          <input type="tel" id="clientDoc" inputmode="numeric" placeholder="000.000.000-00" maxlength="14">
         </label>
         
         <label class="span-2">Endereço</label>

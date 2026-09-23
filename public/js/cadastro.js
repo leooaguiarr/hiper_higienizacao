@@ -1,5 +1,5 @@
 import { firebaseConfig } from './firebase-config.js';
-import { maskPhone, maskCep, maskCpfCnpj } from './utils.js';
+import { maskPhone, maskCep, maskCpf, maskCnpj } from './utils.js';
 
 const SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
 
@@ -26,12 +26,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const zipInput = document.getElementById('clientZip');
   const btnSearchZip = document.getElementById('btnSearchZip');
   const phoneInput = document.getElementById('clientPhone');
+  const docType = document.getElementById('docType');
   const docInput = document.getElementById('clientDoc');
   
-  if (docInput) {
-    docInput.addEventListener('input', e => {
-      e.target.value = maskCpfCnpj(e.target.value);
+  if (docType && docInput) {
+    const updateDocMask = () => {
+      docInput.value = docType.value === 'cpf' ? maskCpf(docInput.value) : maskCnpj(docInput.value);
+      docInput.maxLength = docType.value === 'cpf' ? 14 : 18;
+      docInput.placeholder = docType.value === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00';
+    };
+
+    docType.addEventListener('change', () => {
+      docInput.value = '';
+      updateDocMask();
+      docInput.focus();
     });
+
+    docInput.addEventListener('input', updateDocMask);
   }
   
   phoneInput.addEventListener('input', e => {
@@ -81,6 +92,17 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e) {
       console.warn("Erro ao buscar CEP", e);
       showError("Erro na busca de CEP");
+    }
+  });
+
+  // Prevent accidental submit when pressing Enter on any input
+  form.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      // Se for o CEP, busca o CEP
+      if (e.target.id === 'clientZip') {
+        btnSearchZip.click();
+      }
     }
   });
 
