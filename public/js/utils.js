@@ -24,3 +24,42 @@ export function uid(prefix) { return `${prefix}-${Date.now()}-${Math.random().to
 export function esc(value = '') { return String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char])); }
 export function phoneDigits(phone) { return String(phone || '').replace(/\D/g, ''); }
 export function cap(text) { return text ? text.charAt(0).toUpperCase() + text.slice(1) : ''; }
+
+export function whatsappLink(phone, text = '') {
+  const number = phoneDigits(phone);
+  if (!number) return '#';
+  const param = text ? `&text=${encodeURIComponent(text)}` : '';
+  return `https://wa.me/55${number}?${param}`;
+}
+
+export function maskPhone(value) {
+  let v = String(value).replace(/\D/g, '');
+  if (v.length > 11) v = v.slice(0, 11);
+  if (v.length > 2) v = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+  if (v.length > 10) v = `${v.slice(0, 10)}-${v.slice(10)}`;
+  else if (v.length > 9) v = `${v.slice(0, 9)}-${v.slice(9)}`;
+  return v;
+}
+
+export function maskCep(value) {
+  let v = String(value).replace(/\D/g, '');
+  if (v.length > 8) v = v.slice(0, 8);
+  if (v.length > 5) v = `${v.slice(0, 5)}-${v.slice(5)}`;
+  return v;
+}
+
+export function maskCurrency(value) {
+  let v = String(value).replace(/\D/g, '');
+  if (!v) return '';
+  v = (Number(v) / 100).toFixed(2);
+  v = v.replace('.', ',');
+  v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+  return v;
+}
+
+export function parseCurrency(value) {
+  if (typeof value === 'number') return value;
+  if (!value) return 0;
+  let v = String(value).replace(/\./g, '').replace(',', '.');
+  return Number(v) || 0;
+}

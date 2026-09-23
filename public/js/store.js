@@ -22,10 +22,11 @@ const COLECOES = {
   services: 'servicos',
   clients: 'clientes',
   appointments: 'agendamentos',
-  transactions: 'lancamentos'
+  transactions: 'lancamentos',
+  settings: 'configuracoes'
 };
 
-const estadoVazio = () => ({ services: [], clients: [], appointments: [], transactions: [] });
+const estadoVazio = () => ({ services: [], clients: [], appointments: [], transactions: [], settings: [] });
 
 let fb = null;
 let ouvintes = [];
@@ -235,10 +236,18 @@ async function escutarColecoes(uidConta) {
 async function semearServicos(uidConta) {
   const { db, dbApi } = await carregarSDK();
   const lote = dbApi.writeBatch(db);
-  SERVICOS_PADRAO.forEach(servico => {
+  const padrao = seedData();
+  
+  padrao.services.forEach(servico => {
     const { id, ...dados } = servico;
     lote.set(dbApi.doc(db, 'usuarios', uidConta, 'servicos', id), dados);
   });
+  
+  padrao.settings.forEach(config => {
+    const { id, ...dados } = config;
+    lote.set(dbApi.doc(db, 'usuarios', uidConta, 'configuracoes', id), dados);
+  });
+  
   await lote.commit();
 }
 

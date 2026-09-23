@@ -50,5 +50,13 @@ export function seedData() {
     { id:'tx-9', type:'income', date:monthDate(-3,10), description:'Higienizações residenciais', value:1240, paymentMethod:'PIX', status:'paid', category:'Serviços' },
     { id:'tx-10', type:'income', date:monthDate(-5,20), description:'Serviços do período', value:980, paymentMethod:'Misto', status:'paid', category:'Serviços' }
   ];
-  return { services, clients, appointments, transactions };
+  const settings = [
+    {
+      id: 'empresa',
+      msgConfirmacao: 'Olá {{cliente}}! Passando para confirmar nosso agendamento de {{servico}} para o dia {{data}} às {{hora}}.',
+      msgGarantia: 'Olá {{cliente}}! Seu serviço de {{servico}} foi concluído.\n\n⚠️ *Orientações:*\nDeixe o estofado secando em local ventilado por 12 a 24 horas. Evite usar durante a secagem.\nQualquer dúvida, estamos à disposição!',
+      msgLembrete: 'Olá {{cliente}}! Como você está?\nJá faz um tempinho desde a última limpeza. Que tal agendar uma nova higienização para manter seus estofados limpos e livres de ácaros?'
+    }
+  ];
+  return { services, clients, appointments, transactions, settings };
 }
