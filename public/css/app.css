@@ -48,12 +48,7 @@ h3 { margin-bottom: 0; font-size: 16px; letter-spacing: -.02em; }
 .nav-item:disabled { opacity: 0.6; cursor: not-allowed; }
 .nav-group { margin: 15px 14px 5px; color: #5f7592; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .pro-badge { margin-left: auto; padding: 3px 6px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 4px; font-size: 9px; font-weight: 800; }
-.sidebar-contact { margin-top: auto; padding: 15px; border: 1px solid rgba(134,190,255,.16); border-radius: 14px; background: rgba(255,255,255,.045); }
-.sidebar-contact span { display: block; color: #6ce8ee; font-size: 10px; text-transform: uppercase; letter-spacing: .12em; }
-.sidebar-contact strong { display: block; margin: 5px 0 10px; color: #fff; font-size: 12px; }
-.sidebar-contact a { color: #b9cff0; font-size: 11px; text-decoration: none; }
-.sidebar-contact a i { color: #35d786; font-size: 15px; }
-.sidebar footer { padding: 18px 7px 0; color: #6f87a7; font-size: 9px; text-align: center; }
+.sidebar footer { margin-top: auto; padding: 18px 7px 0; color: #6f87a7; font-size: 11px; text-align: center; }
 
 .content-shell { margin-left: var(--sidebar); min-height: 100vh; }
 .topbar { position: sticky; z-index: 25; top: 0; height: 86px; display: flex; align-items: center; gap: 14px; padding: 0 30px; background: rgba(245,248,252,.94); border-bottom: 1px solid rgba(221,230,240,.78); backdrop-filter: blur(14px); }
