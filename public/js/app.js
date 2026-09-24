@@ -830,6 +830,7 @@ async function recarregarApp() {
 }
 document.getElementById('reloadAppButton')?.addEventListener('click', recarregarApp);
 document.getElementById('helpGuideButton')?.addEventListener('click', openGuide);
+document.getElementById('mobileHelpGuideButton')?.addEventListener('click', openGuide);
 window.addEventListener('focus', () => {
   renderAppPanel();
   atualizarStatusSegundoPlano();

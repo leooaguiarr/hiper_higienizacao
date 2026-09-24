@@ -189,7 +189,8 @@ async function main() {
     form.elements.firstName.value = 'Teste';
     form.elements.lastName.value = 'Headless';
     form.elements.phone.value = '(16) 90000-0000';
-    form.elements.address.value = 'Rua Teste, 1';
+    form.elements.address.value = 'Rua Teste';
+    form.elements.number.value = '1';
     form.elements.neighborhood.value = 'Centro';
     form.elements.city.value = 'Ribeirao Preto';
     form.requestSubmit();

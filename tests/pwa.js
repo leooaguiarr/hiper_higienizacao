@@ -223,6 +223,8 @@ async function main() {
 
   // --- Escrita offline: precisa continuar operando ---
   const escritaOffline = await avaliar(`(async () => {
+    document.querySelector('.nav-item[data-view="clientes"]').click();
+    await new Promise(r => setTimeout(r, 300));
     const antes = document.querySelectorAll('#clientGrid .client-card').length;
     document.querySelector('[data-open="client"]').click();
     const form = document.getElementById('clientForm');
@@ -230,6 +232,7 @@ async function main() {
     form.elements.lastName.value = 'Teste';
     form.elements.phone.value = '(16) 91111-1111';
     form.elements.address.value = 'Rua Sem Sinal, 0';
+    form.elements.number.value = '100';
     form.elements.neighborhood.value = 'Centro';
     form.elements.city.value = 'Ribeirao Preto';
     form.requestSubmit();
