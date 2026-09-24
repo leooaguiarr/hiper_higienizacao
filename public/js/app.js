@@ -863,6 +863,17 @@ document.getElementById('copyClientLink')?.addEventListener('click', () => {
     .then(() => toast('Link de cadastro copiado!'))
     .catch(() => toast('Erro ao copiar link.'));
 });
+
+document.getElementById('shareClientLinkButton')?.addEventListener('click', () => {
+  const adminUid = store.usuario?.uid;
+  if (!adminUid) {
+    toast('É preciso estar logado para gerar o link.');
+    return;
+  }
+  const url = `${window.location.origin}/cadastro.html?u=${adminUid}`;
+  const text = encodeURIComponent(`Olá! Por favor, preencha seu cadastro para podermos agendar o seu serviço na Hiper Higienizações:\n${url}`);
+  window.open(`https://wa.me/?text=${text}`, '_blank');
+});
 // O navegador avisa quando a instalação é possível; guardamos o evento para
 // disparar no clique do usuário, que é a única forma aceita.
 window.addEventListener('beforeinstallprompt', evento => {
