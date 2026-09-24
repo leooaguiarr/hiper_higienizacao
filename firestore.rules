@@ -38,11 +38,11 @@ service cloud.firestore {
       allow read, write: if autorizado() && request.auth.uid == uid;
 
       // Coleções operacionais: clientes, servicos, equipes,
-      // agendamentos e lancamentos.
+      // agendamentos, lancamentos e configuracoes.
       match /{colecao}/{documento} {
         allow read, delete: if autorizado() && request.auth.uid == uid;
         allow create, update: if autorizado() && request.auth.uid == uid
-          && colecao in ['clientes', 'servicos', 'equipes', 'agendamentos', 'lancamentos']
+          && colecao in ['clientes', 'servicos', 'equipes', 'agendamentos', 'lancamentos', 'configuracoes']
           && request.resource.data.keys().size() <= 40;
           
         // Permite o auto-cadastro público de clientes (via link sem login)
