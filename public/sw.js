@@ -7,7 +7,7 @@
 // Suba a VERSAO a cada alteração de arquivo estático: o cache antigo é
 // descartado no activate.
 
-const VERSAO = 'hiper-v18';
+const VERSAO = 'hiper-v21';
 const CACHE_APP = `${VERSAO}-app`;
 const CACHE_EXTERNO = `${VERSAO}-externo`;
 const CACHE_DADOS = 'hiper-dados';
@@ -28,6 +28,7 @@ const APP_SHELL = [
   '/js/cadastro.js',
   '/manifest.webmanifest',
   '/assets/logo-hiper.png',
+  '/assets/login-hiper-hero.png',
   '/assets/icon-192.png',
   '/assets/icon-512.png',
   '/assets/icon-maskable-512.png'

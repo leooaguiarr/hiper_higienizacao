@@ -1,7 +1,8 @@
 # Hiper Higienizações - Sistema de Gestão
 
-Aplicação para controlar agenda de serviços externos, clientes, recorrência,
-ordens de serviço e financeiro da Hiper Higienizações.
+Aplicação para a Hiper Higienizações. A tela inicial é o acesso da equipe com
+conta Google; depois do login, o sistema controla agenda, clientes, recorrência,
+ordens de serviço e financeiro.
 
 Um só sistema atende os dois usos: **aplicativo instalável no celular** da
 equipe em campo e **acesso pelo navegador** no computador. É uma PWA, então não
@@ -20,12 +21,12 @@ Abra `http://localhost:8000`.
 
 | Modo | Quando é usado | Onde os dados ficam |
 | --- | --- | --- |
-| **Demonstração** | Sem login, ou enquanto o Firebase não estiver configurado | `localStorage` do navegador |
+| **Demonstração** | Uso interno dos testes automatizados, sem botão na tela de acesso | `localStorage` do navegador |
 | **Nuvem** | Após entrar com uma conta | Firestore, sincronizado em tempo real |
 
-Sem configuração do Firebase, o app abre direto em demonstração com dados de
-exemplo — nada é enviado para a internet. Use **Restaurar demonstração** em
-Configurações para repor os dados iniciais.
+Sem configuração do Firebase, a tela informa que o acesso em nuvem ainda não
+está disponível. O modo demonstração continua existindo apenas para os testes
+automatizados e salva seus dados no próprio navegador.
 
 Para ligar a nuvem, siga [docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md): são
 15 minutos e tudo cabe no plano gratuito (Spark).
@@ -34,7 +35,7 @@ Para ligar a nuvem, siga [docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md): são
 
 ```text
 public/
-  index.html            telas, formulários e tela de acesso
+  index.html            tela de acesso, telas internas e formulários
   manifest.webmanifest  identidade do aplicativo instalável
   sw.js                 service worker: cache offline e lembretes
   css/app.css           identidade visual e responsividade

@@ -852,6 +852,36 @@ document.getElementById('demoButton').addEventListener('click', iniciarDemo);
 document.getElementById('deniedSignOut').addEventListener('click', () => comFeedback(() => sair()));
 document.getElementById('deniedDemo').addEventListener('click', async () => { await sair(); iniciarDemo(); });
 
+document.querySelectorAll('[data-service-choice]').forEach(link => link.addEventListener('click', () => {
+  const select = document.getElementById('landingServiceSelect');
+  select.value = link.dataset.serviceChoice;
+}));
+
+const landingDate = document.getElementById('landingPreferredDate');
+if (landingDate) landingDate.min = localISO(new Date());
+
+document.getElementById('landingQuoteForm')?.addEventListener('submit', event => {
+  event.preventDefault();
+  const data = new FormData(event.currentTarget);
+  const date = data.get('preferredDate');
+  const period = data.get('period');
+  const periodText = { 'Manhã':'pela manhã', 'Tarde':'à tarde', 'Qualquer período':'em qualquer período' }[period] || '';
+  const preference = date
+    ? `${dateFmt.format(parseDate(date))}${periodText ? `, ${periodText}` : ''}`
+    : periodText ? `${cap(periodText)}, em data a combinar` : 'Data e período a combinar';
+  const message = [
+    'Olá! Quero solicitar um orçamento na Hiper Higienizações.',
+    '',
+    `*Nome:* ${data.get('name')}`,
+    `*WhatsApp:* ${data.get('phone')}`,
+    `*Serviço:* ${data.get('service')}`,
+    `*Local:* ${data.get('neighborhood')} — ${data.get('city')}`,
+    `*Peça / necessidade:* ${data.get('details')}`,
+    `*Preferência de atendimento:* ${preference}`
+  ].join('\n');
+  window.open(`https://wa.me/5516997603600?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+});
+
 document.getElementById('copyClientLink')?.addEventListener('click', () => {
   const adminUid = store.usuario?.uid;
   if (!adminUid) {
@@ -940,7 +970,6 @@ aoErro(mensagem => toast(mensagem));
 if (store.configPendente) {
   document.getElementById('configWarning').hidden = false;
   document.getElementById('configHint').hidden = false;
-  document.getElementById('cloudDisabled').hidden = false;
   document.getElementById('authEntrar').hidden = true;
   document.getElementById('goToLogin').hidden = true;
 }

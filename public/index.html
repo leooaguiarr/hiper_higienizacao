@@ -3,9 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#087ff5">
-  <meta name="description" content="Agenda, clientes, ordens de serviço e financeiro da Hiper Higienizações.">
-  <title>Hiper Higienizações | Gestão</title>
+  <meta name="theme-color" content="#071a35">
+  <meta name="description" content="Acesso ao sistema de gestão da Hiper Higienizações.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Hiper Higienizações | Acesso ao sistema</title>
+  <link rel="canonical" href="https://hiper-higienizacoes.web.app/">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Hiper Higienizações | Acesso ao sistema">
+  <meta property="og:description" content="Área exclusiva da equipe Hiper Higienizações.">
+  <meta property="og:url" content="https://hiper-higienizacoes.web.app/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Hiper Higienizações | Acesso ao sistema">
+  <meta name="twitter:description" content="Área exclusiva da equipe Hiper Higienizações.">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/assets/icon-192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
@@ -17,18 +27,297 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="/css/app.css?v=18">
+  <link rel="stylesheet" href="/css/app.css?v=20">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Hiper Higienizações","url":"https://hiper-higienizacoes.web.app/","telephone":"+55 16 99760-3600","email":"hiperhigienizacoesrp@gmail.com","description":"Serviços de limpeza, higienização e impermeabilização de estofados.","areaServed":"Ribeirão Preto e região","sameAs":["https://www.instagram.com/hiperhigienizacoesrp"]}</script>
 </head>
 <body>
+  <div class="landing" id="landingScreen" hidden inert aria-hidden="true">
+    <header class="landing-header">
+      <a class="landing-brand" href="#inicio" aria-label="Hiper Higienizações — início">
+        <img src="/assets/icon-192.png" alt="">
+        <span><strong>Hiper</strong><small>Higienizações</small></span>
+      </a>
+      <nav class="landing-nav" aria-label="Navegação da página">
+        <a href="#servicos">Serviços</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#orcamento">Orçamento</a>
+      </nav>
+      <button type="button" class="landing-login" data-open-login><i class="fa-regular fa-user"></i> Área da equipe</button>
+    </header>
+
+    <main class="landing-main" id="inicio">
+      <section class="landing-hero" aria-labelledby="landingTitle">
+        <div class="landing-hero-copy">
+          <span class="landing-kicker"><i class="fa-solid fa-location-dot"></i> Ribeirão Preto e região</span>
+          <h1 id="landingTitle">Seu estofado limpo.<br><em>Sua casa mais leve.</em></h1>
+          <p>Higienização profunda e impermeabilização feitas por quem entende de cuidado. Atendimento em domicílio, avaliação transparente e praticidade do primeiro contato à entrega.</p>
+          <div class="landing-hero-actions">
+            <a class="landing-primary" href="#orcamento">Pedir orçamento <i class="fa-solid fa-arrow-right"></i></a>
+            <a class="landing-secondary" href="https://wa.me/5516997603600?text=Ol%C3%A1%21%20Gostaria%20de%20conhecer%20os%20servi%C3%A7os%20da%20Hiper%20Higieniza%C3%A7%C3%B5es." target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Falar agora</a>
+          </div>
+          <div class="landing-trust" aria-label="Diferenciais do atendimento">
+            <span><i class="fa-solid fa-house"></i> Atendimento em domicílio</span>
+            <span><i class="fa-solid fa-shield-heart"></i> Cuidado profissional</span>
+            <span><i class="fa-regular fa-calendar-check"></i> Horário combinado</span>
+          </div>
+        </div>
+
+        <div class="landing-hero-visual" aria-label="Serviços para o cuidado de estofados">
+          <div class="landing-orbit orbit-one"></div>
+          <div class="landing-orbit orbit-two"></div>
+          <div class="landing-service-preview">
+            <div class="landing-preview-top">
+              <span class="landing-preview-logo"><img src="/assets/icon-192.png" alt=""></span>
+              <span class="landing-preview-badge"><i class="fa-solid fa-sparkles"></i> Cuidado Hiper</span>
+            </div>
+            <div class="landing-preview-copy">
+              <span>Higienização completa</span>
+              <strong>Conforto renovado<br>em cada detalhe.</strong>
+            </div>
+            <div class="landing-preview-services">
+              <span><i class="fa-solid fa-couch"></i> Sofás</span>
+              <span><i class="fa-solid fa-bed"></i> Colchões</span>
+              <span><i class="fa-solid fa-rug"></i> Tapetes</span>
+            </div>
+            <div class="landing-preview-note">
+              <span class="landing-preview-check"><i class="fa-solid fa-check"></i></span>
+              <span><small>Próximo passo</small><strong>Conte o que você precisa</strong></span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          </div>
+          <span class="landing-float-note note-top"><i class="fa-solid fa-droplet"></i> Proteção</span>
+          <span class="landing-float-note note-bottom"><i class="fa-solid fa-wand-magic-sparkles"></i> Higienização</span>
+        </div>
+      </section>
+
+      <section class="landing-proof" aria-label="Resumo do atendimento">
+        <p><strong>Mais cuidado, menos complicação.</strong> Você envia os detalhes, recebe a avaliação e combina o melhor horário.</p>
+        <a href="#servicos">Conheça as soluções <i class="fa-solid fa-arrow-down"></i></a>
+      </section>
+
+      <section class="landing-section landing-services" id="servicos" aria-labelledby="servicesTitle">
+        <div class="landing-section-heading">
+          <div>
+            <span class="landing-overline">Serviços e soluções</span>
+            <h2 id="servicesTitle">Cuidado certo para cada peça.</h2>
+          </div>
+          <p>Da limpeza profunda à proteção contra líquidos, cada atendimento é avaliado conforme o tecido, o tamanho e o nível de sujidade.</p>
+        </div>
+
+        <div class="landing-services-grid">
+          <article class="landing-service-card featured">
+            <span class="landing-service-icon"><i class="fa-solid fa-couch"></i></span>
+            <span class="landing-card-label">Mais procurado</span>
+            <h3>Higienização de sofá</h3>
+            <p>Limpeza profunda para remover sujeiras, odores e agentes acumulados sem agredir o tecido.</p>
+            <a href="#orcamento" data-service-choice="Higienização de sofá">Solicitar avaliação <i class="fa-solid fa-arrow-right"></i></a>
+          </article>
+          <article class="landing-service-card">
+            <span class="landing-service-icon"><i class="fa-solid fa-bed"></i></span>
+            <h3>Colchões</h3>
+            <p>Higienização para um ambiente de descanso mais limpo, fresco e confortável.</p>
+            <a href="#orcamento" data-service-choice="Higienização de colchão">Quero um orçamento <i class="fa-solid fa-arrow-right"></i></a>
+          </article>
+          <article class="landing-service-card">
+            <span class="landing-service-icon"><i class="fa-solid fa-chair"></i></span>
+            <h3>Cadeiras e poltronas</h3>
+            <p>Tratamento para peças residenciais e corporativas, respeitando a característica de cada revestimento.</p>
+            <a href="#orcamento" data-service-choice="Higienização de cadeiras">Quero um orçamento <i class="fa-solid fa-arrow-right"></i></a>
+          </article>
+          <article class="landing-service-card">
+            <span class="landing-service-icon"><i class="fa-solid fa-rug"></i></span>
+            <h3>Tapetes e carpetes</h3>
+            <p>Processo adequado à fibra para retirar a sujeira incrustada e preservar o toque e a maciez.</p>
+            <a href="#orcamento" data-service-choice="Tapetes e carpetes">Quero um orçamento <i class="fa-solid fa-arrow-right"></i></a>
+          </article>
+          <article class="landing-service-card accent-card">
+            <span class="landing-service-icon"><i class="fa-solid fa-shield-halved"></i></span>
+            <span class="landing-card-label">Proteção</span>
+            <h3>Hiper Proteção Premium</h3>
+            <p>Impermeabilização que dificulta a absorção de líquidos sem alterar a cor ou a textura do tecido.</p>
+            <a href="#orcamento" data-service-choice="Hiper Proteção Premium">Proteger meu estofado <i class="fa-solid fa-arrow-right"></i></a>
+          </article>
+          <article class="landing-service-card">
+            <span class="landing-service-icon"><i class="fa-solid fa-paw"></i></span>
+            <h3>Manchas e odores de pet</h3>
+            <p>Tratamento técnico para resíduos de origem orgânica, com atenção especial às áreas mais afetadas.</p>
+            <a href="#orcamento" data-service-choice="Remoção de urina de pet">Solicitar avaliação <i class="fa-solid fa-arrow-right"></i></a>
+          </article>
+          <article class="landing-service-card">
+            <span class="landing-service-icon"><i class="fa-solid fa-baby-carriage"></i></span>
+            <h3>Itens infantis</h3>
+            <p>Carrinhos, bebê conforto e cadeirinhas tratados com produtos adequados ao uso infantil.</p>
+            <a href="#orcamento" data-service-choice="Higienização infantil">Quero um orçamento <i class="fa-solid fa-arrow-right"></i></a>
+          </article>
+          <article class="landing-service-card">
+            <span class="landing-service-icon"><i class="fa-solid fa-building"></i></span>
+            <h3>Empresas e condomínios</h3>
+            <p>Atendimentos planejados para escritórios, clínicas, áreas comuns e serviços de maior volume.</p>
+            <a href="#orcamento" data-service-choice="Atendimento empresarial">Falar sobre o espaço <i class="fa-solid fa-arrow-right"></i></a>
+          </article>
+        </div>
+        <p class="landing-price-note"><i class="fa-solid fa-circle-info"></i> O valor final varia conforme quantidade, tamanho, tecido e condição de cada peça. Envie os detalhes para receber uma avaliação.</p>
+      </section>
+
+      <section class="landing-method" id="como-funciona" aria-labelledby="methodTitle">
+        <div class="landing-method-inner">
+          <div class="landing-method-intro">
+            <span class="landing-overline light">Como funciona</span>
+            <h2 id="methodTitle">Simples do pedido<br>ao cuidado final.</h2>
+            <p>Você conta o que precisa. A Hiper avalia, combina os detalhes e realiza o atendimento no local.</p>
+            <a href="#orcamento" class="landing-primary">Começar meu orçamento <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+          <ol class="landing-steps">
+            <li>
+              <span>01</span>
+              <div><i class="fa-regular fa-message"></i><h3>Conte o que precisa</h3><p>Escolha o serviço e descreva a peça, o tamanho e o que mais incomoda hoje.</p></div>
+            </li>
+            <li>
+              <span>02</span>
+              <div><i class="fa-solid fa-magnifying-glass"></i><h3>Receba a avaliação</h3><p>A equipe confirma as informações, orienta sobre o tratamento e apresenta o orçamento.</p></div>
+            </li>
+            <li>
+              <span>03</span>
+              <div><i class="fa-regular fa-calendar-check"></i><h3>Combine o melhor dia</h3><p>Você indica sua preferência e a Hiper confirma o horário disponível para o atendimento.</p></div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="landing-section landing-care" aria-labelledby="careTitle">
+        <div class="landing-care-visual" aria-hidden="true">
+          <div class="care-surface surface-back"></div>
+          <div class="care-surface surface-front"></div>
+          <div class="care-shield"><i class="fa-solid fa-shield-halved"></i></div>
+          <span class="care-drop drop-one"><i class="fa-solid fa-droplet"></i></span>
+          <span class="care-drop drop-two"><i class="fa-solid fa-droplet"></i></span>
+          <span class="care-spark spark-one"><i class="fa-solid fa-sparkles"></i></span>
+          <span class="care-spark spark-two"><i class="fa-solid fa-sparkles"></i></span>
+        </div>
+        <div class="landing-care-copy">
+          <span class="landing-overline">Produtos e proteção</span>
+          <h2 id="careTitle">Limpeza que cuida.<br>Proteção que permanece.</h2>
+          <p>A solução usada é escolhida de acordo com a necessidade da peça — sem promessas genéricas e sem tratar todo tecido do mesmo jeito.</p>
+          <ul>
+            <li><i class="fa-solid fa-check"></i><span><strong>Aplicação profissional</strong> com atenção ao tipo de tecido.</span></li>
+            <li><i class="fa-solid fa-check"></i><span><strong>Tratamento direcionado</strong> para sujeira, manchas e odores.</span></li>
+            <li><i class="fa-solid fa-check"></i><span><strong>Orientação pós-serviço</strong> para secagem e conservação.</span></li>
+            <li><i class="fa-solid fa-check"></i><span><strong>Proteção impermeabilizante</strong> disponível sob avaliação.</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="landing-quote" id="orcamento" aria-labelledby="quoteTitle">
+        <div class="landing-quote-inner">
+          <div class="landing-quote-copy">
+            <span class="landing-overline light">Orçamento rápido</span>
+            <h2 id="quoteTitle">Vamos cuidar<br>do seu estofado?</h2>
+            <p>Preencha os detalhes abaixo. Ao enviar, sua solicitação será aberta no WhatsApp da Hiper para você revisar e continuar a conversa.</p>
+            <div class="landing-contact-list">
+              <span><i class="fa-brands fa-whatsapp"></i><small>WhatsApp</small><strong>(16) 99760-3600</strong></span>
+              <span><i class="fa-regular fa-clock"></i><small>Atendimento</small><strong>Seg–sex 08h–18h · Sáb 08h–14h</strong></span>
+              <span><i class="fa-solid fa-location-dot"></i><small>Região</small><strong>Ribeirão Preto e região</strong></span>
+            </div>
+          </div>
+          <form class="landing-quote-form" id="landingQuoteForm">
+            <div class="landing-form-heading">
+              <span>Conte para a gente</span>
+              <strong>Peça seu orçamento</strong>
+            </div>
+            <div class="landing-form-grid">
+              <label>Seu nome<input type="text" name="name" autocomplete="name" placeholder="Como podemos chamar você?" required></label>
+              <label>WhatsApp<input type="tel" name="phone" class="mask-phone" autocomplete="tel" inputmode="tel" maxlength="15" placeholder="(16) 99999-9999" required></label>
+              <label class="span-2">Qual serviço você procura?
+                <select name="service" id="landingServiceSelect" required>
+                  <option value="">Selecione uma opção</option>
+                  <option>Higienização de sofá</option>
+                  <option>Higienização de colchão</option>
+                  <option>Higienização de cadeiras</option>
+                  <option>Tapetes e carpetes</option>
+                  <option>Hiper Proteção Premium</option>
+                  <option>Remoção de urina de pet</option>
+                  <option>Higienização infantil</option>
+                  <option>Atendimento empresarial</option>
+                  <option>Outro serviço</option>
+                </select>
+              </label>
+              <label>Cidade<input type="text" name="city" autocomplete="address-level2" value="Ribeirão Preto" required></label>
+              <label>Bairro<input type="text" name="neighborhood" autocomplete="address-level3" placeholder="Seu bairro" required></label>
+              <label class="span-2">Conte um pouco sobre a peça<textarea name="details" rows="4" placeholder="Ex.: sofá retrátil de 4 lugares, tecido claro, com manchas..." required></textarea></label>
+              <label>Data de preferência <span>(opcional)</span><input type="date" name="preferredDate" id="landingPreferredDate"></label>
+              <label>Melhor período <span>(opcional)</span><select name="period"><option value="">A combinar</option><option>Manhã</option><option>Tarde</option><option>Qualquer período</option></select></label>
+            </div>
+            <button type="submit" class="landing-form-submit"><i class="fa-brands fa-whatsapp"></i> Enviar pelo WhatsApp <i class="fa-solid fa-arrow-right"></i></button>
+            <p class="landing-form-note"><i class="fa-solid fa-lock"></i> A data é uma preferência. O atendimento só é agendado depois da confirmação da equipe.</p>
+          </form>
+        </div>
+      </section>
+
+      <section class="landing-section landing-faq" aria-labelledby="faqTitle">
+        <div class="landing-faq-title">
+          <span class="landing-overline">Dúvidas frequentes</span>
+          <h2 id="faqTitle">Antes de pedir<br>seu orçamento.</h2>
+          <p>Se ainda ficar alguma dúvida, fale diretamente com a equipe pelo WhatsApp.</p>
+        </div>
+        <div class="landing-faq-list">
+          <details open><summary>Quanto tempo leva para secar?<i class="fa-solid fa-plus"></i></summary><p>Em geral, a orientação é deixar o estofado em local ventilado por 12 a 24 horas. A equipe explica os cuidados específicos depois do serviço.</p></details>
+          <details><summary>Toda mancha sai completamente?<i class="fa-solid fa-plus"></i></summary><p>Cada mancha reage de uma forma, dependendo da origem, do tempo e do tecido. Por isso, a equipe avalia o caso antes de indicar o resultado esperado.</p></details>
+          <details><summary>Como o orçamento é calculado?<i class="fa-solid fa-plus"></i></summary><p>O valor considera o tipo de peça, tamanho, quantidade, tecido, nível de sujidade e o tratamento necessário.</p></details>
+          <details><summary>Já posso escolher uma data?<i class="fa-solid fa-plus"></i></summary><p>Sim. Informe a data e o período de preferência no formulário. A equipe verifica a agenda e confirma o horário com você pelo WhatsApp.</p></details>
+        </div>
+      </section>
+
+      <footer class="landing-footer">
+        <div class="landing-footer-brand">
+          <img src="/assets/icon-192.png" alt="">
+          <span><strong>Hiper Higienizações</strong><small>Limpeza, higienização e impermeabilização de estofados</small></span>
+        </div>
+        <div class="landing-footer-links">
+          <a href="#servicos">Serviços</a><a href="#como-funciona">Como funciona</a><a href="#orcamento">Orçamento</a>
+        </div>
+        <div class="landing-footer-social">
+          <a href="https://www.instagram.com/hiperhigienizacoesrp" target="_blank" rel="noopener noreferrer" aria-label="Instagram da Hiper Higienizações"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://wa.me/5516997603600" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp da Hiper Higienizações"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+        <p>© 2026 Hiper Higienizações · Ribeirão Preto/SP</p>
+      </footer>
+      <a class="landing-mobile-cta" href="#orcamento"><i class="fa-brands fa-whatsapp"></i> Pedir orçamento</a>
+    </main>
+  </div>
+
   <div class="auth-screen" id="authScreen" hidden>
-    <div class="auth-loading" id="authLoading"><i class="fa-solid fa-spinner fa-spin"></i><span>Verificando acesso...</span></div>
-    <div class="auth-box" id="authBox" hidden>
+    <section class="auth-visual" aria-label="Hiper Higienizações — cuidado profissional para estofados">
+      <div class="auth-visual-brand">
+        <img src="/assets/icon-192.png" alt="">
+        <span><strong>Hiper</strong><small>Higienizações</small></span>
+      </div>
+      <div class="auth-visual-copy">
+        <span class="auth-visual-kicker"><i class="fa-solid fa-sparkles"></i> Excelência em cada detalhe</span>
+        <h1>Cuidado que renova.<br><em>Gestão que transforma.</em></h1>
+        <p>Tecnologia e organização para manter cada atendimento no padrão Hiper.</p>
+      </div>
+      <div class="auth-visual-meta">
+        <span><i class="fa-solid fa-couch"></i> Higienização</span>
+        <span><i class="fa-solid fa-shield-halved"></i> Impermeabilização</span>
+      </div>
+    </section>
+
+    <section class="auth-panel" aria-label="Acesso da equipe">
+      <div class="auth-panel-glow" aria-hidden="true"></div>
+      <div class="auth-panel-inner">
+        <div class="auth-mobile-brand">
+          <img src="/assets/icon-192.png" alt="">
+          <span><strong>Hiper</strong><small>Higienizações</small></span>
+        </div>
+        <div class="auth-loading" id="authLoading"><i class="fa-solid fa-spinner fa-spin"></i><span>Verificando acesso...</span></div>
+        <div class="auth-box" id="authBox" hidden>
       <div class="auth-brand">
         <img src="/assets/logo-hiper.png" alt="Logo Hiper Higienizações">
         <div><strong>Hiper</strong><span>Higienizações</span></div>
       </div>
-      <h1 id="authTitle">Acesse o sistema</h1>
-      <p id="authText">Entre com a conta Google autorizada para ver os dados da Hiper.</p>
+      <span class="auth-eyebrow">Área exclusiva da equipe</span>
+      <h1 id="authTitle">Acesse a gestão</h1>
+      <p id="authText">Entre com a conta Google autorizada para acompanhar a operação da Hiper.</p>
 
       <div class="auth-notice aviso" id="configWarning" hidden>
         <i class="fa-solid fa-triangle-exclamation"></i>
@@ -40,16 +329,12 @@
       <div id="authEntrar">
         <button type="button" class="google-button" id="googleButton">
           <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
-          Entrar com Google
+          Continuar com Google
         </button>
-        <small class="auth-hint">O acesso é liberado apenas para contas autorizadas pela Hiper.</small>
+        <small class="auth-hint"><i class="fa-solid fa-shield-halved"></i> Acesso seguro para contas autorizadas</small>
       </div>
 
-      <div class="auth-divider" id="cloudDisabled" hidden><span>modo disponível agora</span></div>
-      <div class="auth-demo">
-        <button type="button" class="secondary-button" id="demoButton"><i class="fa-solid fa-flask"></i> Entrar em modo demonstração</button>
-        <small>Dados de exemplo salvos apenas neste navegador, sem enviar nada para a nuvem.</small>
-      </div>
+      <button type="button" id="demoButton" hidden tabindex="-1" aria-hidden="true">Modo demonstração</button>
     </div>
 
     <div class="auth-box" id="deniedBox" hidden>
@@ -66,6 +351,12 @@
         <button type="button" class="secondary-button" id="deniedDemo"><i class="fa-solid fa-flask"></i> Ver a demonstração</button>
       </div>
     </div>
+        <footer class="auth-footer">
+          <span>Sistema interno · Hiper Higienizações</span>
+          <a href="https://lexionconsultoria.com.br" target="_blank" rel="noopener noreferrer">Desenvolvido por Lexion Consultoria</a>
+        </footer>
+      </div>
+    </section>
   </div>
 
   <div class="app-shell" hidden>
@@ -261,6 +552,6 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
-  <script type="module" src="/js/app.js?v=12"></script>
+  <script type="module" src="/js/app.js?v=15"></script>
 </body>
 </html>

@@ -8,7 +8,7 @@ o que já foi entregue, o que falta e as armadilhas que já custaram tempo.
 principalmente as seções *Estado atual*, *O que vem a seguir* e *Histórico*.
 
 - Repositório: <https://github.com/leooaguiarr/hiper_higienizacao> (público)
-- Última atualização deste documento: 11/09/2026
+- Última atualização deste documento: 24/09/2026
 
 ---
 
@@ -92,10 +92,10 @@ tela — não quebre essa fronteira.
 
 | Modo | Quando | Dados |
 | --- | --- | --- |
-| `demo` | Sem login, ou `firebase-config.js` não preenchido | `localStorage` |
+| `demo` | Acionado internamente pelos testes automatizados; não há botão público | `localStorage` |
 | `nuvem` | Autenticado **e** autorizado | Firestore, tempo real, com cache offline |
 | `sem-acesso` | Autenticado, mas fora da lista de autorizados | Nenhum |
-| `deslogado` | Sessão ausente | Tela de acesso |
+| `deslogado` | Sessão ausente | Tela institucional de acesso com login Google |
 | `carregando` | Enquanto o SDK carrega | Spinner |
 
 O `store.js` expõe: `iniciar`, `iniciarDemo`, `entrarComGoogle`, `sair`,
@@ -174,6 +174,12 @@ de serviço em lote (status + recorrência + receita), catálogo de serviços ge
 bloqueio de quem não está autorizado, instalação como app, operação offline e
 lembretes locais. Equipe opcional e flexibilizada.
 
+**Landing page pública em standby desde 24/09/2026:** a estrutura com catálogo,
+produtos/proteção, FAQ e orçamento pelo WhatsApp permanece no código, mas fica
+oculta. A raiz voltou a mostrar somente o login Google. A nova tela de acesso
+usa uma imagem institucional própria da Hiper, a marca real e composição em
+duas áreas; sessões ativas continuam entrando direto no sistema interno.
+
 **Chave de API protegida:** restrição ativa de HTTP referrers no Google Cloud
 para localhost, 127.0.0.1, e domínios do Hosting (.web.app e .firebaseapp.com).
 
@@ -200,12 +206,12 @@ com outra conta Google de verdade.
 
 ## 6. O que vem a seguir
 
-1. **Mensagens inteligentes no WhatsApp:** pré-preenchimento de confirmação de
-   agendamento e lembrete com 1 clique a partir da OS e ficha do cliente.
-2. **Máscaras de entrada:** formatação automática de telefone e moeda nos formulários.
-3. **Comprovante/Garantia pós-serviço:** envio de orientações de secagem e termo de
-   garantia via WhatsApp após conclusão.
-4. **Cadastro formal de equipes:** ativado somente se a empresa expandir para mais equipes.
+1. **Retomar a landing page quando a operação decidir:** revisar textos, redes
+   sociais e fluxo de orçamento antes de reativá-la na raiz.
+2. **Integrar pedidos confirmados à agenda:** avaliar, no futuro, um fluxo em
+   que a equipe converta o contato do WhatsApp em cliente e agendamento sem
+   redigitar os dados.
+3. **Cadastro formal de equipes:** ativado somente se a empresa expandir para mais equipes.
 
 ## 7. Armadilhas conhecidas
 
@@ -270,3 +276,6 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 04/09/2026 | **Login trocado para conta Google**, com liberação por lista `autorizados/{email}` nas regras. Teste `tests/regras.js`, 22 casos. |
 | 04/09/2026 | Login com Google validado em uso real: entrada funciona e o catálogo é semeado sozinho na primeira vez. |
 | 11/09/2026 | **CRUD de serviços** implementado, campo de equipe flexibilizado (opcional), chave de API restrita por domínio no Google Cloud e testes headless expandidos. |
+| 24/09/2026 | **Landing page pública** criada antes do login, com catálogo de serviços, produtos/proteção, FAQ e solicitação de orçamento com preferência de agendamento pelo WhatsApp. |
+| 24/09/2026 | Landing colocada em **standby** e raiz devolvida ao login Google, redesenhado com imagem institucional, marca e cores da Hiper. |
+| 24/09/2026 | Botão de **modo demonstração removido da interface de login**; o modo permanece acessível apenas aos testes automatizados. |
