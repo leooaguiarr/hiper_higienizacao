@@ -7,8 +7,8 @@ rules_version = '2';
 //   1. Autorização. Entrar com Google não basta: qualquer pessoa com conta
 //      Google consegue se autenticar, então o acesso depende de constar em
 //      autorizados/{email}. Essa lista é mantida fora do app.
-//   2. Isolamento. Os dados vivem sob usuarios/{uid}, então o caminho do
-//      documento garante que ninguém alcance a base de outra conta.
+//   2. Base da empresa. Todas as pessoas autorizadas trabalham no mesmo
+//      conjunto de dados, restrito ao UID oficial da Hiper.
 //
 // Sem Cloud Functions (plano Spark) não há como bloquear o login em si; o que
 // se bloqueia é o acesso aos dados, e o app trata isso mostrando uma tela de
@@ -26,6 +26,10 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/autorizados/$(request.auth.token.email));
     }
 
+    function baseHiper(uid) {
+      return uid == 'pFfNUp3yU2PsQhbnIvNa5f1Y0q83';
+    }
+
     // Cada pessoa lê apenas o próprio registro, e só para o app saber se
     // libera a entrada. A lista nunca é gravada pelo app.
     match /autorizados/{email} {
@@ -33,20 +37,21 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Dados da conta: usuarios/{uid}
+    // Base compartilhada da Hiper: usuarios/{UID_OFICIAL}
     match /usuarios/{uid} {
-      allow read, write: if autorizado() && request.auth.uid == uid;
+      allow read, write: if autorizado() && baseHiper(uid);
 
       // Coleções operacionais: clientes, servicos, equipes,
       // agendamentos, lancamentos e configuracoes.
       match /{colecao}/{documento} {
-        allow read, delete: if autorizado() && request.auth.uid == uid;
-        allow create, update: if autorizado() && request.auth.uid == uid
+        allow read, delete: if autorizado() && baseHiper(uid);
+        allow create, update: if autorizado() && baseHiper(uid)
           && colecao in ['clientes', 'servicos', 'equipes', 'agendamentos', 'lancamentos', 'configuracoes']
           && request.resource.data.keys().size() <= 40;
-          
+
         // Permite o auto-cadastro público de clientes (via link sem login)
-        allow create: if colecao == 'clientes' 
+        allow create: if baseHiper(uid)
+          && colecao == 'clientes'
           && request.auth == null
           && request.resource.data.keys().hasAll(['firstName', 'phone'])
           && request.resource.data.keys().size() <= 20;

@@ -604,6 +604,45 @@ function renderAuth() {
   document.getElementById('cloudPanel').hidden = demo;
   document.getElementById('accountEmail').textContent = store.usuario?.email || '-';
   document.getElementById('accountName').textContent = store.usuario?.displayName || 'Sem nome definido';
+  renderProfile(demo);
+}
+
+function profileInitials(name, email) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length) return `${parts[0][0] || ''}${parts.length > 1 ? parts.at(-1)[0] : parts[0][1] || ''}`.toUpperCase();
+  return String(email || 'HH').slice(0, 2).toUpperCase();
+}
+
+function renderProfile(demo) {
+  const name = demo ? 'Modo demonstração' : store.usuario?.displayName || 'Equipe Hiper';
+  const email = demo ? 'Dados locais neste dispositivo' : store.usuario?.email || '-';
+  const photoURL = demo ? '' : store.usuario?.photoURL || '';
+  const initials = profileInitials(name, email);
+
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileEmail').textContent = email;
+  document.getElementById('profileInitials').textContent = initials;
+  document.getElementById('profileMenuInitials').textContent = initials;
+  ['profilePhoto', 'profileMenuPhoto'].forEach(id => {
+    const image = document.getElementById(id);
+    image.hidden = !photoURL;
+    if (photoURL) image.src = photoURL;
+    else image.removeAttribute('src');
+  });
+  closeProfile();
+}
+
+function closeProfile() {
+  document.getElementById('profilePopover')?.setAttribute('hidden', '');
+  document.getElementById('profileButton')?.setAttribute('aria-expanded', 'false');
+}
+
+function toggleProfile() {
+  const popover = document.getElementById('profilePopover');
+  const button = document.getElementById('profileButton');
+  const open = popover.hidden;
+  popover.hidden = !open;
+  button.setAttribute('aria-expanded', String(open));
 }
 
 function mostrarAvisoAuth(mensagem, tom = 'erro') {
@@ -760,7 +799,10 @@ document.querySelectorAll('[data-go]').forEach(button => button.addEventListener
 document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', closeModal));
 document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('modalBackdrop').addEventListener('click', event => { if (event.target === event.currentTarget) closeModal(); });
-document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeModal(); closeAlerts(); toggleSidebar(false); } });
+document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeModal(); closeAlerts(); closeProfile(); toggleSidebar(false); } });
+document.getElementById('profileButton')?.addEventListener('click', event => { event.stopPropagation(); toggleProfile(); });
+document.getElementById('profilePopover')?.addEventListener('click', event => event.stopPropagation());
+document.addEventListener('click', closeProfile);
 document.getElementById('appointmentForm').addEventListener('submit', handleAppointmentSubmit);
 document.getElementById('clientForm').addEventListener('submit', handleClientSubmit);
 document.getElementById('transactionForm').addEventListener('submit', handleTransactionSubmit);
@@ -844,9 +886,11 @@ document.getElementById('resetDemo').addEventListener('click', () => {
   if (confirm('Restaurar os dados demonstrativos e apagar alterações locais?')) { restaurarDemo(); toast('Demonstração restaurada.'); }
 });
 document.getElementById('goToLogin').addEventListener('click', irParaLogin);
-document.getElementById('signOut').addEventListener('click', async () => {
+async function confirmarSaida() {
   if (confirm('Sair da conta?')) await comFeedback(() => sair());
-});
+}
+document.getElementById('signOut').addEventListener('click', confirmarSaida);
+document.getElementById('profileSignOut')?.addEventListener('click', confirmarSaida);
 document.getElementById('googleButton').addEventListener('click', handleGoogleLogin);
 document.getElementById('demoButton').addEventListener('click', iniciarDemo);
 document.getElementById('deniedSignOut').addEventListener('click', () => comFeedback(() => sair()));
@@ -883,24 +927,24 @@ document.getElementById('landingQuoteForm')?.addEventListener('submit', event =>
 });
 
 document.getElementById('copyClientLink')?.addEventListener('click', () => {
-  const adminUid = store.usuario?.uid;
-  if (!adminUid) {
+  const empresaUid = store.empresaUid;
+  if (!store.usuario || !empresaUid) {
     toast('É preciso estar logado para gerar o link.');
     return;
   }
-  const url = `${window.location.origin}/cadastro.html?u=${adminUid}`;
+  const url = `${window.location.origin}/cadastro.html?u=${empresaUid}`;
   navigator.clipboard.writeText(url)
     .then(() => toast('Link de cadastro copiado!'))
     .catch(() => toast('Erro ao copiar link.'));
 });
 
 document.getElementById('shareClientLinkButton')?.addEventListener('click', () => {
-  const adminUid = store.usuario?.uid;
-  if (!adminUid) {
+  const empresaUid = store.empresaUid;
+  if (!store.usuario || !empresaUid) {
     toast('É preciso estar logado para gerar o link.');
     return;
   }
-  const url = `${window.location.origin}/cadastro.html?u=${adminUid}`;
+  const url = `${window.location.origin}/cadastro.html?u=${empresaUid}`;
   const text = encodeURIComponent(`Olá! Por favor, preencha seu cadastro para podermos agendar o seu serviço na Hiper Higienizações:\n${url}`);
   window.open(`https://wa.me/?text=${text}`, '_blank');
 });

@@ -75,7 +75,7 @@ public/
   js/store.js           camada de dados: decide entre localStorage e Firestore
   js/notificacoes.js    permissão, resumo de lembretes e background sync
   js/app.js             renderização, eventos e controle de sessão
-firestore.rules         autorização por lista e isolamento por conta
+firestore.rules         autorização por lista e acesso à base compartilhada
 firebase.json           Hosting, regras e emuladores
 server.js               servidor local, só com módulos nativos do Node
 tests/                  smoke.js, crud.js, pwa.js e regras.js
@@ -104,7 +104,7 @@ O `store.js` expõe: `iniciar`, `iniciarDemo`, `entrarComGoogle`, `sair`,
 
 `window.__store` está exposto para inspeção no console e é usado pelos testes.
 
-### Acesso: duas travas independentes
+### Acesso: autorização e base compartilhada
 
 **Autenticar não é ter acesso.** O login é só com Google, e qualquer pessoa com
 conta Google consegue se autenticar no projeto. A liberação vem da coleção
@@ -117,29 +117,24 @@ lê o próprio registro, para saber se entra. Liberar ou revogar é criar ou
 apagar o documento pelo console — o passo a passo está em
 `docs/FIREBASE_SETUP.md`.
 
-`tests/regras.js` cobre isso com 22 casos, pela API de teste do Firebase Rules
+`tests/regras.js` cobre isso com 26 casos, pela API de teste do Firebase Rules
 (sem emulador, sem Java, sem tocar no banco real).
 
 ### Dados no Firestore
 
-Tudo sob `usuarios/{uid}`, então **o isolamento vem do caminho do documento** —
-é o substituto do RLS que existiria no Postgres.
+Os dados operacionais existentes continuam sob o UID original da Hiper, usado
+como identificador fixo da empresa. Toda conta presente em `autorizados/{email}`
+lê e grava nesse mesmo caminho; UIDs pessoais diferentes não criam bases novas.
 
 ```text
 autorizados/{email}
-usuarios/{uid}/clientes|servicos|agendamentos|lancamentos|equipes/{id}
+usuarios/pFfNUp3yU2PsQhbnIvNa5f1Y0q83/clientes|servicos|agendamentos|lancamentos|equipes/{id}
 ```
 
-Conta nova recebe automaticamente os oito serviços de `SERVICOS_PADRAO`, para a
-agenda já nascer utilizável.
-
-> **Antes de autorizar uma segunda pessoa, leia isto.** Como cada conta tem sua
-> própria base, quem entrar depois vê um sistema **vazio**, não a agenda da
-> Hiper. Para a equipe compartilhar os dados, é preciso mover os documentos
-> para um caminho da empresa (algo como `empresa/hiper/...`), ajustar o
-> `COLECOES`/caminho no `store.js` e trocar a checagem de dono nas regras por
-> uma de pertencimento. Foi decidido em 04/09/2026 não fazer isso ainda, porque
-> só há um usuário.
+A base vazia recebe automaticamente os oito serviços de `SERVICOS_PADRAO`, para
+a agenda já nascer utilizável. As regras aceitam apenas o UID fixo acima e uma
+conta Google previamente liberada; caminhos baseados no UID pessoal permanecem
+fechados.
 
 ### Regras que ligam as coleções
 
@@ -200,9 +195,9 @@ naquele dia: 1 autorizado (`leooaguiarr@gmail.com`, uid
 `pFfNUp3yU2PsQhbnIvNa5f1Y0q83`), 1 conta autenticada, 8 serviços e nenhum
 cliente ou agendamento na nuvem.
 
-**Não testado com um segundo usuário real:** o bloqueio de quem não está na
-lista está provado pelas regras (`tests/regras.js`), mas ninguém tentou entrar
-com outra conta Google de verdade.
+**Acesso de equipe:** as regras automatizadas comprovam que duas identidades
+autorizadas distintas podem ler e gravar a mesma base da Hiper. A inclusão ou
+revogação de pessoas continua sendo feita pela coleção `autorizados`.
 
 ## 6. O que vem a seguir
 
@@ -279,3 +274,4 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 24/09/2026 | **Landing page pública** criada antes do login, com catálogo de serviços, produtos/proteção, FAQ e solicitação de orçamento com preferência de agendamento pelo WhatsApp. |
 | 24/09/2026 | Landing colocada em **standby** e raiz devolvida ao login Google, redesenhado com imagem institucional, marca e cores da Hiper. |
 | 24/09/2026 | Botão de **modo demonstração removido da interface de login**; o modo permanece acessível apenas aos testes automatizados. |
+| 24/09/2026 | **Base compartilhada da Hiper** ativada para todas as contas autorizadas, mantendo os dados no UID original da empresa; dashboard responsivo e menu de perfil Google adicionados. |

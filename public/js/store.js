@@ -3,7 +3,7 @@
 // Opera em dois modos, expostos pela mesma API para a interface:
 //
 //   'demo'  - dados demonstrativos guardados em localStorage, sem login.
-//   'nuvem' - dados do Firestore da conta autenticada, em tempo real.
+//   'nuvem' - dados compartilhados da Hiper no Firestore, em tempo real.
 //
 // Em ambos os modos a interface só chama criar/atualizar/remover e escuta
 // aoMudar(). O SDK do Firebase é carregado sob demanda: em modo demonstração
@@ -16,6 +16,7 @@ import { uid } from './utils.js';
 const SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
 const STORAGE_KEY = 'hiper-higienizacoes-v1';
 const MODO_KEY = 'hiper-modo';
+export const EMPRESA_UID = 'pFfNUp3yU2PsQhbnIvNa5f1Y0q83';
 
 // Chaves do estado em memória -> nomes das coleções no Firestore.
 const COLECOES = {
@@ -36,6 +37,7 @@ let notificarErro = () => {};
 export const store = {
   modo: 'carregando',
   usuario: null,
+  empresaUid: EMPRESA_UID,
   state: estadoVazio(),
   configPendente,
   // Sincronização: 'doCache' indica que os dados vieram do cache local e
@@ -133,7 +135,7 @@ export async function iniciar() {
       }
       store.modo = 'nuvem';
       localStorage.setItem(MODO_KEY, 'nuvem');
-      await escutarColecoes(usuario.uid);
+      await escutarColecoes();
     } else {
       pararEscuta();
       store.usuario = null;
@@ -205,9 +207,9 @@ function salvarLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(store.
 
 function pararEscuta() { ouvintes.forEach(cancelar => cancelar()); ouvintes = []; }
 
-// Assina as quatro coleções da conta. O Firestore entrega a alteração local
-// antes da confirmação do servidor, então a interface responde na hora.
-async function escutarColecoes(uidConta) {
+// Assina as coleções compartilhadas da Hiper. Todas as contas liberadas usam
+// o mesmo caminho; o e-mail autorizado determina quem pode acessar a base.
+async function escutarColecoes() {
   pararEscuta();
   const { db, dbApi } = await carregarSDK();
   store.state = estadoVazio();
@@ -215,17 +217,17 @@ async function escutarColecoes(uidConta) {
   const cacheDe = {};
   const pendentesDe = {};
   Object.entries(COLECOES).forEach(([chave, nome]) => {
-    const referencia = dbApi.collection(db, 'usuarios', uidConta, nome);
+    const referencia = dbApi.collection(db, 'usuarios', EMPRESA_UID, nome);
     const cancelar = dbApi.onSnapshot(referencia, { includeMetadataChanges: true }, async snapshot => {
       store.state[chave] = snapshot.docs.map(documento => ({ id: documento.id, ...documento.data() }));
       cacheDe[chave] = snapshot.metadata.fromCache;
       pendentesDe[chave] = snapshot.metadata.hasPendingWrites;
       store.doCache = Object.values(cacheDe).some(Boolean);
       store.pendentes = Object.values(pendentesDe).some(Boolean);
-      // Conta nova: publica o catálogo padrão para a agenda já nascer utilizável.
+      // Base vazia: publica o catálogo padrão para a agenda já nascer utilizável.
       if (chave === 'services' && snapshot.empty && !snapshot.metadata.fromCache && !semeado) {
         semeado = true;
-        try { await semearServicos(uidConta); } catch (error) { notificarErro(mensagemErro(error)); }
+        try { await semearServicos(); } catch (error) { notificarErro(mensagemErro(error)); }
       }
       notificar();
     }, error => notificarErro(mensagemErro(error)));
@@ -233,19 +235,19 @@ async function escutarColecoes(uidConta) {
   });
 }
 
-async function semearServicos(uidConta) {
+async function semearServicos() {
   const { db, dbApi } = await carregarSDK();
   const lote = dbApi.writeBatch(db);
   const padrao = seedData();
   
   padrao.services.forEach(servico => {
     const { id, ...dados } = servico;
-    lote.set(dbApi.doc(db, 'usuarios', uidConta, 'servicos', id), dados);
+    lote.set(dbApi.doc(db, 'usuarios', EMPRESA_UID, 'servicos', id), dados);
   });
   
   padrao.settings.forEach(config => {
     const { id, ...dados } = config;
-    lote.set(dbApi.doc(db, 'usuarios', uidConta, 'configuracoes', id), dados);
+    lote.set(dbApi.doc(db, 'usuarios', EMPRESA_UID, 'configuracoes', id), dados);
   });
   
   await lote.commit();
@@ -254,7 +256,7 @@ async function semearServicos(uidConta) {
 /* ------------------------------------------------------------- Escrita -- */
 
 function referenciaDoc(chave, id) {
-  return fb.dbApi.doc(fb.db, 'usuarios', store.usuario.uid, COLECOES[chave], id);
+  return fb.dbApi.doc(fb.db, 'usuarios', EMPRESA_UID, COLECOES[chave], id);
 }
 
 export async function criar(chave, dados) {

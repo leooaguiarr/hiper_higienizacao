@@ -77,20 +77,20 @@ recuperação. Quem entra é controlado pela lista de autorizados do passo 5.
 
 ### Como os dados ficam organizados
 
-Cada conta guarda tudo sob o próprio UID, então o isolamento é garantido pelo
-caminho do documento:
+Toda a equipe autorizada usa a mesma base oficial da Hiper. O UID abaixo é o
+identificador fixo da empresa e preserva os dados que já estavam em produção:
 
 ```text
-autorizados/{email}                quem pode entrar no sistema
-usuarios/{uid}/clientes/{id}       nome, telefone, endereço, recorrência
-usuarios/{uid}/servicos/{id}       catálogo, duração e preço base
-usuarios/{uid}/agendamentos/{id}   data, hora, equipe, valor, status, pagamento
-usuarios/{uid}/lancamentos/{id}    receitas e despesas do financeiro
-usuarios/{uid}/equipes/{id}        reservado para o cadastro de equipes
+autorizados/{email}                                      quem pode entrar no sistema
+usuarios/pFfNUp3yU2PsQhbnIvNa5f1Y0q83/clientes/{id}      nome, telefone, endereço, recorrência
+usuarios/pFfNUp3yU2PsQhbnIvNa5f1Y0q83/servicos/{id}      catálogo, duração e preço base
+usuarios/pFfNUp3yU2PsQhbnIvNa5f1Y0q83/agendamentos/{id}  data, hora, equipe, valor, status, pagamento
+usuarios/pFfNUp3yU2PsQhbnIvNa5f1Y0q83/lancamentos/{id}   receitas e despesas do financeiro
+usuarios/pFfNUp3yU2PsQhbnIvNa5f1Y0q83/equipes/{id}       reservado para o cadastro de equipes
 ```
 
-No primeiro acesso de uma conta nova, o app publica sozinho os oito serviços
-do catálogo da Hiper, para que a agenda já nasça utilizável.
+Se a base oficial estiver vazia, o app publica sozinho os oito serviços do
+catálogo da Hiper, para que a agenda já nasça utilizável.
 
 ### Liberar quem pode entrar
 
@@ -107,11 +107,10 @@ Para liberar alguém, crie um documento cujo **ID é o e-mail** da pessoa:
 Para revogar o acesso, exclua o documento. O app nunca escreve nessa coleção:
 cada pessoa só consegue ler o próprio registro, e apenas para saber se entra.
 
-> **Atenção ao adicionar a segunda pessoa.** Hoje os dados vivem sob
-> `usuarios/{uid}`, ou seja, cada conta tem a própria base. Uma segunda pessoa
-> autorizada entraria num sistema vazio, não na agenda da Hiper. Para a equipe
-> compartilhar os mesmos dados, os documentos precisam ser movidos para um
-> caminho da empresa e as regras ajustadas.
+Depois da liberação, qualquer integrante autorizado vê o mesmo conteúdo da
+Hiper — clientes, serviços, agenda e financeiro. As regras impedem tanto o
+acesso de e-mails não liberados quanto a criação de bases paralelas em outros
+UIDs.
 
 ## 6. Publicar no Firebase Hosting
 

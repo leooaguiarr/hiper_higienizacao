@@ -22,7 +22,7 @@ Abra `http://localhost:8000`.
 | Modo | Quando é usado | Onde os dados ficam |
 | --- | --- | --- |
 | **Demonstração** | Uso interno dos testes automatizados, sem botão na tela de acesso | `localStorage` do navegador |
-| **Nuvem** | Após entrar com uma conta | Firestore, sincronizado em tempo real |
+| **Nuvem** | Após entrar com uma conta Google autorizada | Base compartilhada da Hiper no Firestore, sincronizada em tempo real |
 
 Sem configuração do Firebase, a tela informa que o acesso em nuvem ainda não
 está disponível. O modo demonstração continua existindo apenas para os testes
@@ -56,6 +56,8 @@ docs/APP_CELULAR.md     instalação no celular, offline e lembretes
 A interface nunca fala com o Firebase diretamente: ela lê `store.state` e grava
 por `criar`, `atualizar`, `remover` e `gravarLote`. É o `store.js` que decide
 entre navegador e nuvem, o que mantém os dois modos com o mesmo código de tela.
+Todas as contas presentes em `autorizados/{email}` acessam o mesmo conteúdo
+operacional da Hiper; contas fora da lista não leem nem gravam dados.
 
 ## Testar
 

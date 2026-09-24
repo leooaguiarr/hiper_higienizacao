@@ -141,6 +141,22 @@ async function main() {
   console.log('\n=== ESTADO INICIAL ===');
   console.log(JSON.stringify(relatorio, null, 2));
 
+  const perfil = await avaliar(`(() => {
+    const botao = document.getElementById('profileButton');
+    botao.click();
+    const popover = document.getElementById('profilePopover');
+    const resultado = {
+      abriu: !popover.hidden,
+      nome: document.getElementById('profileName').textContent,
+      editarPerfil: !!popover.querySelector('a[href*="myaccount.google.com/profile"]')
+    };
+    botao.click();
+    return resultado;
+  })()`);
+  console.log('\n=== PERFIL ===');
+  console.log(JSON.stringify(perfil, null, 2));
+  if (!perfil.abriu || !perfil.editarPerfil) erros.push('menu de perfil não abriu corretamente');
+
   // Navegação entre telas
   const navegacao = await avaliar(`(() => {
     const resultado = {};
@@ -225,7 +241,27 @@ async function main() {
   console.log('\n=== CONCLUSAO DE SERVICO ===');
   console.log(JSON.stringify(conclusao, null, 2));
 
-  // Responsivo
+  // Largura intermediária: os subcards precisam permanecer dentro dos painéis.
+  await enviar('Emulation.setDeviceMetricsOverride', { width: 1058, height: 800, deviceScaleFactor: 1, mobile: false });
+  await esperar(500);
+  const intermediario = await avaliar(`(() => {
+    document.querySelector('.nav-item[data-view="dashboard"]').click();
+    const painel = document.getElementById('alertsPanel').getBoundingClientRect();
+    const itens = [...document.querySelectorAll('#alertsList .list-item')].map(item => item.getBoundingClientRect());
+    return {
+      scrollHorizontal: document.documentElement.scrollWidth > window.innerWidth + 1,
+      painelDentroDaTela: painel.right <= window.innerWidth + 1,
+      subcardsContidos: itens.every(item => item.left >= painel.left && item.right <= painel.right + 1),
+      colunas: getComputedStyle(document.querySelector('#view-dashboard .dashboard-grid')).gridTemplateColumns
+    };
+  })()`);
+  console.log('\n=== RESPONSIVO 1058px ===');
+  console.log(JSON.stringify(intermediario, null, 2));
+  if (intermediario.scrollHorizontal || !intermediario.painelDentroDaTela || !intermediario.subcardsContidos) {
+    erros.push('dashboard ultrapassa as margens em largura intermediária');
+  }
+
+  // Responsivo mobile
   await enviar('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await esperar(600);
   const mobile = await avaliar(`(() => ({

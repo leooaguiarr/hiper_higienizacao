@@ -1,8 +1,8 @@
 // Teste das regras do Firestore, sem dependências npm e sem emulador.
 //
 // É o teste de segurança do sistema. Verifica que entrar com Google não basta,
-// que a liberação vem de autorizados/{email} e que ninguém alcança a base de
-// outra conta.
+// que a liberação vem de autorizados/{email}, que toda a equipe liberada usa
+// a base oficial da Hiper e que nenhum outro caminho fica exposto.
 //
 // Usa a API de teste do Firebase Rules, que avalia as regras no servidor. Não
 // precisa de Java nem do emulador, e não toca no banco real: as chamadas a
@@ -85,36 +85,44 @@ function caso({ nome, esperado, uid, email, caminho, metodo, dados, naLista }) {
 }
 
 const CLIENTE = { firstName: 'Ana', lastName: 'Martins', phone: '(16) 90000-0000' };
+const EMPRESA_UID = 'pFfNUp3yU2PsQhbnIvNa5f1Y0q83';
+const BASE = `/usuarios/${EMPRESA_UID}`;
 
 const CASOS = [
-  // --- Quem está na lista de autorizados ---
-  caso({ nome: 'lê o próprio cliente', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
-    caminho: '/usuarios/u-dono/clientes/c1', metodo: 'get', naLista: true }),
-  caso({ nome: 'cria cliente na própria base', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
-    caminho: '/usuarios/u-dono/clientes/c1', metodo: 'create', dados: CLIENTE, naLista: true }),
-  caso({ nome: 'edita o próprio cliente', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
-    caminho: '/usuarios/u-dono/clientes/c1', metodo: 'update', dados: CLIENTE, naLista: true }),
-  caso({ nome: 'exclui o próprio cliente', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
-    caminho: '/usuarios/u-dono/clientes/c1', metodo: 'delete', naLista: true }),
-  caso({ nome: 'cria agendamento', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
-    caminho: '/usuarios/u-dono/agendamentos/a1', metodo: 'create', dados: { clientId: 'c1', date: '2026-09-10' }, naLista: true }),
-  caso({ nome: 'cria lançamento', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
-    caminho: '/usuarios/u-dono/lancamentos/t1', metodo: 'create', dados: { type: 'income', value: 100 }, naLista: true }),
+  // --- Toda pessoa autorizada usa a mesma base da Hiper ---
+  caso({ nome: 'responsável lê cliente da Hiper', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
+    caminho: `${BASE}/clientes/c1`, metodo: 'get', naLista: true }),
+  caso({ nome: 'responsável cria cliente na base da Hiper', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
+    caminho: `${BASE}/clientes/c1`, metodo: 'create', dados: CLIENTE, naLista: true }),
+  caso({ nome: 'responsável edita cliente da Hiper', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
+    caminho: `${BASE}/clientes/c1`, metodo: 'update', dados: CLIENTE, naLista: true }),
+  caso({ nome: 'responsável exclui cliente da Hiper', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
+    caminho: `${BASE}/clientes/c1`, metodo: 'delete', naLista: true }),
+  caso({ nome: 'responsável cria agendamento', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
+    caminho: `${BASE}/agendamentos/a1`, metodo: 'create', dados: { clientId: 'c1', date: '2026-09-10' }, naLista: true }),
+  caso({ nome: 'responsável cria lançamento', esperado: 'ALLOW', uid: 'u-dono', email: 'dono@exemplo.com',
+    caminho: `${BASE}/lancamentos/t1`, metodo: 'create', dados: { type: 'income', value: 100 }, naLista: true }),
+  caso({ nome: 'segunda pessoa autorizada lê a mesma base', esperado: 'ALLOW', uid: 'u-equipe', email: 'equipe@exemplo.com',
+    caminho: `${BASE}/clientes/c1`, metodo: 'get', naLista: true }),
+  caso({ nome: 'segunda pessoa autorizada grava na mesma base', esperado: 'ALLOW', uid: 'u-equipe', email: 'equipe@exemplo.com',
+    caminho: `${BASE}/clientes/c1`, metodo: 'update', dados: CLIENTE, naLista: true }),
+  caso({ nome: 'segunda pessoa autorizada exclui na mesma base', esperado: 'ALLOW', uid: 'u-equipe', email: 'equipe@exemplo.com',
+    caminho: `${BASE}/clientes/c1`, metodo: 'delete', naLista: true }),
 
   // --- Autenticou com Google, mas não está na lista ---
-  caso({ nome: 'NÃO lê nada, nem na própria base', esperado: 'DENY', uid: 'u-fora', email: 'estranho@exemplo.com',
-    caminho: '/usuarios/u-fora/clientes/c1', metodo: 'get', naLista: false }),
-  caso({ nome: 'NÃO cria nada', esperado: 'DENY', uid: 'u-fora', email: 'estranho@exemplo.com',
-    caminho: '/usuarios/u-fora/clientes/c1', metodo: 'create', dados: CLIENTE, naLista: false }),
-  caso({ nome: 'NÃO exclui nada', esperado: 'DENY', uid: 'u-fora', email: 'estranho@exemplo.com',
-    caminho: '/usuarios/u-fora/clientes/c1', metodo: 'delete', naLista: false }),
+  caso({ nome: 'não autorizado NÃO lê a base da Hiper', esperado: 'DENY', uid: 'u-fora', email: 'estranho@exemplo.com',
+    caminho: `${BASE}/clientes/c1`, metodo: 'get', naLista: false }),
+  caso({ nome: 'não autorizado NÃO cria na base da Hiper', esperado: 'DENY', uid: 'u-fora', email: 'estranho@exemplo.com',
+    caminho: `${BASE}/clientes/c1`, metodo: 'create', dados: CLIENTE, naLista: false }),
+  caso({ nome: 'não autorizado NÃO exclui da base da Hiper', esperado: 'DENY', uid: 'u-fora', email: 'estranho@exemplo.com',
+    caminho: `${BASE}/clientes/c1`, metodo: 'delete', naLista: false }),
 
-  // --- Isolamento entre contas, mesmo entre autorizados ---
-  caso({ nome: 'autorizado NÃO lê a base de outra conta', esperado: 'DENY', uid: 'u-outro', email: 'equipe@exemplo.com',
+  // --- Nenhuma conta alcança uma base fora do caminho oficial ---
+  caso({ nome: 'autorizado NÃO lê base paralela', esperado: 'DENY', uid: 'u-dono', email: 'dono@exemplo.com',
     caminho: '/usuarios/u-dono/clientes/c1', metodo: 'get', naLista: true }),
-  caso({ nome: 'autorizado NÃO grava na base de outra conta', esperado: 'DENY', uid: 'u-outro', email: 'equipe@exemplo.com',
+  caso({ nome: 'autorizado NÃO grava em base paralela', esperado: 'DENY', uid: 'u-dono', email: 'dono@exemplo.com',
     caminho: '/usuarios/u-dono/clientes/c1', metodo: 'update', dados: CLIENTE, naLista: true }),
-  caso({ nome: 'autorizado NÃO exclui da base de outra conta', esperado: 'DENY', uid: 'u-outro', email: 'equipe@exemplo.com',
+  caso({ nome: 'autorizado NÃO exclui em base paralela', esperado: 'DENY', uid: 'u-dono', email: 'dono@exemplo.com',
     caminho: '/usuarios/u-dono/clientes/c1', metodo: 'delete', naLista: true }),
 
   // --- A lista de autorizados ---
@@ -131,15 +139,17 @@ const CASOS = [
 
   // --- Sem login ---
   caso({ nome: 'visitante não lê os dados', esperado: 'DENY',
-    caminho: '/usuarios/u-dono/clientes/c1', metodo: 'get' }),
+    caminho: `${BASE}/clientes/c1`, metodo: 'get' }),
   caso({ nome: 'visitante não lê a lista de autorizados', esperado: 'DENY',
     caminho: '/autorizados/dono@exemplo.com', metodo: 'get' }),
-  caso({ nome: 'visitante não grava nada', esperado: 'DENY',
+  caso({ nome: 'visitante envia autocadastro para a Hiper', esperado: 'ALLOW',
+    caminho: `${BASE}/clientes/c1`, metodo: 'create', dados: CLIENTE }),
+  caso({ nome: 'visitante NÃO grava em base paralela', esperado: 'DENY',
     caminho: '/usuarios/u-dono/clientes/c1', metodo: 'create', dados: CLIENTE }),
 
   // --- Coleção fora das previstas ---
   caso({ nome: 'não cria em coleção não prevista', esperado: 'DENY', uid: 'u-dono', email: 'dono@exemplo.com',
-    caminho: '/usuarios/u-dono/secreta/s1', metodo: 'create', dados: { a: '1' }, naLista: true }),
+    caminho: `${BASE}/secreta/s1`, metodo: 'create', dados: { a: '1' }, naLista: true }),
   caso({ nome: 'raiz do banco permanece fechada', esperado: 'DENY', uid: 'u-dono', email: 'dono@exemplo.com',
     caminho: '/qualquer/coisa', metodo: 'get', naLista: true })
 ];

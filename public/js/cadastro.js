@@ -12,11 +12,11 @@ function showError(msg) {
 
 document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const adminUid = urlParams.get('u');
+  const empresaUid = urlParams.get('u');
   
   const form = document.getElementById('cadastroForm');
   
-  if (!adminUid) {
+  if (!empresaUid) {
     showError("Link de cadastro inválido. Falta a identificação do sistema.");
     form.style.display = 'none';
     return;
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         createdAt: serverTimestamp()
       };
       
-      await addDoc(collection(db, 'usuarios', adminUid, 'clientes'), clientData);
+      await addDoc(collection(db, 'usuarios', empresaUid, 'clientes'), clientData);
       
       form.style.display = 'none';
       document.getElementById('brandHeader').style.display = 'none';
