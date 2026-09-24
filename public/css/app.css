@@ -133,15 +133,15 @@ main { padding: 26px 30px 50px; }
 .panel-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
 .panel-heading .overline { display: block; margin-bottom: 5px; }
 .stack-list { display: grid; gap: 10px; }
-.list-item { display: flex; align-items: center; gap: 16px; padding: 14px 16px; background: #f8fafc; border: 1px solid #edf1f6; border-radius: 14px; text-align: left; }
-.list-time { flex: 0 0 92px; display: flex; flex-direction: column; justify-content: center; gap: 3px; color: var(--blue); text-align: left; }
+.list-item { display: flex; align-items: center; gap: 16px; width: 100%; padding: 14px 16px; background: #f8fafc; border: 1px solid #edf1f6; border-radius: 14px; text-align: left; box-sizing: border-box; }
+.list-time { flex: 0 0 85px; display: flex; flex-direction: column; justify-content: center; gap: 3px; color: var(--blue); text-align: left; }
 .list-time strong { display: block; font-size: 15px; font-weight: 800; line-height: 1.2; }
 .list-time span { display: block; font-size: 12px; font-weight: 600; color: var(--muted); line-height: 1.2; }
 .list-main { min-width: 0; flex: 1; }
 .list-main strong, .list-main span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .list-main strong { font-size: 15px; font-weight: 700; }
 .list-main span { margin-top: 4px; color: var(--muted); font-size: 13px; }
-.list-value { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; font-size: 15px; font-weight: 800; white-space: nowrap; }
+.list-value { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; font-size: 15px; font-weight: 800; white-space: nowrap; flex-shrink: 0; }
 .whats-link { display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; color: #159b63; background: #eaf8f0; font-size: 18px; text-decoration: none; transition: .2s ease; }
 .whats-link:hover { background: #159b63; color: #fff; transform: scale(1.05); }
 .compact .list-item { padding: 10px 12px; }
@@ -346,6 +346,13 @@ td.expense { color: var(--danger); font-weight: 800; }
   .month-day .day-number { font-size: 12px; margin-bottom: 4px; }
   .month-day.today .day-number { width: 22px; height: 22px; }
   .month-event { padding: 3px; font-size: 10px; letter-spacing: -0.2px; }
+
+  .list-item { padding: 12px 10px; gap: 8px; }
+  .list-time { flex: 0 0 60px; }
+  .list-time strong { font-size: 14px; }
+  .list-main strong { font-size: 14px; }
+  .list-value { font-size: 14px; }
+  .badge { padding: 3px 6px; font-size: 10px; }
 }
 
 /* ----------------------------------------------------- Tela de acesso -- */
