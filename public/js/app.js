@@ -600,8 +600,10 @@ function renderAuth() {
     ? '<i class="fa-solid fa-flask"></i> Demonstração'
     : `<i class="fa-solid fa-cloud"></i> ${esc(store.usuario?.email || 'Conta conectada')}`;
   document.getElementById('modeBadge').className = `mode-badge ${demo ? 'demo' : 'cloud'}`;
-  document.getElementById('demoPanel').hidden = !demo;
-  document.getElementById('cloudPanel').hidden = demo;
+  const demoPanel = document.getElementById('demoPanel');
+  if (demoPanel) demoPanel.hidden = !demo;
+  const cloudPanel = document.getElementById('cloudPanel');
+  if (cloudPanel) cloudPanel.hidden = demo;
   document.getElementById('accountEmail').textContent = store.usuario?.email || '-';
   document.getElementById('accountName').textContent = store.usuario?.displayName || 'Sem nome definido';
   renderProfile(demo);
