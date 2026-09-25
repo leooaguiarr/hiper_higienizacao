@@ -442,6 +442,38 @@ async function handleAppointmentSubmit(event) {
   const values = Object.fromEntries(new FormData(event.currentTarget));
   const dados = { ...values, duration:Number(values.duration), value:parseCurrency(values.value) };
   const emEdicao = editando;
+
+  // Validação: data/hora no passado
+  const apptDate = parseDate(dados.date);
+  const [hours, minutes] = dados.time.split(':').map(Number);
+  apptDate.setHours(hours, minutes, 0, 0);
+  
+  const dataHoraAlterada = !emEdicao || emEdicao.date !== dados.date || emEdicao.time !== dados.time;
+  if (dataHoraAlterada && apptDate < new Date()) {
+    toast('Não é possível agendar em uma data ou horário que já passou.');
+    return;
+  }
+
+  // Validação: conflito de horário (sobreposição)
+  const inicioNovo = apptDate.getTime();
+  const fimNovo = inicioNovo + (dados.duration * 60000);
+
+  const conflito = state().appointments.find(a => {
+    if (a.id === emEdicao?.id) return false;
+    if (a.date !== dados.date) return false;
+    
+    const [h, m] = a.time.split(':').map(Number);
+    const inicioExistente = new Date(apptDate).setHours(h, m, 0, 0);
+    const fimExistente = inicioExistente + (a.duration * 60000);
+    
+    return inicioNovo < fimExistente && fimNovo > inicioExistente;
+  });
+
+  if (conflito) {
+    toast('Já existe um agendamento conflitante neste horário.');
+    return;
+  }
+
   closeModal();
 
   if (emEdicao) {
