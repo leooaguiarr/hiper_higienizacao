@@ -235,12 +235,17 @@ async function main() {
   console.log(JSON.stringify(agenda, null, 2));
 
   // Abrir detalhe de uma OS
+  await enviar('Emulation.setDeviceMetricsOverride', { width: 1200, height: 820, deviceScaleFactor: 1, mobile: false });
+  await esperar(300);
   const detalhe = await avaliar(`(() => {
     const botao = document.querySelector('#orderList [data-detail]');
     if (!botao) return 'sem ordens';
     const item = window.__store.state.appointments.find(appointment => appointment.id === botao.dataset.detail);
     botao.click();
     const aberto = document.getElementById('modalBackdrop').classList.contains('open');
+    const modal = document.querySelector('#modalBackdrop .modal');
+    const conteudoCabeNaTela = modal.scrollHeight <= modal.clientHeight + 1;
+    const barraVisualOculta = getComputedStyle(modal).scrollbarWidth === 'none';
     const titulo = document.getElementById('modalTitle').textContent;
     const acoes = document.querySelectorAll('[data-set-status]').length;
     const statusSelecionado = document.querySelector('[data-set-status].is-active');
@@ -253,11 +258,15 @@ async function main() {
       && form.querySelector('button[type="submit"]').textContent === 'Salvar nova data'
       && form.elements.status.value === 'scheduled';
     document.getElementById('modalClose').click();
-    return { aberto, titulo, acoes, statusAtualMarcado, temBotaoRemarcar:!!botaoRemarcar, remarcacaoAbriu };
+    return {
+      aberto, titulo, acoes, statusAtualMarcado, temBotaoRemarcar:!!botaoRemarcar, remarcacaoAbriu,
+      conteudoCabeNaTela,
+      barraVisualOculta
+    };
   })()`);
   console.log('\n=== DETALHE DA OS ===');
   console.log(JSON.stringify(detalhe, null, 2));
-  if (!detalhe.aberto || detalhe.acoes !== 5 || !detalhe.statusAtualMarcado || !detalhe.temBotaoRemarcar || !detalhe.remarcacaoAbriu) {
+  if (!detalhe.aberto || detalhe.acoes !== 5 || !detalhe.statusAtualMarcado || !detalhe.temBotaoRemarcar || !detalhe.remarcacaoAbriu || !detalhe.conteudoCabeNaTela || !detalhe.barraVisualOculta) {
     erros.push('status atual ou fluxo de remarcação da OS não funcionou corretamente');
   }
 

@@ -621,6 +621,7 @@ function openForm(type, id = null) {
     updateServiceCategoryFields(form);
   }
   if (type === 'client') updateClientDocumentFields(form);
+  document.querySelector('#modalBackdrop .modal').dataset.kind = 'form';
   openModal();
 }
 function openDetail(eyebrow,title,html) {
@@ -628,7 +629,9 @@ function openDetail(eyebrow,title,html) {
   document.getElementById('modalTitle').textContent = title;
   document.getElementById('modalClientInvite').hidden = true;
   document.querySelectorAll('.modal-form, #guideContent').forEach(element => element.hidden = true);
-  const detail = document.getElementById('detailContent'); detail.hidden = false; detail.innerHTML = html; openModal();
+  const detail = document.getElementById('detailContent'); detail.hidden = false; detail.innerHTML = html;
+  document.querySelector('#modalBackdrop .modal').dataset.kind = 'detail';
+  openModal();
 }
 function openGuide() {
   document.getElementById('modalEyebrow').textContent = 'AJUDA';
@@ -637,6 +640,7 @@ function openGuide() {
   document.querySelectorAll('.modal-form, #detailContent').forEach(element => element.hidden = true);
   document.getElementById('guideContent').hidden = false;
   document.getElementById('guideDontShow').checked = localStorage.getItem(GUIDE_HIDDEN_KEY) === '1';
+  document.querySelector('#modalBackdrop .modal').dataset.kind = 'guide';
   openModal();
 }
 function maybeOpenGuide() {
