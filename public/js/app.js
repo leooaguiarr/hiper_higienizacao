@@ -23,6 +23,11 @@ const ICONS = {
   sofa: 'fa-couch', chair: 'fa-chair', mattress: 'fa-bed', rug: 'fa-rug',
   shield: 'fa-shield-halved', pet: 'fa-paw', baby: 'fa-baby-carriage', business: 'fa-building'
 };
+const SERVICE_CATEGORY_LABELS = {
+  sofa: 'Sofá', chair: 'Cadeira / Poltrona', mattress: 'Colchão', rug: 'Tapete / Carpete',
+  shield: 'Impermeabilização / Proteção', pet: 'Pet / Manchas e odores', baby: 'Infantil / Carrinhos',
+  business: 'Empresarial / Corporativo', sparkles: 'Geral / Outros'
+};
 
 let currentView = 'dashboard';
 let agendaMode = 'week';
@@ -46,6 +51,9 @@ function clientAddress(client) {
 }
 function serviceRequiresReturn(service) {
   return service?.requiresReturn === true || (service?.requiresReturn == null && service?.icon === 'rug');
+}
+function serviceCategory(service) {
+  return service?.category || SERVICE_CATEGORY_LABELS[service?.icon] || 'Geral / Outros';
 }
 function agendaItems() {
   return state().appointments.flatMap(item => {
@@ -210,6 +218,7 @@ function renderServices() {
         ${badgeHtml}
       </div>
       <h3>${esc(service.name)}</h3>
+      <span class="service-category"><i class="fa-solid fa-tag"></i> ${esc(serviceCategory(service))}</span>
       <p>${esc(service.description || 'Sem descrição operacional cadastrada.')}</p>
       ${serviceRequiresReturn(service) ? `<span class="badge" style="margin-bottom:10px;color:#6941c6;background:#f1ebff"><i class="fa-solid fa-truck-fast"></i>&nbsp; Devolução em ${Number(service.returnDays) || 7} dias</span>` : ''}
       <div class="service-meta">
@@ -476,6 +485,14 @@ function updateServiceReturnFields(form) {
   form.elements.returnDays.required = enabled;
 }
 
+function updateServiceCategoryFields(form) {
+  const custom = form.elements.icon.value === 'custom';
+  document.getElementById('serviceCustomCategory').hidden = !custom;
+  form.elements.customCategory.disabled = !custom;
+  form.elements.customCategory.required = custom;
+  if (!custom) form.elements.customCategory.value = '';
+}
+
 function openForm(type, id = null) {
   let registro = null;
   if (type === 'settings') {
@@ -545,6 +562,7 @@ function openForm(type, id = null) {
       form.elements.returnDays.value = 7;
     }
     form.elements.requiresReturn.onchange = () => updateServiceReturnFields(form);
+    form.elements.icon.onchange = () => updateServiceCategoryFields(form);
   }
   if (registro) {
     preencherForm(form, registro);
@@ -556,10 +574,17 @@ function openForm(type, id = null) {
     if (type === 'service') {
       form.elements.requiresReturn.value = String(serviceRequiresReturn(registro));
       form.elements.returnDays.value = Number(registro.returnDays) || 7;
+      if (registro.category && registro.category !== SERVICE_CATEGORY_LABELS[registro.icon]) {
+        form.elements.icon.value = 'custom';
+        form.elements.customCategory.value = registro.category;
+      }
     }
     if (type === 'service') form.elements.active.value = String(registro.active !== false);
   }
-  if (type === 'service') updateServiceReturnFields(form);
+  if (type === 'service') {
+    updateServiceReturnFields(form);
+    updateServiceCategoryFields(form);
+  }
   openModal();
 }
 function openDetail(eyebrow,title,html) {
@@ -712,14 +737,19 @@ async function handleTransactionSubmit(event) {
 async function handleServiceSubmit(event) {
   event.preventDefault();
   const values = Object.fromEntries(new FormData(event.currentTarget));
+  const customCategory = String(values.customCategory || '').trim();
+  const customIcon = values.icon === 'custom';
   const dados = {
     ...values,
+    icon: customIcon ? 'sparkles' : values.icon,
+    category: customIcon ? customCategory : SERVICE_CATEGORY_LABELS[values.icon],
     duration: Number(values.duration) || 60,
     basePrice: parseCurrency(values.basePrice),
     active: values.active === 'true' || values.active === true,
     requiresReturn: values.requiresReturn === 'true' || values.requiresReturn === true,
     returnDays: Number(values.returnDays) || 7
   };
+  delete dados.customCategory;
   const emEdicao = editando;
   closeModal();
   if (emEdicao) await comFeedback(() => atualizar('services', emEdicao.id, dados), 'Serviço atualizado.');

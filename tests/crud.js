@@ -334,7 +334,9 @@ async function main() {
     await new Promise(r => setTimeout(r, 300));
     const form = document.getElementById('serviceForm');
     form.elements.name.value = 'Higienização de Cortinas';
-    form.elements.icon.value = 'sparkles';
+    form.elements.icon.value = 'custom';
+    form.elements.icon.dispatchEvent(new Event('change'));
+    form.elements.customCategory.value = 'Cortinas / Persianas';
     form.elements.duration.value = 90;
     form.elements.basePrice.value = 180;
     form.elements.active.value = 'true';
@@ -343,10 +345,14 @@ async function main() {
     await new Promise(r => setTimeout(r, 700));
     const criado = window.__store.state.services.find(s => s.name === 'Higienização de Cortinas');
     if (!criado) return { criado: false };
+    const categoriaNoCard = document.querySelector('[data-edit-service="' + criado.id + '"]')
+      ?.closest('.service-card')?.querySelector('.service-category')?.textContent || '';
 
     // Edita o serviço para inativo e altera o valor
     document.querySelector('[data-edit-service="' + criado.id + '"]').click();
     await new Promise(r => setTimeout(r, 300));
+    const categoriaRestaurada = form.elements.icon.value === 'custom'
+      && form.elements.customCategory.value === 'Cortinas / Persianas';
     form.elements.basePrice.value = 210;
     form.elements.active.value = 'false';
     form.elements.requiresReturn.value = 'true';
@@ -365,6 +371,9 @@ async function main() {
     return {
       criado: true,
       adicionou: window.__store.state.services.length >= antes,
+      categoriaPersonalizada: criado.category === 'Cortinas / Persianas' && criado.icon === 'sparkles',
+      categoriaNoCard: categoriaNoCard.includes('Cortinas / Persianas'),
+      categoriaRestaurada,
       editouPreco: editado && Number(editado.basePrice) === 210,
       editouInativo: editado && editado.active === false,
       configurouDevolucao: editado && editado.requiresReturn === true && Number(editado.returnDays) === 5,
@@ -374,6 +383,9 @@ async function main() {
   })()`);
   console.log('\n=== CRUD DE SERVIÇOS ===');
   conferir('serviço criado no catálogo', servicoTeste.criado === true);
+  conferir('categoria personalizada salva', servicoTeste.categoriaPersonalizada === true);
+  conferir('categoria personalizada exibida no card', servicoTeste.categoriaNoCard === true);
+  conferir('categoria personalizada restaurada na edição', servicoTeste.categoriaRestaurada === true);
   conferir('serviço editado (preço)', servicoTeste.editouPreco === true);
   conferir('serviço editado (inativo)', servicoTeste.editouInativo === true);
   conferir('serviço configurado com prazo de devolução', servicoTeste.configurouDevolucao === true);
