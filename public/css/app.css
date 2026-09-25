@@ -597,7 +597,8 @@ td.expense { color: var(--danger); font-weight: 800; }
 .guide-preference input { flex: 0 0 auto; margin-top: 1px; accent-color: var(--blue); }
 .guide-actions a { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .status-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
-.status-actions button { padding: 9px 12px; color: var(--ink); background: #f1f5f9; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; font-weight: 700; }
+.status-actions button { display: inline-flex; align-items: center; gap: 6px; padding: 9px 12px; color: var(--ink); background: #f1f5f9; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; font-weight: 700; }
+.status-actions button.is-active { color: #fff; background: var(--status); border-color: var(--status); box-shadow: 0 5px 14px color-mix(in srgb,var(--status) 26%,transparent); cursor: default; opacity: 1; }
 .toast { position: fixed; z-index: 100; left: 50%; bottom: -70px; transform: translateX(-50%); padding: 12px 18px; color: #fff; background: #122843; border-radius: 11px; box-shadow: 0 12px 35px rgba(0,0,0,.22); font-size: 13px; font-weight: 700; transition: bottom .25s ease; }
 .toast.show { bottom: 24px; }
 
@@ -895,6 +896,7 @@ td.expense { color: var(--danger); font-weight: 800; }
 /* Editar ocupa o espaco; excluir fica compacto, para a acao destrutiva nao
    competir em peso com a acao comum. */
 .detail-actions .secondary-button { flex: 1; min-width: 140px; }
+.detail-actions .reschedule-button { color: var(--blue); background: var(--blue-soft); border-color: #cfe4fb; }
 .detail-actions .danger-button { flex: 0 0 auto; margin-top: 0; color: var(--danger); background: #fdeced; }
 .detail-actions .danger-button:hover { color: #fff; background: var(--danger); }
 /* .icon-button e display:grid, entao sem flex os botoes empilhariam. */

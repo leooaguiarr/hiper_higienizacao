@@ -201,6 +201,37 @@ async function main() {
   conferir('pagamento voltou para pendente', voltaPendente.pagamento === 'pending');
   conferir('receita correspondente removida', voltaPendente.receitaRemovida === true);
 
+  // --- Remarcar atendimento: nova data, volta para agendado e nova confirmação ---
+  const remarcacao = await avaliar(`(async () => {
+    const id = '${viraPago.id}';
+    document.querySelector('.nav-item[data-view="ordens"]').click();
+    document.querySelector('[data-detail="' + id + '"]').click();
+    document.querySelector('[data-reschedule-appointment]').click();
+    const form = document.getElementById('appointmentForm');
+    const modoCorreto = document.getElementById('modalTitle').textContent === 'Alterar data do atendimento'
+      && form.elements.status.value === 'scheduled';
+    form.elements.date.value = '2099-12-20';
+    form.elements.time.value = '07:00';
+    form.elements.date.dispatchEvent(new Event('change'));
+    form.requestSubmit();
+    await new Promise(r => setTimeout(r, 1000));
+    const atualizado = window.__store.state.appointments.find(a => a.id === id);
+    const pediuConfirmacao = document.getElementById('modalTitle').textContent === 'Enviar confirmação?';
+    document.getElementById('whatsappDismiss')?.click();
+    return {
+      modoCorreto,
+      data: atualizado.date,
+      hora: atualizado.time,
+      status: atualizado.status,
+      pediuConfirmacao
+    };
+  })()`);
+  console.log('\n=== REMARCAR ATENDIMENTO ===');
+  conferir('modo de remarcação abriu corretamente', remarcacao.modoCorreto === true);
+  conferir('nova data e horário foram salvos', remarcacao.data === '2099-12-20' && remarcacao.hora === '07:00');
+  conferir('remarcação voltou o status para agendado', remarcacao.status === 'scheduled');
+  conferir('remarcação ofereceu nova confirmação', remarcacao.pediuConfirmacao === true);
+
   // --- Editar lançamento pela tabela do financeiro ---
   const edicaoLancamento = await avaliar(`(async () => {
     document.querySelector('.nav-item[data-view="financeiro"]').click();

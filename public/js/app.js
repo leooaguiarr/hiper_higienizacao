@@ -325,10 +325,26 @@ function showAppointmentDetail(id) {
   const returnDetail = item.returnDate && item.returnTime
     ? `<div><span>Devolução prevista</span><strong>${dateFmt.format(parseDate(item.returnDate))} · ${item.returnTime}</strong></div>`
     : '';
-  openDetail('ORDEM DE SERVIÇO', `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>Data e horário</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div>${returnDetail}<div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || 'Não informado')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" ${item.status===key?'disabled':''}>${label}</button>`).join('')}</div><div class="detail-actions">${whatsButton}<button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
+  openDetail('ORDEM DE SERVIÇO', `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>Data e horário</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div>${returnDetail}<div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || 'Não informado')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" class="${item.status===key?'is-active':''}" style="--status:var(--${key})" aria-pressed="${item.status===key}" ${item.status===key?'disabled':''}>${item.status===key?'<i class="fa-solid fa-check"></i> ':''}${label}</button>`).join('')}</div><div class="detail-actions">${whatsButton}<button type="button" class="secondary-button reschedule-button" data-reschedule-appointment="${item.id}"><i class="fa-regular fa-calendar-days"></i> Alterar data</button><button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
   document.querySelectorAll('[data-set-status]').forEach(button => button.onclick = () => updateAppointmentStatus(item.id, button.dataset.setStatus));
+  document.querySelector('[data-reschedule-appointment]').onclick = () => openAppointmentReschedule(item.id);
   document.querySelector('[data-edit-appointment]').onclick = () => openForm('appointment', item.id);
   document.querySelector('[data-delete-appointment]').onclick = () => excluirAgendamento(item.id);
+}
+
+function openAppointmentReschedule(id) {
+  openForm('appointment', id);
+  if (!editando) return;
+  editando.mode = 'reschedule';
+  const form = document.getElementById('appointmentForm');
+  form.elements.status.value = 'scheduled';
+  document.getElementById('modalEyebrow').textContent = 'REMARCAÇÃO';
+  document.getElementById('modalTitle').textContent = 'Alterar data do atendimento';
+  form.querySelector('button[type="submit"]').textContent = 'Salvar nova data';
+  window.requestAnimationFrame(() => {
+    form.elements.date.focus();
+    form.elements.date.scrollIntoView({ block:'center', behavior:'smooth' });
+  });
 }
 
 function promptWhatsAppConfirmation(id) {
@@ -556,6 +572,7 @@ function openForm(type, id = null) {
     form.elements.date.onchange = () => updateAppointmentReturnFields(form, true);
     if (!registro) {
       form.elements.date.value = localISO(new Date()); form.elements.time.value = '08:00'; form.elements.duration.value = 180;
+      form.elements.status.value = 'scheduled';
       form.elements.serviceId.onchange();
       form.elements.clientId.onchange();
     }
@@ -644,6 +661,7 @@ async function handleAppointmentSubmit(event) {
   const values = Object.fromEntries(new FormData(event.currentTarget));
   const dados = { ...values, duration:Number(values.duration), value:parseCurrency(values.value) };
   const emEdicao = editando;
+  const appointmentBeforeEdit = emEdicao ? state().appointments.find(item => item.id === emEdicao.id) : null;
   const selectedService = getService(dados.serviceId);
   if (!serviceRequiresReturn(selectedService)) {
     dados.returnDate = '';
@@ -655,7 +673,7 @@ async function handleAppointmentSubmit(event) {
   const [hours, minutes] = dados.time.split(':').map(Number);
   apptDate.setHours(hours, minutes, 0, 0);
   
-  const dataHoraAlterada = !emEdicao || emEdicao.date !== dados.date || emEdicao.time !== dados.time;
+  const dataHoraAlterada = !appointmentBeforeEdit || appointmentBeforeEdit.date !== dados.date || appointmentBeforeEdit.time !== dados.time;
   if (dataHoraAlterada && apptDate < new Date()) {
     toast('Não é possível agendar em uma data ou horário que já passou.');
     return;
@@ -716,8 +734,9 @@ async function handleAppointmentSubmit(event) {
         operacoes.push({ tipo:'remover', chave:'transactions', id:receita.id });
       }
       await gravarLote(operacoes);
-    }, 'Atendimento atualizado.');
+    }, emEdicao.mode === 'reschedule' ? 'Agendamento remarcado.' : 'Atendimento atualizado.');
     agendaDate = parseDate(dados.date); renderAgenda(); bindDynamicActions();
+    if (emEdicao.mode === 'reschedule') setTimeout(() => promptWhatsAppConfirmation(emEdicao.id), 100);
     return;
   }
 

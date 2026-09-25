@@ -238,15 +238,28 @@ async function main() {
   const detalhe = await avaliar(`(() => {
     const botao = document.querySelector('#orderList [data-detail]');
     if (!botao) return 'sem ordens';
+    const item = window.__store.state.appointments.find(appointment => appointment.id === botao.dataset.detail);
     botao.click();
     const aberto = document.getElementById('modalBackdrop').classList.contains('open');
     const titulo = document.getElementById('modalTitle').textContent;
     const acoes = document.querySelectorAll('[data-set-status]').length;
+    const statusSelecionado = document.querySelector('[data-set-status].is-active');
+    const statusAtualMarcado = statusSelecionado?.dataset.setStatus === item.status
+      && statusSelecionado?.getAttribute('aria-pressed') === 'true';
+    const botaoRemarcar = document.querySelector('[data-reschedule-appointment]');
+    botaoRemarcar.click();
+    const form = document.getElementById('appointmentForm');
+    const remarcacaoAbriu = document.getElementById('modalTitle').textContent === 'Alterar data do atendimento'
+      && form.querySelector('button[type="submit"]').textContent === 'Salvar nova data'
+      && form.elements.status.value === 'scheduled';
     document.getElementById('modalClose').click();
-    return { aberto, titulo, acoes };
+    return { aberto, titulo, acoes, statusAtualMarcado, temBotaoRemarcar:!!botaoRemarcar, remarcacaoAbriu };
   })()`);
   console.log('\n=== DETALHE DA OS ===');
   console.log(JSON.stringify(detalhe, null, 2));
+  if (!detalhe.aberto || detalhe.acoes !== 5 || !detalhe.statusAtualMarcado || !detalhe.temBotaoRemarcar || !detalhe.remarcacaoAbriu) {
+    erros.push('status atual ou fluxo de remarcação da OS não funcionou corretamente');
+  }
 
   // Cadastro de cliente ponta a ponta
   const cadastro = await avaliar(`(async () => {
@@ -330,6 +343,7 @@ async function main() {
       clientesSincronizados,
       devolucaoVisivel,
       prazoSugerido,
+      statusInicialAgendado: criado?.status === 'scheduled',
       devolucaoSalva: criado?.returnDate === '2100-01-07' && criado?.returnTime === '17:00',
       devolucaoNaAgenda,
       abriu,
@@ -338,7 +352,7 @@ async function main() {
   })()`);
   console.log('\n=== CONVITE DO WHATSAPP ===');
   console.log(JSON.stringify(conviteWhatsApp, null, 2));
-  if (!conviteWhatsApp.criou || !conviteWhatsApp.conviteCadastroVisivel || !conviteWhatsApp.clientesSincronizados || !conviteWhatsApp.devolucaoVisivel || !conviteWhatsApp.prazoSugerido || !conviteWhatsApp.devolucaoSalva || !conviteWhatsApp.devolucaoNaAgenda || !conviteWhatsApp.abriu || !conviteWhatsApp.fechou) {
+  if (!conviteWhatsApp.criou || !conviteWhatsApp.conviteCadastroVisivel || !conviteWhatsApp.clientesSincronizados || !conviteWhatsApp.devolucaoVisivel || !conviteWhatsApp.prazoSugerido || !conviteWhatsApp.statusInicialAgendado || !conviteWhatsApp.devolucaoSalva || !conviteWhatsApp.devolucaoNaAgenda || !conviteWhatsApp.abriu || !conviteWhatsApp.fechou) {
     erros.push('fluxo integrado de cadastro e agendamento não funcionou corretamente');
   }
 
