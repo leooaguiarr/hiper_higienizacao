@@ -96,12 +96,12 @@ function renderDashboard() {
   const recurrent = state().clients.filter(client => clientHistory(client.id).length > 1).length;
   const ticket = completed.length ? completed.reduce((sum,item) => sum + Number(item.value),0) / completed.length : 0;
   const metrics = [
-    ['fa-chart-line', brl.format(revenue), 'Faturamento do mês', '+ operação'],
-    ['fa-circle-check', completed.length, 'Serviços concluídos', `${currentAppointments.length} no mês`],
-    ['fa-user-group', recurrent, 'Clientes recorrentes', `${state().clients.length} cadastrados`],
-    ['fa-receipt', brl.format(ticket), 'Ticket médio', 'serviços concluídos']
+    ['fa-chart-line', brl.format(revenue), 'Faturamento do mês'],
+    ['fa-circle-check', completed.length, 'Serviços concluídos'],
+    ['fa-user-group', recurrent, 'Clientes recorrentes'],
+    ['fa-receipt', brl.format(ticket), 'Ticket médio']
   ];
-  document.getElementById('dashboardMetrics').innerHTML = metrics.map(([icon,value,label,hint]) => `<article class="metric-card"><div class="metric-icon"><i class="fa-solid ${icon}"></i></div><strong>${value}</strong><span>${label}</span><small>${hint}</small></article>`).join('');
+  document.getElementById('dashboardMetrics').innerHTML = metrics.map(([icon,value,label]) => `<article class="metric-card"><div class="metric-icon"><i class="fa-solid ${icon}"></i></div><strong>${value}</strong><span>${label}</span></article>`).join('');
 
   const upcoming = state().appointments
     .filter(item => item.date >= today && item.status !== 'canceled' && item.status !== 'completed')
