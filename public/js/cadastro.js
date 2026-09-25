@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         phone: document.getElementById('clientPhone').value.trim(),
         document: docInput ? docInput.value.trim() : '',
         zip: document.getElementById('clientZip').value.trim(),
-        street: document.getElementById('clientStreet').value.trim(),
+        address: document.getElementById('clientStreet').value.trim(),
         number: document.getElementById('clientNumber').value.trim(),
         complement: document.getElementById('clientComplement').value.trim(),
         neighborhood: document.getElementById('clientNeighborhood').value.trim(),

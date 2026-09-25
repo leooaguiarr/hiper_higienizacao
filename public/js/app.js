@@ -390,7 +390,8 @@ function openForm(type, id = null) {
       if (client) {
         const numStr = client.number ? `, ${client.number}` : '';
         const compStr = client.complement ? ` (${client.complement})` : '';
-        form.elements.address.value = `${client.address}${numStr}${compStr} - ${client.neighborhood}, ${client.city}`;
+        const enderecoRua = client.address || client.street || '';
+        form.elements.address.value = `${enderecoRua}${numStr}${compStr} - ${client.neighborhood || ''}, ${client.city || ''}`;
       }
     };
     if (!registro) {
