@@ -217,6 +217,31 @@ async function main() {
   console.log('\n=== CADASTRO DE CLIENTE ===');
   console.log(JSON.stringify(cadastro, null, 2));
 
+  // Novo agendamento e descarte do convite para enviar a confirmação.
+  const conviteWhatsApp = await avaliar(`(async () => {
+    const antes = window.__store.state.appointments.length;
+    document.querySelector('[data-open="appointment"]').click();
+    const form = document.getElementById('appointmentForm');
+    form.elements.date.value = '2099-12-31';
+    form.elements.time.value = '23:30';
+    form.requestSubmit();
+    await new Promise(r => setTimeout(r, 700));
+    const modal = document.getElementById('modalBackdrop');
+    const botao = document.getElementById('whatsappDismiss');
+    const abriu = modal.classList.contains('open') && !!botao;
+    if (botao) botao.click();
+    return {
+      criou: window.__store.state.appointments.length === antes + 1,
+      abriu,
+      fechou: !modal.classList.contains('open')
+    };
+  })()`);
+  console.log('\n=== CONVITE DO WHATSAPP ===');
+  console.log(JSON.stringify(conviteWhatsApp, null, 2));
+  if (!conviteWhatsApp.criou || !conviteWhatsApp.abriu || !conviteWhatsApp.fechou) {
+    erros.push('botão Agora não do convite do WhatsApp não fechou corretamente');
+  }
+
   // Conclusão de serviço (status + receita + recorrência)
   const conclusao = await avaliar(`(async () => {
     const pendente = window.__store.state.appointments.find(a => a.status !== 'completed' && a.status !== 'canceled');

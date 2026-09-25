@@ -305,13 +305,15 @@ function promptWhatsAppConfirmation(id) {
       <i class="fa-brands fa-whatsapp" style="font-size: 48px; color: var(--success); margin-bottom: 16px;"></i>
       <p style="font-size: 16px; color: var(--ink); margin-bottom: 24px;">Agendamento salvo com sucesso!<br>Deseja avisar o cliente pelo WhatsApp?</p>
       <div class="form-actions" style="justify-content: center; gap: 12px;">
-        <button type="button" class="secondary-button" onclick="closeModal()">Agora não</button>
-        <a target="_blank" rel="noopener noreferrer" href="${link}" class="primary-button" style="background:var(--success); border-color:var(--success);" onclick="closeModal()">
+        <button type="button" class="secondary-button" id="whatsappDismiss">Agora não</button>
+        <a target="_blank" rel="noopener noreferrer" href="${link}" class="primary-button" id="whatsappSend" style="background:var(--success); border-color:var(--success);">
           <i class="fa-brands fa-whatsapp"></i> Enviar mensagem
         </a>
       </div>
     </div>
   `);
+  document.getElementById('whatsappDismiss').addEventListener('click', closeModal);
+  document.getElementById('whatsappSend').addEventListener('click', closeModal);
 }
 function showClientDetail(id) {
   const client = getClient(id); if (!client) return;
