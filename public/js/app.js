@@ -284,6 +284,35 @@ function showAppointmentDetail(id) {
   document.querySelector('[data-edit-appointment]').onclick = () => openForm('appointment', item.id);
   document.querySelector('[data-delete-appointment]').onclick = () => excluirAgendamento(item.id);
 }
+
+function promptWhatsAppConfirmation(id) {
+  const item = state().appointments.find(appointment => appointment.id === id); if (!item) return;
+  const client = getClient(item.clientId), service = getService(item.serviceId);
+  
+  const params = {
+    cliente: clientName(client),
+    servico: service?.name || 'higienização',
+    data: dateFmt.format(parseDate(item.date)),
+    hora: item.time
+  };
+  
+  const config = getSettings();
+  const text = renderTemplate(config.msgConfirmacao, params);
+  const link = whatsappLink(client?.phone, text);
+
+  openDetail('WHATSAPP', 'Enviar confirmação?', `
+    <div style="text-align: center; padding: 20px 0;">
+      <i class="fa-brands fa-whatsapp" style="font-size: 48px; color: var(--success); margin-bottom: 16px;"></i>
+      <p style="font-size: 16px; color: var(--ink); margin-bottom: 24px;">Agendamento salvo com sucesso!<br>Deseja avisar o cliente pelo WhatsApp?</p>
+      <div class="form-actions" style="justify-content: center; gap: 12px;">
+        <button type="button" class="secondary-button" data-close>Agora não</button>
+        <a target="_blank" rel="noopener noreferrer" href="${link}" class="primary-button" style="background:var(--success); border-color:var(--success);" onclick="closeModal()">
+          <i class="fa-brands fa-whatsapp"></i> Enviar mensagem
+        </a>
+      </div>
+    </div>
+  `);
+}
 function showClientDetail(id) {
   const client = getClient(id); if (!client) return;
   const history = clientHistory(id), total = history.reduce((sum,item) => sum + Number(item.value),0);
@@ -504,8 +533,8 @@ async function handleAppointmentSubmit(event) {
     await gravarLote(operacoes);
   }, 'Serviço agendado com sucesso.');
   navigate('agenda'); agendaDate = parseDate(appointment.date); renderAgenda(); bindDynamicActions();
-  // Abre o popup do agendamento recém-criado para facilitar o envio da confirmação pelo WhatsApp
-  setTimeout(() => showAppointmentDetail(appointment.id), 100);
+  // Abre o popup para perguntar se quer enviar WhatsApp
+  setTimeout(() => promptWhatsAppConfirmation(appointment.id), 100);
 }
 async function handleClientSubmit(event) {
   event.preventDefault();
