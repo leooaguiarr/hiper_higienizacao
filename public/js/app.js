@@ -504,6 +504,8 @@ async function handleAppointmentSubmit(event) {
     await gravarLote(operacoes);
   }, 'Serviço agendado com sucesso.');
   navigate('agenda'); agendaDate = parseDate(appointment.date); renderAgenda(); bindDynamicActions();
+  // Abre o popup do agendamento recém-criado para facilitar o envio da confirmação pelo WhatsApp
+  setTimeout(() => showAppointmentDetail(appointment.id), 100);
 }
 async function handleClientSubmit(event) {
   event.preventDefault();
