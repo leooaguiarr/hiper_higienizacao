@@ -342,7 +342,7 @@ function preencherForm(form, registro) {
     const campo = form.elements[chave];
     if (campo && valor !== undefined && valor !== null) {
       if (campo.classList.contains('mask-phone')) campo.value = maskPhone(valor);
-      else if (campo.classList.contains('mask-currency')) campo.value = maskCurrency(valor);
+      else if (campo.classList.contains('mask-currency')) campo.value = maskCurrency(Number(valor).toFixed(2));
       else campo.value = valor;
     }
   });
@@ -384,7 +384,7 @@ function openForm(type, id = null) {
     form.elements.serviceId.innerHTML = servicos.map(service => `<option value="${service.id}">${esc(service.name)}</option>`).join('');
     // Ao trocar o serviço, sugere duração e preço; ao trocar o cliente, o
     // endereço. Só na criação, para não sobrescrever o que já foi ajustado.
-    form.elements.serviceId.onchange = () => { const service = getService(form.elements.serviceId.value); if (service) { form.elements.duration.value = service.duration; form.elements.value.value = service.basePrice; } };
+    form.elements.serviceId.onchange = () => { const service = getService(form.elements.serviceId.value); if (service) { form.elements.duration.value = service.duration; form.elements.value.value = maskCurrency(Number(service.basePrice).toFixed(2)); } };
     form.elements.clientId.onchange = () => { 
       const client = getClient(form.elements.clientId.value); 
       if (client) {
@@ -404,7 +404,7 @@ function openForm(type, id = null) {
     if (!registro) {
       form.elements.icon.value = 'sofa';
       form.elements.duration.value = 120;
-      form.elements.basePrice.value = 150;
+      form.elements.basePrice.value = '150,00';
       form.elements.active.value = 'true';
     }
   }
