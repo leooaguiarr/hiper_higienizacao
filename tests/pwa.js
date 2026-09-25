@@ -196,6 +196,20 @@ async function main() {
   conferir('dados renderizados', offline.clientes > 0 && offline.servicos > 0, `${offline.clientes} clientes, ${offline.servicos} serviços`);
   conferir('agenda renderizada', offline.diasAgenda === 7);
 
+  const lgpdOffline = await avaliar(`(async () => {
+    const [pagina, estilo] = await Promise.all([fetch('/lgpd.html'), fetch('/css/app.css?v=24')]);
+    const [html, css] = await Promise.all([pagina.text(), estilo.text()]);
+    return {
+      pagina: pagina.status,
+      estilo: estilo.status,
+      conteudoCorreto: html.includes('Política de Privacidade e LGPD'),
+      layoutCorreto: css.includes('.privacy-header') && css.includes('.privacy-brand img')
+    };
+  })()`);
+  console.log('\n=== LGPD SEM REDE ===');
+  conferir('página da LGPD veio do cache', lgpdOffline.pagina === 200 && lgpdOffline.conteudoCorreto);
+  conferir('CSS atual da LGPD veio do cache', lgpdOffline.estilo === 200 && lgpdOffline.layoutCorreto);
+
   // O CDP bloqueia o tráfego mas não mexe em navigator.onLine no headless, e
   // é ele que o app observa. Aqui forçamos o mesmo par (propriedade + evento)
   // que o navegador emite de verdade ao perder a rede.

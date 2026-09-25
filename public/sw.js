@@ -7,7 +7,7 @@
 // Suba a VERSAO a cada alteração de arquivo estático: o cache antigo é
 // descartado no activate.
 
-const VERSAO = 'hiper-v32';
+const VERSAO = 'hiper-v33';
 const CACHE_APP = `${VERSAO}-app`;
 const CACHE_EXTERNO = `${VERSAO}-externo`;
 const CACHE_DADOS = 'hiper-dados';
@@ -17,7 +17,7 @@ const CHAVE_LEMBRETES = '/__lembretes';
 const APP_SHELL = [
   '/',
   '/index.html',
-  '/css/app.css',
+  '/css/app.css?v=24',
   '/js/app.js',
   '/js/store.js',
   '/js/seed.js',
@@ -76,13 +76,14 @@ self.addEventListener('fetch', evento => {
   // segurança quando não há conexão.
   if (requisicao.mode === 'navigate') {
     evento.respondWith((async () => {
+      const paginaCache = ['/cadastro.html', '/lgpd.html'].includes(url.pathname) ? url.pathname : '/index.html';
       try {
         const resposta = await fetch(requisicao);
         const cache = await caches.open(CACHE_APP);
-        cache.put('/index.html', resposta.clone());
+        cache.put(paginaCache, resposta.clone());
         return resposta;
       } catch {
-        return (await caches.match('/index.html')) || (await caches.match('/')) || Response.error();
+        return (await caches.match(paginaCache)) || (await caches.match('/index.html')) || (await caches.match('/')) || Response.error();
       }
     })());
     return;
