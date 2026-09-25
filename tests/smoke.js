@@ -368,6 +368,24 @@ async function main() {
     erros.push('dashboard ultrapassa as margens em largura intermediária');
   }
 
+  const botoesServico = await avaliar(`(() => {
+    document.querySelector('.nav-item[data-view="servicos"]').click();
+    const botoes = [...document.querySelector('.service-card .service-actions').querySelectorAll('button')];
+    const caixas = botoes.map(botao => botao.getBoundingClientRect());
+    return {
+      quantidade: botoes.length,
+      mesmaAltura: Math.abs(caixas[0].height - caixas[1].height) < 1,
+      mesmaLargura: Math.abs(caixas[0].width - caixas[1].width) < 1,
+      mesmoTopo: Math.abs(caixas[0].top - caixas[1].top) < 1,
+      semMargemExtra: botoes.every(botao => parseFloat(getComputedStyle(botao).marginTop) === 0)
+    };
+  })()`);
+  console.log('\n=== BOTOES DOS SERVICOS ===');
+  console.log(JSON.stringify(botoesServico, null, 2));
+  if (botoesServico.quantidade !== 2 || !botoesServico.mesmaAltura || !botoesServico.mesmaLargura || !botoesServico.mesmoTopo || !botoesServico.semMargemExtra) {
+    erros.push('botões de editar e excluir serviço estão desalinhados');
+  }
+
   // Responsivo mobile
   await enviar('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await esperar(600);
