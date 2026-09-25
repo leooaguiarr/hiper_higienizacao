@@ -869,7 +869,7 @@ function navigate(view) {
   currentView = view;
   document.querySelectorAll('.view').forEach(section => section.classList.toggle('active', section.id === `view-${view}`));
   document.querySelectorAll('.nav-item, .bottom-nav-item[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === view));
-  const titles = { dashboard:['Operação de hoje','Início'], agenda:['Planejamento de equipes','Agenda de serviços'], clientes:['Relacionamento e recorrência','Clientes'], servicos:['Padrões de atendimento','Catálogo de serviços'], financeiro:['Entradas, despesas e recebimentos','Controle financeiro'], ordens:['Execução em campo','Atendimentos'], configuracoes:['Dados e preferências','Configurações'] };
+  const titles = { dashboard:['Operação de hoje','Início'], agenda:['Planejamento de equipes','Agenda'], clientes:['Relacionamento e recorrência','Clientes'], servicos:['Padrões de atendimento','Catálogo de serviços'], financeiro:['Entradas, despesas e recebimentos','Controle financeiro'], ordens:['Execução em campo','Atendimentos'], configuracoes:['Dados e preferências','Configurações'] };
   if (titles[view]) {
     document.getElementById('eyebrow').textContent = titles[view][0];
     document.getElementById('pageTitle').textContent = titles[view][1];
