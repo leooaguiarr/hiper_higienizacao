@@ -157,6 +157,38 @@ async function main() {
   console.log(JSON.stringify(perfil, null, 2));
   if (!perfil.abriu || !perfil.editarPerfil) erros.push('menu de perfil não abriu corretamente');
 
+  // Guia completo, suporte e preferência salva neste aparelho.
+  const guia = await avaliar(`(async () => {
+    localStorage.removeItem('hiper-guide-hidden');
+    document.getElementById('helpGuideButton').click();
+    const modal = document.getElementById('modalBackdrop');
+    const preferencia = document.getElementById('guideDontShow');
+    const resultado = {
+      abriu: modal.classList.contains('open'),
+      titulo: document.getElementById('modalTitle').textContent.trim(),
+      secoes: document.querySelectorAll('#guideContent .guide-details details').length,
+      telefoneCorreto: document.querySelector('#guideContent .guide-support')?.textContent.includes('(16) 99760-3600'),
+      linkCorreto: document.querySelector('#guideContent .guide-support a')?.href.includes('5516997603600')
+    };
+    preferencia.checked = true;
+    preferencia.dispatchEvent(new Event('change', { bubbles: true }));
+    resultado.preferenciaSalva = localStorage.getItem('hiper-guide-hidden') === '1';
+    document.getElementById('modalClose').click();
+    localStorage.removeItem('hiper-guide-hidden');
+    window.__store.modo = 'nuvem';
+    maybeOpenGuide();
+    await new Promise(resolve => setTimeout(resolve, 500));
+    resultado.aberturaAutomatica = modal.classList.contains('open');
+    document.getElementById('modalClose').click();
+    window.__store.modo = 'demo';
+    return resultado;
+  })()`);
+  console.log('\n=== GUIA RAPIDO ===');
+  console.log(JSON.stringify(guia, null, 2));
+  if (!guia.abriu || guia.titulo !== 'Guia rápido' || guia.secoes < 7 || !guia.telefoneCorreto || !guia.linkCorreto || !guia.preferenciaSalva || !guia.aberturaAutomatica) {
+    erros.push('guia rápido, suporte ou preferência não funcionou corretamente');
+  }
+
   // Navegação entre telas
   const navegacao = await avaliar(`(() => {
     const resultado = {};

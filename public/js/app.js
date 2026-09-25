@@ -28,6 +28,8 @@ let currentView = 'dashboard';
 let agendaMode = 'week';
 let agendaDate = new Date();
 let appointmentClientIds = new Set();
+let guideAutoOpened = false;
+const GUIDE_HIDDEN_KEY = 'hiper-guide-hidden';
 
 const state = () => store.state;
 
@@ -573,7 +575,15 @@ function openGuide() {
   document.getElementById('modalClientInvite').hidden = true;
   document.querySelectorAll('.modal-form, #detailContent').forEach(element => element.hidden = true);
   document.getElementById('guideContent').hidden = false;
+  document.getElementById('guideDontShow').checked = localStorage.getItem(GUIDE_HIDDEN_KEY) === '1';
   openModal();
+}
+function maybeOpenGuide() {
+  if (guideAutoOpened || store.modo !== 'nuvem' || localStorage.getItem(GUIDE_HIDDEN_KEY) === '1') return;
+  guideAutoOpened = true;
+  window.setTimeout(() => {
+    if (!document.getElementById('modalBackdrop').classList.contains('open')) openGuide();
+  }, 350);
 }
 function openModal() { const backdrop = document.getElementById('modalBackdrop'); backdrop.classList.add('open'); backdrop.setAttribute('aria-hidden','false'); }
 function closeModal() { const backdrop = document.getElementById('modalBackdrop'); backdrop.classList.remove('open'); backdrop.setAttribute('aria-hidden','true'); }
@@ -1095,6 +1105,10 @@ async function recarregarApp() {
 document.getElementById('reloadAppButton')?.addEventListener('click', recarregarApp);
 document.getElementById('helpGuideButton')?.addEventListener('click', openGuide);
 document.getElementById('mobileHelpGuideButton')?.addEventListener('click', openGuide);
+document.getElementById('guideDontShow')?.addEventListener('change', event => {
+  if (event.currentTarget.checked) localStorage.setItem(GUIDE_HIDDEN_KEY, '1');
+  else localStorage.removeItem(GUIDE_HIDDEN_KEY);
+});
 window.addEventListener('focus', () => {
   renderAppPanel();
   atualizarStatusSegundoPlano();
@@ -1234,6 +1248,7 @@ aoMudar(() => {
   refreshAppointmentClients(true);
   renderSync();
   renderAppPanel();
+  maybeOpenGuide();
   // Mantém o resumo que o service worker lê para lembrar dos serviços do dia.
   if (store.modo === 'demo' || store.modo === 'nuvem') {
     publicarLembretes(state(), id => clientName(getClient(id)));

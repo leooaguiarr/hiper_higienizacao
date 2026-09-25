@@ -383,9 +383,9 @@
       </nav>
 
       <footer>
-        <button type="button" class="sidebar-footer-btn" id="helpGuideButton" title="Ajuda e suporte">
+        <button type="button" class="sidebar-footer-btn" id="helpGuideButton" title="Abrir guia rápido">
           <i class="fa-regular fa-circle-question"></i>
-          <span>Desenvolvido por <strong>Lexion Consultoria</strong></span>
+          <span><strong>Guia rápido</strong><small>Ajuda e suporte</small></span>
         </button>
       </footer>
     </aside>
@@ -530,50 +530,32 @@
       </form>
       <div id="detailContent" hidden></div>
       <div id="guideContent" hidden>
-        <div style="margin-bottom: 24px;">
-          <h3 style="color:var(--text-light); font-size:11px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">PRIMEIROS PASSOS</h3>
-          <p style="color:var(--muted); font-size:13px; line-height:1.4;">Para aproveitar o Hiper da melhor forma, recomendamos iniciar pelas etapas abaixo:</p>
+        <section class="guide-intro"><span class="guide-icon"><i class="fa-solid fa-compass"></i></span><div><span class="overline">BEM-VINDO À HIPER</span><h3>Seu sistema de operação, do cadastro ao recebimento</h3><p>Comece pelos passos abaixo e consulte os detalhes sempre que precisar.</p></div></section>
+
+        <div class="guide-steps">
+          <article><span>1</span><div><strong>Configure os serviços</strong><small>Serviços → Novo serviço</small><p>Cadastre preço, duração e categoria. Para tapetes ou itens levados para lavagem, ative a devolução e defina o prazo padrão.</p></div></article>
+          <article><span>2</span><div><strong>Cadastre ou convide o cliente</strong><small>Clientes ou Novo agendamento</small><p>Cadastre manualmente com busca automática de CEP ou envie o formulário ao cliente. O cadastro recebido aparece em tempo real no agendamento.</p></div></article>
+          <article><span>3</span><div><strong>Crie o agendamento</strong><small>Botão + no cabeçalho</small><p>Escolha cliente, serviço, equipe, data, pagamento e endereço. O sistema impede conflitos e sugere a devolução quando necessária.</p></div></article>
+          <article><span>4</span><div><strong>Acompanhe a execução</strong><small>Agenda e Atendimentos</small><p>Use as visões de dia, semana ou mês. Abra a OS para confirmar, iniciar, concluir ou cancelar o serviço.</p></div></article>
         </div>
-        
-        <div class="stack-list">
-          <div class="list-item" style="align-items:flex-start">
-            <span class="avatar" style="width:28px;height:28px;font-size:11px;margin-right:4px;">1</span>
-            <div class="list-main">
-              <strong style="font-size:15px; margin-bottom:4px; display:block;">Cadastre os serviços</strong>
-              <span style="font-size:12px; display:inline-block; margin-bottom:8px; padding:2px 8px; background:rgba(255,255,255,0.06); border-radius:4px; border:1px solid rgba(255,255,255,0.05); color:var(--text-light);">Gestão → Serviços</span>
-              <p style="color:var(--muted); font-size:13px; line-height:1.4; white-space:normal;">Defina o nome, valor base e duração média de cada tipo de lavagem. Isso agiliza muito o preenchimento da agenda depois.</p>
-            </div>
-          </div>
-          <div class="list-item" style="align-items:flex-start">
-            <span class="avatar" style="width:28px;height:28px;font-size:11px;margin-right:4px;">2</span>
-            <div class="list-main">
-              <strong style="font-size:15px; margin-bottom:4px; display:block;">Cadastre os clientes</strong>
-              <span style="font-size:12px; display:inline-block; margin-bottom:8px; padding:2px 8px; background:rgba(255,255,255,0.06); border-radius:4px; border:1px solid rgba(255,255,255,0.05); color:var(--text-light);">Gestão → Clientes</span>
-              <p style="color:var(--muted); font-size:13px; line-height:1.4; white-space:normal;">Adicione seus clientes, informando o CEP para autocompletar o endereço. O WhatsApp de cobrança já ficará na ficha do cliente.</p>
-            </div>
-          </div>
-          <div class="list-item" style="align-items:flex-start">
-            <span class="avatar" style="width:28px;height:28px;font-size:11px;margin-right:4px;">3</span>
-            <div class="list-main">
-              <strong style="font-size:15px; margin-bottom:4px; display:block;">Controle a agenda</strong>
-              <span style="font-size:12px; display:inline-block; margin-bottom:8px; padding:2px 8px; background:rgba(255,255,255,0.06); border-radius:4px; border:1px solid rgba(255,255,255,0.05); color:var(--text-light);">Operação → Agenda</span>
-              <p style="color:var(--muted); font-size:13px; line-height:1.4; white-space:normal;">Lance novos agendamentos selecionando os clientes e serviços. Acompanhe e atualize o status para "Em atendimento" ou "Concluído".</p>
-            </div>
-          </div>
-        </div>
-        
-        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction:column; gap:4px; color:var(--muted); font-size:11px;">
-          <span>Desenvolvido por <strong>Lexion Consultoria</strong> · 2026 — <a href="https://lexionconsultoria.com.br" target="_blank" style="color:var(--blue); text-decoration:none;">lexionconsultoria.com.br</a></span>
-          <span>Dúvidas ou suporte: <a href="https://wa.me/5516997603600" target="_blank" style="color:var(--success); text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> (16) 99760-3600</a></span>
-        </div>
-        
-        <div class="form-actions" style="margin-top:24px;">
-          <button type="button" class="primary-button" style="width:100%" data-close>Fechar guia</button>
-        </div>
+
+        <section class="guide-details" aria-label="Funcionalidades do sistema">
+          <details open><summary><i class="fa-solid fa-house"></i> Início e alertas <i class="fa-solid fa-chevron-down"></i></summary><p>O painel resume faturamento, serviços concluídos, recorrência e ticket médio. Também mostra próximos atendimentos, cobranças pendentes, clientes para reativar e serviços sem confirmação.</p></details>
+          <details><summary><i class="fa-regular fa-calendar"></i> Agenda, devoluções e WhatsApp <i class="fa-solid fa-chevron-down"></i></summary><p>Os atendimentos aparecem por horário e status. Devoluções são exibidas em roxo e abrem a mesma ordem de serviço. Após salvar um agendamento, você pode enviar ao cliente a confirmação pronta pelo WhatsApp.</p></details>
+          <details><summary><i class="fa-solid fa-users"></i> Clientes e recorrência <i class="fa-solid fa-chevron-down"></i></summary><p>A ficha reúne contato, endereço, histórico e total gasto. Os atalhos abrem WhatsApp e Maps. Ao concluir serviços, o sistema atualiza a recomendação de retorno para apoiar novos contatos.</p></details>
+          <details><summary><i class="fa-solid fa-clipboard-check"></i> Ordens e financeiro <i class="fa-solid fa-chevron-down"></i></summary><p>Em Atendimentos, pesquise e atualize cada OS. Quando um serviço é marcado como pago, a receita é criada automaticamente; ao voltar para “a receber”, o lançamento vinculado é removido.</p></details>
+          <details><summary><i class="fa-regular fa-bell"></i> Lembretes e notificações <i class="fa-solid fa-chevron-down"></i></summary><p>Em Configurações, ative as notificações. O app mostra o resumo do dia e avisa 30 minutos antes de atendimentos e devoluções. No Android instalado, também tenta verificar em segundo plano; o horário exato depende do sistema do aparelho.</p></details>
+          <details><summary><i class="fa-solid fa-mobile-screen-button"></i> Aplicativo, nuvem e uso offline <i class="fa-solid fa-chevron-down"></i></summary><p>Instale a PWA pelo painel de Configurações. A interface abre sem internet e as alterações são sincronizadas com o Firebase quando a conexão volta. Use “Atualizar aplicativo” para buscar uma nova versão.</p></details>
+          <details><summary><i class="fa-solid fa-gear"></i> Mensagens, perfil e acesso <i class="fa-solid fa-chevron-down"></i></summary><p>Personalize os textos de confirmação, garantia e retorno em Configurações. O menu de perfil permite consultar a conta e sair; somente contas Google autorizadas acessam a operação.</p></details>
+        </section>
+
+        <aside class="guide-support"><i class="fa-brands fa-whatsapp"></i><div><strong>Precisa de ajuda?</strong><span>Suporte: <a href="https://wa.me/5516997603600" target="_blank" rel="noopener noreferrer">(16) 99760-3600</a></span></div></aside>
+        <label class="guide-preference"><input type="checkbox" id="guideDontShow"> <span>Não mostrar este guia automaticamente novamente neste aparelho</span></label>
+        <div class="form-actions guide-actions"><a class="secondary-button" href="https://lexionconsultoria.com.br" target="_blank" rel="noopener noreferrer">Lexion Consultoria</a><button type="button" class="primary-button" data-close>Começar a usar</button></div>
       </div>
     </div>
   </div>
   <div class="toast" id="toast"></div>
-  <script type="module" src="/js/app.js?v=20"></script>
+  <script type="module" src="/js/app.js?v=21"></script>
 </body>
 </html>
