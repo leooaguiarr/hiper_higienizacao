@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="/css/app.css?v=21">
+  <link rel="stylesheet" href="/css/app.css?v=22">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Hiper Higienizações","url":"https://hiper-higienizacoes.web.app/","telephone":"+55 16 99760-3600","email":"hiperhigienizacoesrp@gmail.com","description":"Serviços de limpeza, higienização e impermeabilização de estofados.","areaServed":"Ribeirão Preto e região","sameAs":["https://www.instagram.com/hiperhigienizacoesrp"]}</script>
 </head>
 <body>
@@ -394,13 +394,13 @@
     <div class="content-shell">
       <header class="topbar">
         <button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu" hidden><i class="fa-solid fa-bars"></i></button>
-        <div><p id="eyebrow">Operação de hoje</p><h1 id="pageTitle">Visão geral</h1></div>
+        <div class="topbar-heading"><p id="eyebrow">Operação de hoje</p><h1 id="pageTitle">Visão geral</h1></div>
         <div class="top-actions">
           <span class="sync-badge" id="syncBadge" hidden></span>
           <span class="mode-badge" id="modeBadge"></span>
-          <button class="secondary-button" id="shareClientLinkButton"><i class="fa-brands fa-whatsapp" style="color: #159b63;"></i> Enviar link de cadastro</button>
-          <button class="icon-button" id="notificationButton" aria-label="Ver alertas"><i class="fa-regular fa-bell"></i><span class="notification-dot" id="notificationCount">0</span></button>
-          <button class="primary-button" data-open="appointment"><i class="fa-solid fa-plus"></i> Novo agendamento</button>
+          <button class="secondary-button topbar-action topbar-share" id="shareClientLinkButton" aria-label="Enviar link de cadastro" title="Enviar link de cadastro"><i class="fa-brands fa-whatsapp" style="color: #159b63;"></i><span>Enviar link de cadastro</span></button>
+          <button class="icon-button topbar-action" id="notificationButton" aria-label="Ver alertas" title="Ver alertas"><i class="fa-regular fa-bell"></i><span class="notification-dot" id="notificationCount">0</span></button>
+          <button class="primary-button topbar-action topbar-new" data-open="appointment" aria-label="Novo agendamento" title="Novo agendamento"><i class="fa-solid fa-plus"></i><span>Novo agendamento</span></button>
           <div class="profile-menu" id="profileMenu">
             <button type="button" class="profile-trigger" id="profileButton" aria-label="Abrir perfil" aria-haspopup="true" aria-expanded="false">
               <span class="profile-avatar" id="profileAvatar">

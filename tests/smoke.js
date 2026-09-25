@@ -289,15 +289,29 @@ async function main() {
   // Responsivo mobile
   await enviar('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await esperar(600);
-  const mobile = await avaliar(`(() => ({
-    scrollHorizontal: document.documentElement.scrollWidth > window.innerWidth + 1,
-    larguraDoc: document.documentElement.scrollWidth,
-    janela: window.innerWidth,
-    bottomNavVisivel: getComputedStyle(document.querySelector('.bottom-nav')).display === 'flex',
-    menuOculto: getComputedStyle(document.getElementById('menuButton')).display === 'none'
-  }))()`);
+  const mobile = await avaliar(`(() => {
+    const topbar = document.querySelector('.topbar');
+    const acoes = [...document.querySelectorAll('.topbar-action, .profile-trigger')];
+    const tamanhos = acoes.map(el => {
+      const rect = el.getBoundingClientRect();
+      return [Math.round(rect.width), Math.round(rect.height)];
+    });
+    return {
+      scrollHorizontal: document.documentElement.scrollWidth > window.innerWidth + 1,
+      larguraDoc: document.documentElement.scrollWidth,
+      janela: window.innerWidth,
+      bottomNavVisivel: getComputedStyle(document.querySelector('.bottom-nav')).display === 'flex',
+      menuOculto: getComputedStyle(document.getElementById('menuButton')).display === 'none',
+      cabecalhoContido: topbar.scrollWidth <= topbar.clientWidth,
+      acoesUniformes: tamanhos.every(([largura, altura]) => largura === 40 && altura === 40),
+      indicadorRedundanteOculto: getComputedStyle(document.getElementById('modeBadge')).display === 'none'
+    };
+  })()`);
   console.log('\n=== MOBILE 390px ===');
   console.log(JSON.stringify(mobile, null, 2));
+  if (!mobile.cabecalhoContido || !mobile.acoesUniformes || !mobile.indicadorRedundanteOculto) {
+    erros.push('cabeçalho mobile perdeu alinhamento ou ultrapassou a largura disponível');
+  }
 
   console.log('\n=== ERROS DE CONSOLE ===');
   console.log(erros.length ? erros.join('\n') : 'nenhum');
