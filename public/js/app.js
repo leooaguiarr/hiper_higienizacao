@@ -80,9 +80,9 @@ function buildAlerts() {
   const overdue = state().clients.filter(client => client.nextRecommendation && client.nextRecommendation <= today);
   const unconfirmed = state().appointments.filter(item => item.date >= today && item.status === 'scheduled');
   const alerts = [];
-  if (pending.length) alerts.push({ icon:'fa-money-bill-wave', tone:'warning', title:`${pending.length} recebimento(s) pendente(s)`, text:`Total ${brl.format(pending.reduce((sum,item) => sum + Number(item.value),0))}` });
-  if (overdue.length) alerts.push({ icon:'fa-rotate', tone:'info', title:`${overdue.length} cliente(s) para reativar`, text:'Recomendação de nova higienização vencida' });
-  if (unconfirmed.length) alerts.push({ icon:'fa-calendar-check', tone:'warning', title:`${unconfirmed.length} serviço(s) sem confirmação`, text:'Confirme a rota com os clientes' });
+  if (pending.length) alerts.push({ icon:'fa-money-bill-wave', tone:'warning', title:`${pending.length} recebimento(s) pendente(s)`, text:`Total ${brl.format(pending.reduce((sum,item) => sum + Number(item.value),0))}`, action: 'financeiro' });
+  if (overdue.length) alerts.push({ icon:'fa-rotate', tone:'info', title:`${overdue.length} cliente(s) para reativar`, text:'Recomendação de nova higienização vencida', action: 'clientes' });
+  if (unconfirmed.length) alerts.push({ icon:'fa-calendar-check', tone:'warning', title:`${unconfirmed.length} serviço(s) sem confirmação`, text:'Confirme a rota com os clientes', action: 'agenda' });
   return alerts;
 }
 
@@ -132,7 +132,7 @@ function renderDashboard() {
   renderRevenueChart();
 }
 
-function alertCard(alert) { return `<div class="list-item"><span class="alert-icon ${alert.tone}"><i class="fa-solid ${alert.icon}"></i></span><span class="list-main"><strong>${esc(alert.title)}</strong><span>${esc(alert.text)}</span></span></div>`; }
+function alertCard(alert) { return `<div class="list-item" ${alert.action ? `onclick="navigate('${alert.action}'); closeModal();" style="cursor:pointer;"` : ''}><span class="alert-icon ${alert.tone}"><i class="fa-solid ${alert.icon}"></i></span><span class="list-main"><strong>${esc(alert.title)}</strong><span>${esc(alert.text)}</span></span>${alert.action ? '<i class="fa-solid fa-chevron-right" style="color: var(--muted); margin-left: auto;"></i>' : ''}</div>`; }
 function empty(message) { return `<div class="empty-state"><i class="fa-regular fa-circle-check"></i><br>${esc(message)}</div>`; }
 
 function renderRevenueChart() {
