@@ -253,13 +253,28 @@ async function main() {
     const antes = document.querySelectorAll('#clientGrid .client-card').length;
     document.querySelector('[data-open="client"]').click();
     const form = document.getElementById('clientForm');
+    const camposIguaisAoPublico = !!form.elements.documentType && !!document.getElementById('clientCepSearch')
+      && !form.elements.birthDate && !form.elements.notes;
     form.elements.firstName.value = 'Teste';
     form.elements.lastName.value = 'Headless';
     form.elements.phone.value = '(16) 90000-0000';
-    form.elements.address.value = 'Rua Teste';
+    form.elements.documentType.value = 'cnpj';
+    form.elements.documentType.dispatchEvent(new Event('change'));
+    form.elements.document.value = '12345678000199';
+    form.elements.document.dispatchEvent(new Event('input', { bubbles: true }));
+    const fetchOriginal = window.fetch;
+    window.fetch = async input => String(input).includes('viacep.com.br')
+      ? { json: async () => ({ logradouro:'Rua Teste', bairro:'Centro', localidade:'Ribeirao Preto' }) }
+      : fetchOriginal(input);
+    form.elements.cep.value = '14000000';
+    form.elements.cep.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 100));
+    window.fetch = fetchOriginal;
+    const cepBuscado = form.elements.cep.value === '14000-000'
+      && form.elements.address.value === 'Rua Teste'
+      && form.elements.neighborhood.value === 'Centro'
+      && form.elements.city.value === 'Ribeirao Preto';
     form.elements.number.value = '1';
-    form.elements.neighborhood.value = 'Centro';
-    form.elements.city.value = 'Ribeirao Preto';
     form.requestSubmit();
     await new Promise(r => setTimeout(r, 600));
     const depois = document.querySelectorAll('#clientGrid .client-card').length;
@@ -274,12 +289,15 @@ async function main() {
       antes,
       depois,
       criou: depois === antes + 1,
+      camposIguaisAoPublico,
+      cepBuscado,
+      tipoDocumentoSalvo: criado.documentType === 'cnpj' && criado.document === '12.345.678/0001-99',
       enderecoLegadoOk: endereco.includes('Rua Teste, 1') && !endereco.includes('undefined')
     };
   })()`);
   console.log('\n=== CADASTRO DE CLIENTE ===');
   console.log(JSON.stringify(cadastro, null, 2));
-  if (!cadastro.criou || !cadastro.enderecoLegadoOk) {
+  if (!cadastro.criou || !cadastro.camposIguaisAoPublico || !cadastro.cepBuscado || !cadastro.tipoDocumentoSalvo || !cadastro.enderecoLegadoOk) {
     erros.push('cadastro de cliente ou compatibilidade de endereço legado falhou');
   }
 

@@ -216,7 +216,7 @@ async function main() {
   conferir('agenda renderizada', offline.diasAgenda === 7);
 
   const lgpdOffline = await avaliar(`(async () => {
-    const [pagina, estilo] = await Promise.all([fetch('/lgpd.html'), fetch('/css/app.css?v=24')]);
+    const [pagina, estilo] = await Promise.all([fetch('/lgpd.html'), fetch('/css/app.css?v=26')]);
     const [html, css] = await Promise.all([pagina.text(), estilo.text()]);
     return {
       pagina: pagina.status,

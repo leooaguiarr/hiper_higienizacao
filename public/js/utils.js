@@ -44,6 +44,7 @@ export function maskPhone(value) {
 export function maskCep(value) {
   let v = String(value).replace(/\D/g, '');
   if (v.length > 8) v = v.slice(0, 8);
+  if (v.length > 5) v = `${v.slice(0, 5)}-${v.slice(5)}`;
   return v;
 }
 

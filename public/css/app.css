@@ -552,6 +552,9 @@ td.expense { color: var(--danger); font-weight: 800; }
 .form-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 13px; }
 .form-grid label { display: grid; gap: 6px; color: #4f6075; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .form-grid label.span-2 { grid-column: span 2; }
+.input-with-action { display: flex; gap: 8px; }
+.input-with-action input { flex: 1 1 auto; min-width: 0; }
+.input-with-action button { display: grid; place-items: center; flex: 0 0 44px; min-width: 44px; padding: 0; }
 .form-grid input, .form-grid select, .form-grid textarea { width: 100%; padding: 11px 12px; color: var(--ink); background: #f9fbfd; border: 1px solid #dce5ef; border-radius: 9px; outline: 0; text-transform: none; font-size: 14px; font-weight: 500; letter-spacing: normal; }
 .form-grid small { font-size: 12px; font-weight: 500; text-transform: none; color: var(--muted); letter-spacing: normal; }
 .form-grid input:focus, .form-grid select:focus, .form-grid textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(8,127,245,.08); }

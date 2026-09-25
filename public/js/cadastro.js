@@ -1,5 +1,5 @@
 import { firebaseConfig } from './firebase-config.js';
-import { maskPhone, maskCep, maskCpf, maskCnpj } from './utils.js';
+import { maskPhone, maskCep, maskCpf, maskCnpj } from './utils.js?v=2';
 
 const SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
 
@@ -122,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         firstName: document.getElementById('clientFirstName').value.trim(),
         lastName: document.getElementById('clientLastName').value.trim(),
         phone: document.getElementById('clientPhone').value.trim(),
+        documentType: docType ? docType.value : 'cpf',
         document: docInput ? docInput.value.trim() : '',
         cep: document.getElementById('clientZip').value.trim(),
         address: document.getElementById('clientStreet').value.trim(),

@@ -2,7 +2,7 @@
 // Toda leitura vem de store.state e toda escrita passa pelas funções do
 // store.js, que decidem entre localStorage (demonstração) e Firestore (nuvem).
 
-import { brl, dateFmt, fullDateFmt, monthFmt, localISO, parseDate, addDays, addMonths, startOfWeek, startOfMonth, uid, esc, phoneDigits, cap, whatsappLink, maskPhone, maskCep, maskCpfCnpj, maskCurrency, parseCurrency } from './utils.js';
+import { brl, dateFmt, fullDateFmt, monthFmt, localISO, parseDate, addDays, addMonths, startOfWeek, startOfMonth, uid, esc, phoneDigits, cap, whatsappLink, maskPhone, maskCep, maskCpf, maskCnpj, maskCurrency, parseCurrency } from './utils.js?v=2';
 import {
   store, iniciar, iniciarDemo, entrarComGoogle, sair, irParaLogin,
   criar, atualizar, remover, gravarLote, restaurarDemo, aoMudar, aoErro, mensagemErro
@@ -493,6 +493,15 @@ function updateServiceCategoryFields(form) {
   if (!custom) form.elements.customCategory.value = '';
 }
 
+function updateClientDocumentFields(form, reset = false) {
+  const isCpf = form.elements.documentType.value === 'cpf';
+  const input = form.elements.document;
+  if (reset) input.value = '';
+  input.value = isCpf ? maskCpf(input.value) : maskCnpj(input.value);
+  input.maxLength = isCpf ? 14 : 18;
+  input.placeholder = isCpf ? '000.000.000-00' : '00.000.000/0000-00';
+}
+
 function openForm(type, id = null) {
   let registro = null;
   if (type === 'settings') {
@@ -551,6 +560,13 @@ function openForm(type, id = null) {
       form.elements.clientId.onchange();
     }
   }
+  if (type === 'client') {
+    form.elements.documentType.onchange = () => {
+      updateClientDocumentFields(form, true);
+      form.elements.document.focus();
+    };
+    if (!registro) form.elements.documentType.value = 'cpf';
+  }
   if (type === 'transaction' && !registro) form.elements.date.value = localISO(new Date());
   if (type === 'service') {
     if (!registro) {
@@ -569,6 +585,8 @@ function openForm(type, id = null) {
     if (type === 'client') {
       form.elements.address.value = clientStreet(registro);
       form.elements.cep.value = registro.cep || registro.zip || '';
+      const documentDigits = String(registro.document || '').replace(/\D/g, '');
+      form.elements.documentType.value = registro.documentType || (documentDigits.length > 11 ? 'cnpj' : 'cpf');
     }
     if (type === 'appointment') updateAppointmentReturnFields(form, false);
     if (type === 'service') {
@@ -585,6 +603,7 @@ function openForm(type, id = null) {
     updateServiceReturnFields(form);
     updateServiceCategoryFields(form);
   }
+  if (type === 'client') updateClientDocumentFields(form);
   openModal();
 }
 function openDetail(eyebrow,title,html) {
@@ -1093,21 +1112,34 @@ function toggleSidebar(abrir) {
 document.addEventListener('input', e => {
   if (e.target.classList.contains('mask-phone')) {
     e.target.value = maskPhone(e.target.value);
-  } else if (e.target.classList.contains('mask-cpf')) {
-    e.target.value = maskCpfCnpj(e.target.value);
+  } else if (e.target.classList.contains('mask-document')) {
+    updateClientDocumentFields(e.target.form);
   } else if (e.target.classList.contains('mask-currency')) {
     e.target.value = maskCurrency(e.target.value);
   } else if (e.target.classList.contains('mask-cep')) {
     e.target.value = maskCep(e.target.value);
-    if (e.target.value.length === 9) buscarCep(e.target.value, e.target.form);
+    if (e.target.value.replace(/\D/g, '').length === 8) buscarCep(e.target.value, e.target.form);
+  } else if (e.target.classList.contains('numbers-only')) {
+    e.target.value = e.target.value.replace(/\D/g, '');
   }
 });
 
-async function buscarCep(cep, form) {
+document.getElementById('clientCepSearch')?.addEventListener('click', event => {
+  buscarCep(event.currentTarget.form.elements.cep.value, event.currentTarget.form, true);
+});
+document.getElementById('clientForm')?.elements.cep.addEventListener('keydown', event => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    buscarCep(event.currentTarget.value, event.currentTarget.form, true);
+  }
+});
+
+async function buscarCep(cep, form, showFeedback = false) {
   const digits = cep.replace(/\D/g, '');
-  if (digits.length !== 8) return;
-  
-  const currentCity = form.elements.city?.value;
+  if (digits.length !== 8) {
+    if (showFeedback) toast('CEP deve ter 8 dígitos.');
+    return false;
+  }
   try {
     const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
     const data = await res.json();
@@ -1115,11 +1147,15 @@ async function buscarCep(cep, form) {
       if (form.elements.address) form.elements.address.value = data.logradouro || '';
       if (form.elements.neighborhood) form.elements.neighborhood.value = data.bairro || '';
       if (form.elements.city) form.elements.city.value = data.localidade || '';
-      if (form.elements.address) form.elements.address.focus();
+      if (form.elements.number) form.elements.number.focus();
+      return true;
     }
+    if (showFeedback) toast('CEP não encontrado.');
   } catch (err) {
     console.error('Erro ao buscar CEP', err);
+    if (showFeedback) toast('Não foi possível buscar o CEP.');
   }
+  return false;
 }
 
 async function recarregarApp() {
