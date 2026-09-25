@@ -882,19 +882,19 @@ window.addEventListener('focus', () => {
   }
 });
 
-document.getElementById('resetDemo').addEventListener('click', () => {
-  if (confirm('Restaurar os dados demonstrativos e apagar alterações locais?')) { restaurarDemo(); toast('Demonstração restaurada.'); }
-});
-document.getElementById('goToLogin').addEventListener('click', irParaLogin);
+// document.getElementById('resetDemo').addEventListener('click', () => {
+//   if (confirm('Restaurar os dados demonstrativos e apagar alterações locais?')) { restaurarDemo(); toast('Demonstração restaurada.'); }
+// });
+// document.getElementById('goToLogin').addEventListener('click', irParaLogin);
 async function confirmarSaida() {
   if (confirm('Sair da conta?')) await comFeedback(() => sair());
 }
 document.getElementById('signOut').addEventListener('click', confirmarSaida);
 document.getElementById('profileSignOut')?.addEventListener('click', confirmarSaida);
 document.getElementById('googleButton').addEventListener('click', handleGoogleLogin);
-document.getElementById('demoButton').addEventListener('click', iniciarDemo);
+// document.getElementById('demoButton').addEventListener('click', iniciarDemo);
 document.getElementById('deniedSignOut').addEventListener('click', () => comFeedback(() => sair()));
-document.getElementById('deniedDemo').addEventListener('click', async () => { await sair(); iniciarDemo(); });
+// document.getElementById('deniedDemo').addEventListener('click', async () => { await sair(); iniciarDemo(); });
 
 document.querySelectorAll('[data-service-choice]').forEach(link => link.addEventListener('click', () => {
   const select = document.getElementById('landingServiceSelect');
@@ -1015,7 +1015,7 @@ if (store.configPendente) {
   document.getElementById('configWarning').hidden = false;
   document.getElementById('configHint').hidden = false;
   document.getElementById('authEntrar').hidden = true;
-  document.getElementById('goToLogin').hidden = true;
+//  document.getElementById('goToLogin').hidden = true;
 }
 
 // Pinta o "Verificando acesso..." antes de iniciar: com o Firebase configurado,

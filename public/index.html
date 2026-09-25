@@ -334,7 +334,7 @@
         <small class="auth-hint"><i class="fa-solid fa-shield-halved"></i> Acesso seguro para contas autorizadas</small>
       </div>
 
-      <button type="button" id="demoButton" hidden tabindex="-1" aria-hidden="true">Modo demonstração</button>
+
     </div>
 
     <div class="auth-box" id="deniedBox" hidden>
@@ -348,7 +348,7 @@
       <p class="muted">Se você faz parte da equipe, peça a liberação do seu e-mail ao responsável pelo sistema.</p>
       <div class="settings-actions">
         <button type="button" class="secondary-button" id="deniedSignOut"><i class="fa-solid fa-right-from-bracket"></i> Sair e tentar outra conta</button>
-        <button type="button" class="secondary-button" id="deniedDemo"><i class="fa-solid fa-flask"></i> Ver a demonstração</button>
+
       </div>
     </div>
         <footer class="auth-footer">
@@ -492,7 +492,7 @@
             <article class="panel" id="templatesPanel"><div class="panel-heading"><div><span class="overline">MENSAGENS</span><h3>WhatsApp Automático</h3></div></div><p class="muted">Textos padrão de confirmação, garantia e lembretes enviados aos clientes.</p><div class="settings-actions"><button type="button" class="primary-button" data-open="settings"><i class="fa-brands fa-whatsapp"></i> Editar mensagens</button></div></article>
             <article class="panel" id="notifyPanel"><div class="panel-heading"><div><span class="overline">LEMBRETES</span><h3>Serviços do dia</h3></div></div><p class="muted">Um aviso no celular com os atendimentos do dia e o horário do primeiro. O lembrete é montado no próprio aparelho, sem servidor.</p><div class="auth-notice aviso" id="notifyDeniedAlert" hidden><i class="fa-solid fa-triangle-exclamation"></i><span>Lembretes bloqueados no aparelho. Para reativar, abra os <strong>Ajustes do iPhone &gt; Notificações &gt; Hiper</strong> e ative <strong>Permitir Notificações</strong>.</span></div><div class="settings-actions"><button type="button" class="primary-button" id="notifyButton"><i class="fa-regular fa-bell"></i> Ativar lembretes</button><button type="button" class="secondary-button" id="notifyTest" hidden><i class="fa-solid fa-vial"></i> Testar agora</button></div><dl class="data-list"><div><dt>Permissão</dt><dd id="notifyStatus">-</dd></div><div><dt>Em segundo plano</dt><dd id="notifyBackground">-</dd></div></dl></article>
             <article class="panel" id="appPanel"><div class="panel-heading"><div><span class="overline">APLICATIVO</span><h3>Instalar no celular</h3></div></div><p class="muted" id="installText">Instale a Hiper no celular da equipe para abrir em tela cheia, com ícone próprio, e continuar funcionando sem sinal na casa do cliente.</p><div class="settings-actions"><button type="button" class="primary-button" id="installButton" hidden><i class="fa-solid fa-download"></i> Instalar aplicativo</button><button type="button" class="secondary-button" id="reloadAppButton"><i class="fa-solid fa-arrows-rotate"></i> Atualizar aplicativo</button></div><dl class="data-list"><div><dt>Instalação</dt><dd id="installStatus">-</dd></div><div><dt>Uso offline</dt><dd id="offlineStatus">-</dd></div></dl></article>
-            <article class="panel" id="demoPanel" hidden><div class="panel-heading"><div><span class="overline">DEMONSTRAÇÃO</span><h3>Dados locais</h3></div></div><p class="muted">Você está no modo demonstração: os registros ficam somente neste navegador e nada é enviado para a nuvem. Para trabalhar com dados reais, entre com uma conta do Firebase.</p><p class="auth-notice aviso" id="configHint" hidden><i class="fa-solid fa-triangle-exclamation"></i><span>O Firebase ainda não foi configurado, então só o modo demonstração está disponível. Preencha <code>public/js/firebase-config.js</code> seguindo <code>docs/FIREBASE_SETUP.md</code>.</span></p><div class="settings-actions"><button type="button" class="danger-button" id="resetDemo"><i class="fa-solid fa-rotate-left"></i> Restaurar demonstração</button><button type="button" class="secondary-button" id="goToLogin"><i class="fa-solid fa-right-to-bracket"></i> Entrar com uma conta</button></div></article>
+
             <article class="panel" id="cloudPanel" hidden><div class="panel-heading"><div><span class="overline">CONTA</span><h3>Dados na nuvem</h3></div></div><p class="muted">Esta conta tem acesso à base compartilhada da Hiper, sincronizada em tempo real entre os dispositivos da equipe.</p><dl class="data-list"><div><dt>Nome</dt><dd id="accountName">-</dd></div><div><dt>E-mail</dt><dd id="accountEmail">-</dd></div></dl><div class="settings-actions"><a class="secondary-button" href="https://myaccount.google.com/profile" target="_blank" rel="noopener noreferrer"><i class="fa-regular fa-pen-to-square"></i> Editar perfil Google</a><button type="button" class="danger-button" id="signOut"><i class="fa-solid fa-right-from-bracket"></i> Sair da conta</button></div></article>
           </div>
         </section>
