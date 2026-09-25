@@ -224,11 +224,8 @@ async function escutarColecoes() {
       pendentesDe[chave] = snapshot.metadata.hasPendingWrites;
       store.doCache = Object.values(cacheDe).some(Boolean);
       store.pendentes = Object.values(pendentesDe).some(Boolean);
-      // Base vazia: publica o catálogo padrão para a agenda já nascer utilizável.
-      if (chave === 'services' && snapshot.empty && !snapshot.metadata.fromCache && !semeado) {
-        semeado = true;
-        try { await semearServicos(); } catch (error) { notificarErro(mensagemErro(error)); }
-      }
+      // Removemos o auto-seed para permitir que a base fique vazia
+      // (caso o usuário exclua todos os serviços para recomeçar).
       notificar();
     }, error => notificarErro(mensagemErro(error)));
     ouvintes.push(cancelar);
