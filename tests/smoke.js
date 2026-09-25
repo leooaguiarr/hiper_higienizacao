@@ -304,12 +304,14 @@ async function main() {
       menuOculto: getComputedStyle(document.getElementById('menuButton')).display === 'none',
       cabecalhoContido: topbar.scrollWidth <= topbar.clientWidth,
       acoesUniformes: tamanhos.every(([largura, altura]) => largura === 40 && altura === 40),
-      indicadorRedundanteOculto: getComputedStyle(document.getElementById('modeBadge')).display === 'none'
+      indicadorRedundanteOculto: getComputedStyle(document.getElementById('modeBadge')).display === 'none',
+      conviteCadastroClaro: document.getElementById('shareClientLinkButton').getAttribute('aria-label') === 'Enviar cadastro ao cliente'
+        && document.querySelector('#shareClientLinkButton .fa-address-card') !== null
     };
   })()`);
   console.log('\n=== MOBILE 390px ===');
   console.log(JSON.stringify(mobile, null, 2));
-  if (!mobile.cabecalhoContido || !mobile.acoesUniformes || !mobile.indicadorRedundanteOculto) {
+  if (!mobile.cabecalhoContido || !mobile.acoesUniformes || !mobile.indicadorRedundanteOculto || !mobile.conviteCadastroClaro) {
     erros.push('cabeçalho mobile perdeu alinhamento ou ultrapassou a largura disponível');
   }
 
