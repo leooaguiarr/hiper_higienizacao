@@ -445,6 +445,8 @@ main { padding: 26px 30px 50px; }
 .appointment-card time, .appointment-card strong, .appointment-card span { display: block; }
 .appointment-card time { color: var(--status); font-size: 12px; font-weight: 800; }
 .appointment-card strong { margin: 4px 0 2px; font-size: 13px; font-weight: 700; }
+.appointment-card.return-event { --status: #7c3aed; background: #f5f0ff; border-color: #ded3ff; }
+.month-event.return-event { --status: #7c3aed; }
 .appointment-card span { color: var(--muted); font-size: 12px; }
 .day-list { display: grid; gap: 10px; padding: 16px; }
 .day-list .appointment-card { display: grid; grid-template-columns: 85px 1fr auto; align-items: center; padding: 16px; }
@@ -532,6 +534,13 @@ td.expense { color: var(--danger); font-weight: 800; }
 .modal-heading h2 { margin: 4px 0 0; font-size: 22px; }
 .modal-client-invite { display: inline-flex; align-items: center; gap: 7px; padding: 10px 12px; color: var(--blue); font-size: 12px; white-space: nowrap; }
 .appointment-client-status { padding: 9px 10px; color: #0b5ba8 !important; background: var(--blue-soft); border-radius: 8px; line-height: 1.4; }
+.return-schedule { padding: 14px; background: #f4f0ff; border: 1px solid #ded3ff; border-radius: 12px; }
+.return-schedule-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: #6941c6; }
+.return-schedule-heading i { display: grid; place-items: center; width: 34px; height: 34px; background: #e8ddff; border-radius: 9px; }
+.return-schedule-heading strong, .return-schedule-heading span { display: block; }
+.return-schedule-heading strong { font-size: 13px; }
+.return-schedule-heading span { margin-top: 2px; color: #786b96; font-size: 11px; }
+.return-schedule-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 13px; }
 .form-grid label { display: grid; gap: 6px; color: #4f6075; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .form-grid label.span-2 { grid-column: span 2; }
@@ -613,6 +622,7 @@ td.expense { color: var(--danger); font-weight: 800; }
   .section-actions { flex-direction: column; }
   .form-grid, .detail-grid { grid-template-columns: 1fr; }
   .form-grid label.span-2 { grid-column: auto; }
+  .return-schedule-fields { grid-template-columns: 1fr; }
   .modal { padding: 18px; }
   .modal-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
   .modal-heading-copy { grid-column: 1; grid-row: 1; }

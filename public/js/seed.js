@@ -9,7 +9,7 @@ export const SERVICOS_PADRAO = [
 { id:'svc-sofa', name:'Higienização de sofá', icon:'sofa', duration:180, basePrice:280, active:true, description:'Limpeza profunda, remoção de ácaros, odores e sujeiras sem agredir o tecido.' },
 { id:'svc-chair', name:'Higienização de cadeiras', icon:'chair', duration:120, basePrice:160, active:true, description:'Tratamento para conjuntos residenciais e corporativos, com recuperação de cor e toque.' },
 { id:'svc-mattress', name:'Higienização de colchão', icon:'mattress', duration:120, basePrice:220, active:true, description:'Redução de ácaros, manchas e odores para um ambiente de descanso mais saudável.' },
-{ id:'svc-rug', name:'Tapetes e carpetes', icon:'rug', duration:180, basePrice:190, active:true, description:'Processo adequado à fibra para remover sujeira incrustada e preservar a maciez.' },
+{ id:'svc-rug', name:'Tapetes e carpetes', icon:'rug', duration:180, basePrice:190, active:true, requiresReturn:true, returnDays:7, description:'Processo adequado à fibra para remover sujeira incrustada e preservar a maciez.' },
 { id:'svc-protection', name:'Hiper Proteção Premium', icon:'shield', duration:150, basePrice:350, active:true, description:'Impermeabilização que dificulta a absorção de líquidos sem alterar cor ou textura.' },
 { id:'svc-pet', name:'Remoção de urina de pet', icon:'pet', duration:150, basePrice:250, active:true, description:'Tratamento técnico de manchas e odores de origem orgânica, seguro para o estofado.' },
 { id:'svc-kids', name:"Higienização infantil", icon:'baby', duration:90, basePrice:140, active:true, description:'Carrinhos, cadeirinhas e itens infantis com produtos seguros e hipoalergênicos.' },

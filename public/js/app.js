@@ -42,6 +42,25 @@ function clientAddress(client) {
   const location = [client.neighborhood, client.city].filter(Boolean).join(' - ');
   return [withComplement, location].filter(Boolean).join(', ') || 'Endereço não informado';
 }
+function serviceRequiresReturn(service) {
+  return service?.requiresReturn === true || (service?.requiresReturn == null && service?.icon === 'rug');
+}
+function agendaItems() {
+  return state().appointments.flatMap(item => {
+    const events = [{ ...item, sourceId:item.id, agendaType:'service' }];
+    if (item.returnDate && item.returnTime) {
+      events.push({
+        ...item,
+        sourceId: item.id,
+        agendaType: 'return',
+        date: item.returnDate,
+        time: item.returnTime,
+        duration: 30
+      });
+    }
+    return events;
+  });
+}
 function clientHistory(id) { return state().appointments.filter(item => item.clientId === id && item.status === 'completed').sort((a,b) => b.date.localeCompare(a.date)); }
 function statusBadge(status) { const config = STATUS[status]; return `<span class="badge" style="--status:var(--${config?.[1] || 'muted'})">${esc(config?.[0] || status)}</span>`; }
 
@@ -128,20 +147,23 @@ function weekPeriodLabel() {
 }
 function eventCard(item, month = false) {
   const client = getClient(item.clientId), service = getService(item.serviceId);
-  if (month) return `<button class="month-event ${item.status}" style="--status:var(--${item.status})" data-detail="${item.id}">${item.time} ${esc(client?.firstName || '')}</button>`;
-  return `<button class="appointment-card ${item.status}" data-detail="${item.id}"><time>${item.time} · ${item.duration} min</time><strong>${esc(clientName(client))}</strong><span>${esc(service?.name || '')}</span></button>`;
+  const isReturn = item.agendaType === 'return';
+  const cssClass = isReturn ? 'return-event' : item.status;
+  const label = isReturn ? `Devolução · ${service?.name || 'Serviço'}` : service?.name || '';
+  if (month) return `<button class="month-event ${cssClass}" style="--status:${isReturn ? '#7c3aed' : `var(--${item.status})`}" data-detail="${item.sourceId || item.id}">${item.time} ${isReturn ? '↩ ' : ''}${esc(client?.firstName || '')}</button>`;
+  return `<button class="appointment-card ${cssClass}" data-detail="${item.sourceId || item.id}"><time>${item.time} · ${item.duration} min</time><strong>${esc(clientName(client))}</strong><span>${esc(label)}</span></button>`;
 }
 function renderWeek() {
   const start = startOfWeek(agendaDate), today = localISO(new Date());
   document.getElementById('calendar').innerHTML = `<div class="week-grid">${Array.from({length:7},(_,index) => {
     const date = addDays(start,index), key = localISO(date);
-    const appointments = state().appointments.filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
+    const appointments = agendaItems().filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
     return `<div class="week-day"><div class="day-heading ${key===today?'today':''}"><span>${date.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><strong>${date.getDate()}</strong></div><div class="day-appointments">${appointments.map(item => eventCard(item)).join('') || '<span class="muted">Livre</span>'}</div></div>`;
   }).join('')}</div>`;
 }
 function renderDay() {
   const key = localISO(agendaDate);
-  const appointments = state().appointments.filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
+  const appointments = agendaItems().filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
   document.getElementById('calendar').innerHTML = `<div class="day-list">${appointments.map(item => eventCard(item)).join('') || empty('Nenhum serviço neste dia.')}</div>`;
 }
 function renderMonth() {
@@ -150,7 +172,7 @@ function renderMonth() {
   let html = `<div class="month-grid">${weekdays.map(day => `<div class="month-weekday">${day}</div>`).join('')}`;
   for (let index=0; index<42; index++) {
     const date = addDays(gridStart,index), key = localISO(date);
-    const items = state().appointments.filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
+    const items = agendaItems().filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
     html += `<div class="month-day ${date.getMonth()!==agendaDate.getMonth()?'outside':''} ${key===today?'today':''}"><span class="day-number">${date.getDate()}</span>${items.slice(0,3).map(item => eventCard(item,true)).join('')}${items.length>3?`<span class="muted">+${items.length-3}</span>`:''}</div>`;
   }
   document.getElementById('calendar').innerHTML = `${html}</div>`;
@@ -187,6 +209,7 @@ function renderServices() {
       </div>
       <h3>${esc(service.name)}</h3>
       <p>${esc(service.description || 'Sem descrição operacional cadastrada.')}</p>
+      ${serviceRequiresReturn(service) ? `<span class="badge" style="margin-bottom:10px;color:#6941c6;background:#f1ebff"><i class="fa-solid fa-truck-fast"></i>&nbsp; Devolução em ${Number(service.returnDays) || 7} dias</span>` : ''}
       <div class="service-meta">
         <span><i class="fa-regular fa-clock"></i> ${duracaoTexto}</span>
         <span>A partir de ${brl.format(service.basePrice)}</span>
@@ -288,7 +311,10 @@ function showAppointmentDetail(id) {
     whatsButton = `<a target="_blank" rel="noopener noreferrer" href="${whatsappLink(client?.phone, text)}" class="secondary-button" style="color:var(--success); border-color:var(--success)"><i class="fa-brands fa-whatsapp"></i> Garantia</a>`;
   }
 
-  openDetail('ORDEM DE SERVIÇO', `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>Data e horário</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div><div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || 'Não informado')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" ${item.status===key?'disabled':''}>${label}</button>`).join('')}</div><div class="detail-actions">${whatsButton}<button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
+  const returnDetail = item.returnDate && item.returnTime
+    ? `<div><span>Devolução prevista</span><strong>${dateFmt.format(parseDate(item.returnDate))} · ${item.returnTime}</strong></div>`
+    : '';
+  openDetail('ORDEM DE SERVIÇO', `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>Data e horário</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div>${returnDetail}<div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || 'Não informado')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" ${item.status===key?'disabled':''}>${label}</button>`).join('')}</div><div class="detail-actions">${whatsButton}<button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
   document.querySelectorAll('[data-set-status]').forEach(button => button.onclick = () => updateAppointmentStatus(item.id, button.dataset.setStatus));
   document.querySelector('[data-edit-appointment]').onclick = () => openForm('appointment', item.id);
   document.querySelector('[data-delete-appointment]').onclick = () => excluirAgendamento(item.id);
@@ -421,6 +447,33 @@ function refreshAppointmentClients(announceNewClient = false, force = false) {
   }
 }
 
+function updateAppointmentReturnFields(form, suggestDate = false) {
+  const service = getService(form.elements.serviceId.value);
+  const enabled = serviceRequiresReturn(service);
+  const container = document.getElementById('returnSchedule');
+  container.hidden = !enabled;
+  form.elements.returnDate.disabled = !enabled;
+  form.elements.returnTime.disabled = !enabled;
+  form.elements.returnDate.required = enabled;
+  form.elements.returnTime.required = enabled;
+  if (!enabled) {
+    form.elements.returnDate.value = '';
+    form.elements.returnTime.value = '';
+    return;
+  }
+  if (suggestDate && form.elements.date.value) {
+    form.elements.returnDate.value = localISO(addDays(parseDate(form.elements.date.value), Number(service.returnDays) || 7));
+    form.elements.returnTime.value = '17:00';
+  }
+}
+
+function updateServiceReturnFields(form) {
+  const enabled = form.elements.requiresReturn.value === 'true';
+  document.getElementById('serviceReturnDays').hidden = !enabled;
+  form.elements.returnDays.disabled = !enabled;
+  form.elements.returnDays.required = enabled;
+}
+
 function openForm(type, id = null) {
   let registro = null;
   if (type === 'settings') {
@@ -456,7 +509,14 @@ function openForm(type, id = null) {
     form.elements.serviceId.innerHTML = servicos.map(service => `<option value="${service.id}">${esc(service.name)}</option>`).join('');
     // Ao trocar o serviço, sugere duração e preço; ao trocar o cliente, o
     // endereço. Só na criação, para não sobrescrever o que já foi ajustado.
-    form.elements.serviceId.onchange = () => { const service = getService(form.elements.serviceId.value); if (service) { form.elements.duration.value = service.duration; form.elements.value.value = maskCurrency(Number(service.basePrice).toFixed(2)); } };
+    form.elements.serviceId.onchange = () => {
+      const service = getService(form.elements.serviceId.value);
+      if (service) {
+        form.elements.duration.value = service.duration;
+        form.elements.value.value = maskCurrency(Number(service.basePrice).toFixed(2));
+        updateAppointmentReturnFields(form, true);
+      }
+    };
     form.elements.clientId.onchange = () => { 
       const client = getClient(form.elements.clientId.value); 
       if (client) {
@@ -465,6 +525,7 @@ function openForm(type, id = null) {
     };
     appointmentClientIds = new Set(state().clients.map(client => client.id));
     refreshAppointmentClients(false, true);
+    form.elements.date.onchange = () => updateAppointmentReturnFields(form, true);
     if (!registro) {
       form.elements.date.value = localISO(new Date()); form.elements.time.value = '08:00'; form.elements.duration.value = 180;
       form.elements.serviceId.onchange();
@@ -478,7 +539,10 @@ function openForm(type, id = null) {
       form.elements.duration.value = 120;
       form.elements.basePrice.value = '150,00';
       form.elements.active.value = 'true';
+      form.elements.requiresReturn.value = 'false';
+      form.elements.returnDays.value = 7;
     }
+    form.elements.requiresReturn.onchange = () => updateServiceReturnFields(form);
   }
   if (registro) {
     preencherForm(form, registro);
@@ -486,8 +550,14 @@ function openForm(type, id = null) {
       form.elements.address.value = clientStreet(registro);
       form.elements.cep.value = registro.cep || registro.zip || '';
     }
+    if (type === 'appointment') updateAppointmentReturnFields(form, false);
+    if (type === 'service') {
+      form.elements.requiresReturn.value = String(serviceRequiresReturn(registro));
+      form.elements.returnDays.value = Number(registro.returnDays) || 7;
+    }
     if (type === 'service') form.elements.active.value = String(registro.active !== false);
   }
+  if (type === 'service') updateServiceReturnFields(form);
   openModal();
 }
 function openDetail(eyebrow,title,html) {
@@ -520,6 +590,11 @@ async function handleAppointmentSubmit(event) {
   const values = Object.fromEntries(new FormData(event.currentTarget));
   const dados = { ...values, duration:Number(values.duration), value:parseCurrency(values.value) };
   const emEdicao = editando;
+  const selectedService = getService(dados.serviceId);
+  if (!serviceRequiresReturn(selectedService)) {
+    dados.returnDate = '';
+    dados.returnTime = '';
+  }
 
   // Validação: data/hora no passado
   const apptDate = parseDate(dados.date);
@@ -536,8 +611,8 @@ async function handleAppointmentSubmit(event) {
   const inicioNovo = apptDate.getTime();
   const fimNovo = inicioNovo + (dados.duration * 60000);
 
-  const conflito = state().appointments.find(a => {
-    if (a.id === emEdicao?.id) return false;
+  const conflito = agendaItems().find(a => {
+    if (a.sourceId === emEdicao?.id) return false;
     if (a.date !== dados.date) return false;
     
     const [h, m] = a.time.split(':').map(Number);
@@ -550,6 +625,27 @@ async function handleAppointmentSubmit(event) {
   if (conflito) {
     toast('Já existe um agendamento conflitante neste horário.');
     return;
+  }
+
+  if (dados.returnDate && dados.returnTime) {
+    const returnAt = parseDate(dados.returnDate);
+    const [returnHours, returnMinutes] = dados.returnTime.split(':').map(Number);
+    returnAt.setHours(returnHours, returnMinutes, 0, 0);
+    if (returnAt.getTime() <= fimNovo) {
+      toast('A devolução precisa ser posterior ao término do atendimento.');
+      return;
+    }
+    const returnEnd = returnAt.getTime() + 30 * 60000;
+    const returnConflict = agendaItems().find(item => {
+      if (item.sourceId === emEdicao?.id || item.date !== dados.returnDate) return false;
+      const [h, m] = item.time.split(':').map(Number);
+      const start = new Date(returnAt).setHours(h, m, 0, 0);
+      return returnAt.getTime() < start + item.duration * 60000 && returnEnd > start;
+    });
+    if (returnConflict) {
+      toast('Já existe um compromisso no horário escolhido para a devolução.');
+      return;
+    }
   }
 
   closeModal();
@@ -610,7 +706,9 @@ async function handleServiceSubmit(event) {
     ...values,
     duration: Number(values.duration) || 60,
     basePrice: parseCurrency(values.basePrice),
-    active: values.active === 'true' || values.active === true
+    active: values.active === 'true' || values.active === true,
+    requiresReturn: values.requiresReturn === 'true' || values.requiresReturn === true,
+    returnDays: Number(values.returnDays) || 7
   };
   const emEdicao = editando;
   closeModal();
@@ -1116,6 +1214,12 @@ document.getElementById('notifyTest').addEventListener('click', async () => {
 });
 window.addEventListener('online', () => { renderSync(); renderNetworkBadge(); renderAppPanel(); });
 window.addEventListener('offline', () => { renderSync(); renderNetworkBadge(); renderAppPanel(); });
+window.setInterval(() => {
+  if (permissaoAtual() === 'granted' && document.visibilityState === 'visible') verificarAgora();
+}, 60 * 1000);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && permissaoAtual() === 'granted') verificarAgora();
+});
 
 /* ------------------------------------------------------------- Arranque -- */
 

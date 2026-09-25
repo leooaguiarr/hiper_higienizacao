@@ -7,7 +7,7 @@
 // Suba a VERSAO a cada alteração de arquivo estático: o cache antigo é
 // descartado no activate.
 
-const VERSAO = 'hiper-v27';
+const VERSAO = 'hiper-v28';
 const CACHE_APP = `${VERSAO}-app`;
 const CACHE_EXTERNO = `${VERSAO}-externo`;
 const CACHE_DADOS = 'hiper-dados';
@@ -123,47 +123,71 @@ function hojeISO() {
   return `${agora.getFullYear()}-${mes}-${dia}`;
 }
 
-async function notificarDoDia() {
+async function verificarLembretes() {
   const dados = await lerLembretes();
   if (!dados || !Array.isArray(dados.agendamentos)) return;
 
   const hoje = hojeISO();
-  if (dados.ultimoAviso === hoje) return;
-
   const doDia = dados.agendamentos
-    .filter(item => item.date === hoje && item.status !== 'canceled' && item.status !== 'completed')
+    .filter(item => item.date === hoje && item.status !== 'canceled' && (item.tipo === 'devolucao' || item.status !== 'completed'))
     .sort((a, b) => a.time.localeCompare(b.time));
-  if (!doDia.length) return;
 
-  const primeiro = doDia[0];
-  const titulo = doDia.length === 1
-    ? `1 serviço hoje, às ${primeiro.time}`
-    : `${doDia.length} serviços hoje, a partir das ${primeiro.time}`;
-  const corpo = doDia.slice(0, 3).map(item => `${item.time} · ${item.cliente} - ${item.endereco || ''}`.trim()).join('\n');
+  if (doDia.length && dados.ultimoAviso !== hoje) {
+    const primeiro = doDia[0];
+    const titulo = doDia.length === 1
+      ? `1 compromisso hoje, às ${primeiro.time}`
+      : `${doDia.length} compromissos hoje, a partir das ${primeiro.time}`;
+    const corpo = doDia.slice(0, 3).map(item => `${item.time} · ${item.tipo === 'devolucao' ? 'Devolução · ' : ''}${item.cliente}`).join('\n');
+    await self.registration.showNotification(titulo, {
+      body: corpo,
+      icon: '/assets/icon-192.png',
+      badge: '/assets/icon-192.png',
+      tag: 'hiper-agenda-do-dia',
+      renotify: false,
+      data: { url: '/?tela=agenda' }
+    });
+    dados.ultimoAviso = hoje;
+  }
 
-  await self.registration.showNotification(titulo, {
-    body: corpo,
-    icon: '/assets/icon-192.png',
-    badge: '/assets/icon-192.png',
-    tag: 'hiper-agenda-do-dia',
-    renotify: false,
-    data: { url: '/?tela=agenda' }
+  const agora = Date.now();
+  const antecedencia = 30 * 60 * 1000;
+  const avisosEnviados = dados.avisosEnviados || {};
+  const proximos = dados.agendamentos.filter(item => {
+    if (item.status === 'canceled' || (item.tipo !== 'devolucao' && item.status === 'completed')) return false;
+    const horario = new Date(`${item.date}T${item.time}:00`).getTime();
+    return horario >= agora && horario - agora <= antecedencia && !avisosEnviados[item.id];
   });
 
+  for (const item of proximos) {
+    const devolucao = item.tipo === 'devolucao';
+    await self.registration.showNotification(
+      devolucao ? `Devolução às ${item.time}` : `Atendimento às ${item.time}`,
+      {
+        body: `${item.cliente}${item.endereco ? ` · ${item.endereco}` : ''}`,
+        icon: '/assets/icon-192.png',
+        badge: '/assets/icon-192.png',
+        tag: `hiper-horario-${item.id}`,
+        renotify: false,
+        data: { url: '/?tela=agenda' }
+      }
+    );
+    avisosEnviados[item.id] = hoje;
+  }
+
   const cache = await caches.open(CACHE_DADOS);
-  await cache.put(CHAVE_LEMBRETES, new Response(JSON.stringify({ ...dados, ultimoAviso: hoje })));
+  await cache.put(CHAVE_LEMBRETES, new Response(JSON.stringify({ ...dados, avisosEnviados })));
 }
 
 // Disponível no Android com a PWA instalada; o intervalo real é decidido
 // pelo navegador conforme o uso do app.
 self.addEventListener('periodicsync', evento => {
-  if (evento.tag === 'lembretes-hiper') evento.waitUntil(notificarDoDia());
+  if (evento.tag === 'lembretes-hiper') evento.waitUntil(verificarLembretes());
 });
 
 // Permite que a página peça a verificação (usado ao abrir o app).
 self.addEventListener('message', evento => {
   if (evento.data && evento.data.tipo === 'verificar-lembretes') {
-    evento.waitUntil(notificarDoDia());
+    evento.waitUntil(verificarLembretes());
   }
 });
 

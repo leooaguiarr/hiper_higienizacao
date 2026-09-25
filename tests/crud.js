@@ -349,6 +349,9 @@ async function main() {
     await new Promise(r => setTimeout(r, 300));
     form.elements.basePrice.value = 210;
     form.elements.active.value = 'false';
+    form.elements.requiresReturn.value = 'true';
+    form.elements.requiresReturn.dispatchEvent(new Event('change'));
+    form.elements.returnDays.value = 5;
     form.requestSubmit();
     await new Promise(r => setTimeout(r, 700));
     const editado = window.__store.state.services.find(s => s.id === criado.id);
@@ -364,6 +367,7 @@ async function main() {
       adicionou: window.__store.state.services.length >= antes,
       editouPreco: editado && Number(editado.basePrice) === 210,
       editouInativo: editado && editado.active === false,
+      configurouDevolucao: editado && editado.requiresReturn === true && Number(editado.returnDays) === 5,
       excluido,
       depoisIgualAntes: depois === antes
     };
@@ -372,6 +376,7 @@ async function main() {
   conferir('serviço criado no catálogo', servicoTeste.criado === true);
   conferir('serviço editado (preço)', servicoTeste.editouPreco === true);
   conferir('serviço editado (inativo)', servicoTeste.editouInativo === true);
+  conferir('serviço configurado com prazo de devolução', servicoTeste.configurouDevolucao === true);
   conferir('serviço excluído', servicoTeste.excluido === true);
 
   console.log('\n=== ERROS DE CONSOLE ===');

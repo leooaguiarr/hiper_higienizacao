@@ -239,25 +239,37 @@ async function main() {
     const form = document.getElementById('appointmentForm');
     const conviteCadastroVisivel = !document.getElementById('modalClientInvite').hidden;
     const clientesSincronizados = form.elements.clientId.options.length === window.__store.state.clients.length;
+    form.elements.serviceId.value = 'svc-rug';
     form.elements.date.value = '2099-12-31';
     form.elements.time.value = '23:30';
+    form.elements.serviceId.dispatchEvent(new Event('change'));
+    const devolucaoVisivel = !document.getElementById('returnSchedule').hidden;
+    const prazoSugerido = form.elements.returnDate.value === '2100-01-07';
     form.requestSubmit();
     await new Promise(r => setTimeout(r, 700));
     const modal = document.getElementById('modalBackdrop');
     const botao = document.getElementById('whatsappDismiss');
     const abriu = modal.classList.contains('open') && !!botao;
     if (botao) botao.click();
+    const criado = window.__store.state.appointments.find(item => item.date === '2099-12-31' && item.serviceId === 'svc-rug');
+    document.querySelector('[data-mode="month"]').click();
+    document.getElementById('agendaNext').click();
+    const devolucaoNaAgenda = document.querySelectorAll('.return-event').length > 0;
     return {
       criou: window.__store.state.appointments.length === antes + 1,
       conviteCadastroVisivel,
       clientesSincronizados,
+      devolucaoVisivel,
+      prazoSugerido,
+      devolucaoSalva: criado?.returnDate === '2100-01-07' && criado?.returnTime === '17:00',
+      devolucaoNaAgenda,
       abriu,
       fechou: !modal.classList.contains('open')
     };
   })()`);
   console.log('\n=== CONVITE DO WHATSAPP ===');
   console.log(JSON.stringify(conviteWhatsApp, null, 2));
-  if (!conviteWhatsApp.criou || !conviteWhatsApp.conviteCadastroVisivel || !conviteWhatsApp.clientesSincronizados || !conviteWhatsApp.abriu || !conviteWhatsApp.fechou) {
+  if (!conviteWhatsApp.criou || !conviteWhatsApp.conviteCadastroVisivel || !conviteWhatsApp.clientesSincronizados || !conviteWhatsApp.devolucaoVisivel || !conviteWhatsApp.prazoSugerido || !conviteWhatsApp.devolucaoSalva || !conviteWhatsApp.devolucaoNaAgenda || !conviteWhatsApp.abriu || !conviteWhatsApp.fechou) {
     erros.push('fluxo integrado de cadastro e agendamento não funcionou corretamente');
   }
 

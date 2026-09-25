@@ -39,21 +39,40 @@ export async function publicarLembretes(estado, clientePorId) {
   const inicio = iso(hoje);
   const fim = iso(limite);
 
-  const agendamentos = (estado.appointments || [])
-    .filter(item => item.date >= inicio && item.date <= fim)
-    .map(item => ({
+  const agendamentos = (estado.appointments || []).flatMap(item => {
+    const cliente = clientePorId(item.clientId);
+    const eventos = [{
+      id: `${item.id}-atendimento-${item.date}-${item.time}`,
+      tipo: 'atendimento',
       date: item.date,
       time: item.time,
       status: item.status,
-      cliente: clientePorId(item.clientId),
+      cliente,
       endereco: item.address
-    }));
+    }];
+    if (item.returnDate && item.returnTime) {
+      eventos.push({
+        id: `${item.id}-devolucao-${item.returnDate}-${item.returnTime}`,
+        tipo: 'devolucao',
+        date: item.returnDate,
+        time: item.returnTime,
+        status: item.status,
+        cliente,
+        endereco: item.address
+      });
+    }
+    return eventos;
+  }).filter(item => item.date >= inicio && item.date <= fim);
 
   try {
     const cache = await caches.open(CACHE_DADOS);
     const anterior = await cache.match(CHAVE_LEMBRETES);
-    const ultimoAviso = anterior ? (await anterior.json()).ultimoAviso : null;
-    await cache.put(CHAVE_LEMBRETES, new Response(JSON.stringify({ agendamentos, ultimoAviso })));
+    const dadosAnteriores = anterior ? await anterior.json() : {};
+    await cache.put(CHAVE_LEMBRETES, new Response(JSON.stringify({
+      agendamentos,
+      ultimoAviso: dadosAnteriores.ultimoAviso || null,
+      avisosEnviados: dadosAnteriores.avisosEnviados || {}
+    })));
   } catch { /* cache indisponível: apenas não haverá lembrete em segundo plano */ }
 }
 
