@@ -34,6 +34,14 @@ const state = () => store.state;
 function getClient(id) { return state().clients.find(item => item.id === id); }
 function getService(id) { return state().services.find(item => item.id === id) || { id, name: 'Serviço desativado/removido', icon: 'sparkles', duration: 120, basePrice: 0, active: false }; }
 function clientName(client) { return client ? `${client.firstName} ${client.lastName}`.trim() : 'Cliente removido'; }
+function clientStreet(client) { return client?.address || client?.street || client?.logradouro || ''; }
+function clientAddress(client) {
+  if (!client) return 'Endereço não informado';
+  const streetAndNumber = [clientStreet(client), client.number].filter(Boolean).join(', ');
+  const withComplement = [streetAndNumber, client.complement].filter(Boolean).join(' - ');
+  const location = [client.neighborhood, client.city].filter(Boolean).join(' - ');
+  return [withComplement, location].filter(Boolean).join(', ') || 'Endereço não informado';
+}
 function clientHistory(id) { return state().appointments.filter(item => item.clientId === id && item.status === 'completed').sort((a,b) => b.date.localeCompare(a.date)); }
 function statusBadge(status) { const config = STATUS[status]; return `<span class="badge" style="--status:var(--${config?.[1] || 'muted'})">${esc(config?.[0] || status)}</span>`; }
 
@@ -157,7 +165,7 @@ function renderClients() {
   document.getElementById('clientGrid').innerHTML = filtered.length ? filtered.map(client => {
     const history = clientHistory(client.id), total = history.reduce((sum,item) => sum + Number(item.value),0), last = history[0];
     const initials = `${client.firstName?.[0] || ''}${client.lastName?.[0] || ''}`.toUpperCase();
-    const address = `${client.address}${client.number ? ', ' + client.number : ''}${client.complement ? ' - ' + client.complement : ''}, ${client.neighborhood} - ${client.city}`;
+    const address = clientAddress(client);
     return `<article class="client-card"><div class="client-head"><span class="initials">${esc(initials)}</span><div><h3>${esc(clientName(client))}</h3><span>${esc(client.phone)}</span></div></div><div class="client-stats"><div><strong>${history.length}</strong><span>serviços</span></div><div><strong>${brl.format(total)}</strong><span>total gasto</span></div><div><strong>${last?dateFmt.format(parseDate(last.date)):'-'}</strong><span>última higiene</span></div></div><p class="client-address"><i class="fa-solid fa-location-dot"></i> ${esc(address)}</p><div class="client-actions"><a target="_blank" rel="noopener noreferrer" href="https://wa.me/55${phoneDigits(client.phone)}"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a><a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}"><i class="fa-solid fa-route"></i> Maps</a><button data-client-detail="${client.id}">Ver ficha</button></div></article>`;
   }).join('') : empty('Nenhum cliente encontrado.');
 }
@@ -329,9 +337,7 @@ function showClientDetail(id) {
     whatsButton = `<a target="_blank" rel="noopener noreferrer" href="${whatsappLink(client.phone)}" class="secondary-button" style="color:var(--success); border-color:var(--success)"><i class="fa-brands fa-whatsapp"></i> Conversar</a>`;
   }
 
-  const numStr = client.number ? `, ${client.number}` : '';
-  const compStr = client.complement ? ` - ${client.complement}` : '';
-  const fullAddress = `${client.address}${numStr}${compStr}, ${client.neighborhood} - ${client.city}`;
+  const fullAddress = clientAddress(client);
 
   const docStr = client.document ? `<div style="grid-column:1/-1"><span>CPF / CNPJ</span><strong>${esc(client.document)}</strong></div>` : '';
 
@@ -454,10 +460,7 @@ function openForm(type, id = null) {
     form.elements.clientId.onchange = () => { 
       const client = getClient(form.elements.clientId.value); 
       if (client) {
-        const numStr = client.number ? `, ${client.number}` : '';
-        const compStr = client.complement ? ` (${client.complement})` : '';
-        const enderecoRua = client.address || client.street || '';
-        form.elements.address.value = `${enderecoRua}${numStr}${compStr} - ${client.neighborhood || ''}, ${client.city || ''}`;
+        form.elements.address.value = clientAddress(client);
       }
     };
     appointmentClientIds = new Set(state().clients.map(client => client.id));
@@ -479,6 +482,10 @@ function openForm(type, id = null) {
   }
   if (registro) {
     preencherForm(form, registro);
+    if (type === 'client') {
+      form.elements.address.value = clientStreet(registro);
+      form.elements.cep.value = registro.cep || registro.zip || '';
+    }
     if (type === 'service') form.elements.active.value = String(registro.active !== false);
   }
   openModal();

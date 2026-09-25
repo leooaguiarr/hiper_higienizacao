@@ -212,10 +212,25 @@ async function main() {
     form.requestSubmit();
     await new Promise(r => setTimeout(r, 600));
     const depois = document.querySelectorAll('#clientGrid .client-card').length;
-    return { antes, depois, criou: depois === antes + 1 };
+    const criado = window.__store.state.clients.find(client => client.firstName === 'Teste' && client.lastName === 'Headless');
+    criado.street = criado.address;
+    delete criado.address;
+    document.getElementById('clientSearch').dispatchEvent(new Event('input'));
+    const card = [...document.querySelectorAll('#clientGrid .client-card')]
+      .find(item => item.querySelector('h3')?.textContent === 'Teste Headless');
+    const endereco = card?.querySelector('.client-address')?.textContent || '';
+    return {
+      antes,
+      depois,
+      criou: depois === antes + 1,
+      enderecoLegadoOk: endereco.includes('Rua Teste, 1') && !endereco.includes('undefined')
+    };
   })()`);
   console.log('\n=== CADASTRO DE CLIENTE ===');
   console.log(JSON.stringify(cadastro, null, 2));
+  if (!cadastro.criou || !cadastro.enderecoLegadoOk) {
+    erros.push('cadastro de cliente ou compatibilidade de endereço legado falhou');
+  }
 
   // Novo agendamento e descarte do convite para enviar a confirmação.
   const conviteWhatsApp = await avaliar(`(async () => {

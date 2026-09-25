@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lastName: document.getElementById('clientLastName').value.trim(),
         phone: document.getElementById('clientPhone').value.trim(),
         document: docInput ? docInput.value.trim() : '',
-        zip: document.getElementById('clientZip').value.trim(),
+        cep: document.getElementById('clientZip').value.trim(),
         address: document.getElementById('clientStreet').value.trim(),
         number: document.getElementById('clientNumber').value.trim(),
         complement: document.getElementById('clientComplement').value.trim(),
