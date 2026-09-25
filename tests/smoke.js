@@ -134,12 +134,29 @@ async function main() {
       badge: document.getElementById('modeBadge').textContent.trim(),
       painelDemo: visivel('#demoPanel'),
       painelNuvem: visivel('#cloudPanel'),
-      titulo: document.getElementById('pageTitle').textContent
+      titulo: document.getElementById('pageTitle').textContent,
+      creditoLoginLegivel: parseFloat(getComputedStyle(document.querySelector('.auth-footer')).fontSize) >= 11,
+      linkLgpd: document.querySelector('.auth-footer a[href="/lgpd.html"]')?.textContent.includes('LGPD')
     };
   })()`);
 
   console.log('\n=== ESTADO INICIAL ===');
   console.log(JSON.stringify(relatorio, null, 2));
+  if (!relatorio.creditoLoginLegivel || !relatorio.linkLgpd) erros.push('rodapé do login ou link da LGPD não está correto');
+
+  const politica = await avaliar(`(async () => {
+    const resposta = await fetch('/lgpd.html');
+    const html = await resposta.text();
+    return {
+      status: resposta.status,
+      titulo: html.includes('Política de Privacidade e LGPD'),
+      direitos: html.includes('Direitos do titular'),
+      contato: html.includes('(16) 99760-3600')
+    };
+  })()`);
+  console.log('\n=== POLITICA LGPD ===');
+  console.log(JSON.stringify(politica, null, 2));
+  if (politica.status !== 200 || !politica.titulo || !politica.direitos || !politica.contato) erros.push('página da Política de Privacidade e LGPD está incompleta');
 
   const perfil = await avaliar(`(() => {
     const botao = document.getElementById('profileButton');
