@@ -139,7 +139,7 @@ async function main() {
 
   // --- Ícones realmente carregam ---
   const icones = await avaliar(`(async () => {
-    const caminhos = ['/assets/icon-192.png','/assets/icon-512.png','/assets/icon-maskable-512.png','/assets/apple-touch-icon.png'];
+    const caminhos = ['/assets/icon-192.png','/assets/favicon-round.png?v=2','/assets/icon-512.png','/assets/icon-maskable-512.png','/assets/apple-touch-icon.png'];
     const saida = {};
     for (const caminho of caminhos) {
       try { const r = await fetch(caminho); saida[caminho] = r.status; } catch (e) { saida[caminho] = 'erro'; }
@@ -148,6 +148,25 @@ async function main() {
   })()`);
   console.log('\n=== ÍCONES ===');
   Object.entries(icones).forEach(([caminho, status]) => conferir(caminho, status === 200, String(status)));
+  const favicon = await avaliar(`(async () => {
+    const img = new Image();
+    img.src = '/assets/favicon-round.png?v=2';
+    await img.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    return {
+      largura: img.naturalWidth,
+      altura: img.naturalHeight,
+      cantoTransparente: ctx.getImageData(0, 0, 1, 1).data[3] === 0,
+      referenciado: document.querySelector('link[rel="icon"]')?.href.includes('favicon-round.png?v=2')
+    };
+  })()`);
+  conferir('favicon redondo tem tamanho correto', favicon.largura === 192 && favicon.altura === 192);
+  conferir('favicon possui cantos transparentes', favicon.cantoTransparente === true);
+  conferir('página usa o favicon novo', favicon.referenciado === true);
 
   // --- Painéis de aplicativo e lembretes ---
   const paineis = await avaliar(`(() => {
