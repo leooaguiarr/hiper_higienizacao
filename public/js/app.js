@@ -596,10 +596,7 @@ function renderAuth() {
 
   // Cabeçalho e configurações refletem o modo em uso.
   const demo = store.modo === 'demo';
-  document.getElementById('modeBadge').innerHTML = demo
-    ? '<i class="fa-solid fa-flask"></i> Demonstração'
-    : `<i class="fa-solid fa-cloud"></i> ${esc(store.usuario?.email || 'Conta conectada')}`;
-  document.getElementById('modeBadge').className = `mode-badge ${demo ? 'demo' : 'cloud'}`;
+  renderNetworkBadge();
   const demoPanel = document.getElementById('demoPanel');
   if (demoPanel) demoPanel.hidden = !demo;
   const cloudPanel = document.getElementById('cloudPanel');
@@ -705,6 +702,19 @@ function renderSync() {
 
   badge.hidden = !(semRede || pendentes || doCache);
   badge.className = `sync-badge ${semRede ? 'offline' : pendentes ? 'pendente' : 'cache'}`;
+}
+
+function renderNetworkBadge() {
+  const badge = document.getElementById('modeBadge');
+  if (!badge) return;
+  const online = navigator.onLine;
+  badge.innerHTML = online 
+    ? '<i class="fa-solid fa-wifi"></i>' 
+    : '<i class="fa-solid fa-wifi" style="opacity: 0.5;"></i>';
+  badge.className = `mode-badge ${online ? 'cloud' : 'demo'}`;
+  badge.title = online ? 'Conectado' : 'Sem internet';
+  badge.style.padding = '7px 10px';
+  badge.style.fontSize = '14px';
 }
 
 function renderAppPanel() {
@@ -989,8 +999,8 @@ document.getElementById('notifyTest').addEventListener('click', async () => {
   await verificarAgora();
   toast('Se houver serviço hoje, o aviso aparece em instantes.');
 });
-window.addEventListener('online', () => { renderSync(); renderAppPanel(); });
-window.addEventListener('offline', () => { renderSync(); renderAppPanel(); });
+window.addEventListener('online', () => { renderSync(); renderNetworkBadge(); renderAppPanel(); });
+window.addEventListener('offline', () => { renderSync(); renderNetworkBadge(); renderAppPanel(); });
 
 /* ------------------------------------------------------------- Arranque -- */
 
