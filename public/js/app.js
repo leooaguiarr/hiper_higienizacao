@@ -132,7 +132,12 @@ function renderDashboard() {
   renderRevenueChart();
 }
 
-function alertCard(alert) { return `<div class="list-item" ${alert.action ? `onclick="navigate('${alert.action}'); closeModal();" style="cursor:pointer;"` : ''}><span class="alert-icon ${alert.tone}"><i class="fa-solid ${alert.icon}"></i></span><span class="list-main"><strong>${esc(alert.title)}</strong><span>${esc(alert.text)}</span></span>${alert.action ? '<i class="fa-solid fa-chevron-right" style="color: var(--muted); margin-left: auto;"></i>' : ''}</div>`; }
+function alertCard(alert) {
+  if (!alert.action) {
+    return `<div class="list-item"><span class="alert-icon ${alert.tone}"><i class="fa-solid ${alert.icon}"></i></span><span class="list-main"><strong>${esc(alert.title)}</strong><span>${esc(alert.text)}</span></span></div>`;
+  }
+  return `<button type="button" class="list-item alert-interactive" data-alert-action="${alert.action}"><span class="alert-icon ${alert.tone}"><i class="fa-solid ${alert.icon}"></i></span><span class="list-main"><strong>${esc(alert.title)}</strong><span>${esc(alert.text)}</span></span><i class="fa-solid fa-chevron-right" style="color: var(--muted); margin-left: auto;"></i></button>`;
+}
 function empty(message) { return `<div class="empty-state"><i class="fa-regular fa-circle-check"></i><br>${esc(message)}</div>`; }
 
 function renderRevenueChart() {
@@ -865,8 +870,13 @@ function navigate(view) {
   document.querySelectorAll('.view').forEach(section => section.classList.toggle('active', section.id === `view-${view}`));
   document.querySelectorAll('.nav-item, .bottom-nav-item[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === view));
   const titles = { dashboard:['Operação de hoje','Início'], agenda:['Planejamento de equipes','Agenda de serviços'], clientes:['Relacionamento e recorrência','Clientes'], servicos:['Padrões de atendimento','Catálogo de serviços'], financeiro:['Entradas, despesas e recebimentos','Controle financeiro'], ordens:['Execução em campo','Atendimentos'], configuracoes:['Dados e preferências','Configurações'] };
-  document.getElementById('eyebrow').textContent = titles[view][0]; document.getElementById('pageTitle').textContent = titles[view][1];
+  if (titles[view]) {
+    document.getElementById('eyebrow').textContent = titles[view][0];
+    document.getElementById('pageTitle').textContent = titles[view][1];
+  }
   toggleSidebar(false);
+  closeAlerts();
+  closeModal();
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 
@@ -1124,6 +1134,21 @@ document.getElementById('notificationButton').addEventListener('click', () => { 
 document.getElementById('closeAlerts').addEventListener('click', closeAlerts);
 document.getElementById('drawerBackdrop').addEventListener('click', closeAlerts);
 function closeAlerts() { document.getElementById('alertDrawer').classList.remove('open'); document.getElementById('drawerBackdrop').classList.remove('open'); }
+
+document.addEventListener('click', event => {
+  const alertBtn = event.target.closest('[data-alert-action]');
+  if (alertBtn) {
+    const action = alertBtn.dataset.alertAction;
+    if (action) {
+      if (action === 'agenda') {
+        agendaDate = new Date();
+        renderAgenda();
+        bindDynamicActions();
+      }
+      navigate(action);
+    }
+  }
+});
 function toggleSidebar(abrir) {
   const sidebar = document.getElementById('sidebar');
   const backdrop = document.getElementById('sidebarBackdrop');
@@ -1378,3 +1403,8 @@ atualizarStatusSegundoPlano();
 if (permissaoAtual() === 'granted') {
   navigator.serviceWorker.ready.then(() => verificarAgora()).catch(() => {});
 }
+
+// Expõe métodos para uso global e inline seguro
+window.navigate = navigate;
+window.closeAlerts = closeAlerts;
+window.closeModal = closeModal;
