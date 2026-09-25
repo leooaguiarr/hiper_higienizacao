@@ -222,6 +222,8 @@ async function main() {
     const antes = window.__store.state.appointments.length;
     document.querySelector('[data-open="appointment"]').click();
     const form = document.getElementById('appointmentForm');
+    const conviteCadastroVisivel = !document.getElementById('modalClientInvite').hidden;
+    const clientesSincronizados = form.elements.clientId.options.length === window.__store.state.clients.length;
     form.elements.date.value = '2099-12-31';
     form.elements.time.value = '23:30';
     form.requestSubmit();
@@ -232,14 +234,16 @@ async function main() {
     if (botao) botao.click();
     return {
       criou: window.__store.state.appointments.length === antes + 1,
+      conviteCadastroVisivel,
+      clientesSincronizados,
       abriu,
       fechou: !modal.classList.contains('open')
     };
   })()`);
   console.log('\n=== CONVITE DO WHATSAPP ===');
   console.log(JSON.stringify(conviteWhatsApp, null, 2));
-  if (!conviteWhatsApp.criou || !conviteWhatsApp.abriu || !conviteWhatsApp.fechou) {
-    erros.push('botão Agora não do convite do WhatsApp não fechou corretamente');
+  if (!conviteWhatsApp.criou || !conviteWhatsApp.conviteCadastroVisivel || !conviteWhatsApp.clientesSincronizados || !conviteWhatsApp.abriu || !conviteWhatsApp.fechou) {
+    erros.push('fluxo integrado de cadastro e agendamento não funcionou corretamente');
   }
 
   // Conclusão de serviço (status + receita + recorrência)

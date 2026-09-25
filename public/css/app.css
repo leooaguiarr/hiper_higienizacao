@@ -527,8 +527,11 @@ td.expense { color: var(--danger); font-weight: 800; }
 .sidebar-backdrop { z-index: 55; }
 .sidebar-backdrop.open { display: block; }
 .modal { width: min(760px,calc(100vw - 28px)); max-height: 90vh; overflow: auto; padding: 24px; background: #fff; border-radius: 20px; box-shadow: 0 30px 80px rgba(4,22,45,.3); }
-.modal-heading, .drawer-heading { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+.modal-heading, .drawer-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.modal-heading-copy { min-width: 0; margin-right: auto; }
 .modal-heading h2 { margin: 4px 0 0; font-size: 22px; }
+.modal-client-invite { display: inline-flex; align-items: center; gap: 7px; padding: 10px 12px; color: var(--blue); font-size: 12px; white-space: nowrap; }
+.appointment-client-status { padding: 9px 10px; color: #0b5ba8 !important; background: var(--blue-soft); border-radius: 8px; line-height: 1.4; }
 .form-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 13px; }
 .form-grid label { display: grid; gap: 6px; color: #4f6075; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .form-grid label.span-2 { grid-column: span 2; }
@@ -611,6 +614,10 @@ td.expense { color: var(--danger); font-weight: 800; }
   .form-grid, .detail-grid { grid-template-columns: 1fr; }
   .form-grid label.span-2 { grid-column: auto; }
   .modal { padding: 18px; }
+  .modal-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .modal-heading-copy { grid-column: 1; grid-row: 1; }
+  .modal-heading > #modalClose { grid-column: 2; grid-row: 1; }
+  .modal-client-invite { grid-column: 1 / -1; grid-row: 2; justify-content: center; width: 100%; }
   .date-nav strong { max-width: 145px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .week-grid { min-width: 0; grid-template-columns: 1fr; }

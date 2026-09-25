@@ -27,6 +27,7 @@ const ICONS = {
 let currentView = 'dashboard';
 let agendaMode = 'week';
 let agendaDate = new Date();
+let appointmentClientIds = new Set();
 
 const state = () => store.state;
 
@@ -379,6 +380,41 @@ function preencherForm(form, registro) {
   });
 }
 
+function refreshAppointmentClients(announceNewClient = false, force = false) {
+  const form = document.getElementById('appointmentForm');
+  const modalOpen = document.getElementById('modalBackdrop').classList.contains('open');
+  if (!form || form.hidden || (!modalOpen && !force)) return;
+
+  const select = form.elements.clientId;
+  const status = document.getElementById('appointmentClientStatus');
+  const previousValue = select.value;
+  const clients = state().clients;
+  const newClient = announceNewClient
+    ? clients.find(client => !appointmentClientIds.has(client.id))
+    : null;
+
+  select.innerHTML = clients.length
+    ? clients.map(client => `<option value="${client.id}">${esc(clientName(client))}</option>`).join('')
+    : '<option value="">Aguardando cadastro do cliente…</option>';
+
+  if (newClient) select.value = newClient.id;
+  else if (clients.some(client => client.id === previousValue)) select.value = previousValue;
+
+  appointmentClientIds = new Set(clients.map(client => client.id));
+
+  if (!clients.length) {
+    status.textContent = 'Envie o cadastro pelo botão acima. O cliente aparecerá aqui automaticamente quando concluir.';
+    status.hidden = false;
+  } else if (newClient) {
+    status.textContent = `${clientName(newClient)} concluiu o cadastro e já foi selecionado.`;
+    status.hidden = false;
+    select.onchange?.();
+    toast(`Cadastro de ${clientName(newClient)} recebido.`);
+  } else {
+    status.hidden = true;
+  }
+}
+
 function openForm(type, id = null) {
   let registro = null;
   if (type === 'settings') {
@@ -402,16 +438,15 @@ function openForm(type, id = null) {
   const [eyebrow, titulo, rotuloBotao] = registro ? configs[type].editar : configs[type].criar;
   document.getElementById('modalEyebrow').textContent = eyebrow;
   document.getElementById('modalTitle').textContent = titulo;
+  document.getElementById('modalClientInvite').hidden = type !== 'appointment';
   document.querySelectorAll('.modal-form, #detailContent, #guideContent').forEach(element => element.hidden = true);
   const form = document.getElementById(formId); form.hidden = false; form.reset();
   form.querySelector('button[type="submit"]').textContent = rotuloBotao;
 
   if (type === 'appointment') {
-    if (!state().clients.length) { toast('Cadastre um cliente antes de agendar.'); navigate('clientes'); return; }
     if (!state().services.some(service => service.active)) { toast('Nenhum serviço ativo no catálogo.'); navigate('servicos'); return; }
     // Na edição o serviço pode estar inativo hoje: garante que ele apareça.
     const servicos = state().services.filter(service => service.active || service.id === registro?.serviceId);
-    form.elements.clientId.innerHTML = state().clients.map(client => `<option value="${client.id}">${esc(clientName(client))}</option>`).join('');
     form.elements.serviceId.innerHTML = servicos.map(service => `<option value="${service.id}">${esc(service.name)}</option>`).join('');
     // Ao trocar o serviço, sugere duração e preço; ao trocar o cliente, o
     // endereço. Só na criação, para não sobrescrever o que já foi ajustado.
@@ -425,6 +460,8 @@ function openForm(type, id = null) {
         form.elements.address.value = `${enderecoRua}${numStr}${compStr} - ${client.neighborhood || ''}, ${client.city || ''}`;
       }
     };
+    appointmentClientIds = new Set(state().clients.map(client => client.id));
+    refreshAppointmentClients(false, true);
     if (!registro) {
       form.elements.date.value = localISO(new Date()); form.elements.time.value = '08:00'; form.elements.duration.value = 180;
       form.elements.serviceId.onchange();
@@ -449,12 +486,14 @@ function openForm(type, id = null) {
 function openDetail(eyebrow,title,html) {
   document.getElementById('modalEyebrow').textContent = eyebrow;
   document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalClientInvite').hidden = true;
   document.querySelectorAll('.modal-form, #guideContent').forEach(element => element.hidden = true);
   const detail = document.getElementById('detailContent'); detail.hidden = false; detail.innerHTML = html; openModal();
 }
 function openGuide() {
   document.getElementById('modalEyebrow').textContent = 'AJUDA';
   document.getElementById('modalTitle').textContent = 'Guia rápido';
+  document.getElementById('modalClientInvite').hidden = true;
   document.querySelectorAll('.modal-form, #detailContent').forEach(element => element.hidden = true);
   document.getElementById('guideContent').hidden = false;
   openModal();
@@ -1016,7 +1055,7 @@ document.getElementById('copyClientLink')?.addEventListener('click', () => {
     .catch(() => toast('Erro ao copiar link.'));
 });
 
-document.getElementById('shareClientLinkButton')?.addEventListener('click', () => {
+function shareClientRegistrationLink() {
   const empresaUid = store.empresaUid;
   if (!store.usuario || !empresaUid) {
     toast('É preciso estar logado para gerar o link.');
@@ -1025,7 +1064,10 @@ document.getElementById('shareClientLinkButton')?.addEventListener('click', () =
   const url = `${window.location.origin}/cadastro.html?u=${empresaUid}`;
   const text = encodeURIComponent(`Olá! Por favor, preencha seu cadastro para podermos agendar o seu serviço na Hiper Higienizações:\n${url}`);
   window.open(`https://wa.me/?text=${text}`, '_blank');
-});
+}
+
+document.getElementById('shareClientLinkButton')?.addEventListener('click', shareClientRegistrationLink);
+document.getElementById('modalClientInvite')?.addEventListener('click', shareClientRegistrationLink);
 // O navegador avisa quando a instalação é possível; guardamos o evento para
 // disparar no clique do usuário, que é a única forma aceita.
 window.addEventListener('beforeinstallprompt', evento => {
@@ -1078,6 +1120,7 @@ window.__store = store;
 aoMudar(() => {
   renderAuth();
   renderAll();
+  refreshAppointmentClients(true);
   renderSync();
   renderAppPanel();
   // Mantém o resumo que o service worker lê para lembrar dos serviços do dia.
