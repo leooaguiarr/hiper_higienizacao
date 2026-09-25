@@ -168,7 +168,9 @@ async function main() {
       titulo: document.getElementById('modalTitle').textContent.trim(),
       secoes: document.querySelectorAll('#guideContent .guide-details details').length,
       telefoneCorreto: document.querySelector('#guideContent .guide-support')?.textContent.includes('(16) 99760-3600'),
-      linkCorreto: document.querySelector('#guideContent .guide-support a')?.href.includes('5516997603600')
+      linkCorreto: document.querySelector('#guideContent .guide-support a')?.href.includes('5516997603600'),
+      creditoLexion: document.querySelector('.sidebar-credit')?.href === 'https://lexionconsultoria.com.br/'
+        && document.querySelector('.sidebar-credit')?.textContent.includes('Desenvolvido por Lexion Consultoria')
     };
     preferencia.checked = true;
     preferencia.dispatchEvent(new Event('change', { bubbles: true }));
@@ -185,7 +187,7 @@ async function main() {
   })()`);
   console.log('\n=== GUIA RAPIDO ===');
   console.log(JSON.stringify(guia, null, 2));
-  if (!guia.abriu || guia.titulo !== 'Guia rápido' || guia.secoes < 7 || !guia.telefoneCorreto || !guia.linkCorreto || !guia.preferenciaSalva || !guia.aberturaAutomatica) {
+  if (!guia.abriu || guia.titulo !== 'Guia rápido' || guia.secoes < 7 || !guia.telefoneCorreto || !guia.linkCorreto || !guia.creditoLexion || !guia.preferenciaSalva || !guia.aberturaAutomatica) {
     erros.push('guia rápido, suporte ou preferência não funcionou corretamente');
   }
 
