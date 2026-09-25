@@ -669,7 +669,7 @@ td.expense { color: var(--danger); font-weight: 800; }
 .auth-visual-meta { position: absolute; z-index: 1; top: 42px; right: 9%; display: flex; gap: 8px; }
 .auth-visual-meta span { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; color: #d4e3f4; background: rgba(5,20,43,.54); border: 1px solid rgba(255,255,255,.13); border-radius: 999px; font-size: 9px; font-weight: 700; backdrop-filter: blur(10px); }
 .auth-visual-meta i { color: #62e6ea; }
-.auth-panel { position: relative; z-index: 2; display: grid; place-items: center; min-width: 0; padding: 46px clamp(34px, 4.2vw, 76px) 30px; overflow-y: auto; color: #fff; background: #040d1e; }
+.auth-panel { position: relative; z-index: 2; display: grid; place-items: center; min-width: 0; padding: 46px clamp(34px, 4.2vw, 76px) 30px; overflow-y: auto; overflow-x: hidden; color: #fff; background: #040d1e; }
 .auth-panel-glow { position: absolute; top: 8%; right: -120px; width: 420px; height: 420px; background: radial-gradient(circle, rgba(8,127,245,.13), transparent 68%); pointer-events: none; }
 .auth-panel-inner { position: relative; z-index: 1; display: grid; align-content: center; width: min(390px, 100%); min-height: 100%; }
 .auth-mobile-brand { display: none; align-items: center; gap: 11px; margin-bottom: 54px; color: #fff; }
