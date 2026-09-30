@@ -124,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         phone: document.getElementById('clientPhone').value.trim(),
         documentType: docType ? docType.value : 'cpf',
         document: docInput ? docInput.value.trim() : '',
+        birthDate: document.getElementById('clientBirthDate')?.value || '',
         cep: document.getElementById('clientZip').value.trim(),
         address: document.getElementById('clientStreet').value.trim(),
         number: document.getElementById('clientNumber').value.trim(),

@@ -2,7 +2,7 @@
 // Toda leitura vem de store.state e toda escrita passa pelas funções do
 // store.js, que decidem entre localStorage (demonstração) e Firestore (nuvem).
 
-import { brl, dateFmt, fullDateFmt, monthFmt, localISO, parseDate, addDays, addMonths, startOfWeek, startOfMonth, uid, esc, phoneDigits, cap, whatsappLink, maskPhone, maskCep, maskCpf, maskCnpj, maskCurrency, parseCurrency } from './utils.js?v=2';
+import { brl, dateFmt, fullDateFmt, monthFmt, localISO, parseDate, addDays, addMonths, startOfWeek, startOfMonth, uid, esc, phoneDigits, cap, whatsappLink, maskPhone, maskCep, maskCpf, maskCnpj, maskCurrency, parseCurrency, getBirthdayInfo, googleCalendarLink, downloadIcs } from './utils.js?v=3';
 import {
   store, iniciar, iniciarDemo, entrarComGoogle, sair, irParaLogin,
   criar, atualizar, remover, gravarLote, restaurarDemo, aoMudar, aoErro, mensagemErro
@@ -79,10 +79,20 @@ function buildAlerts() {
   const pending = state().appointments.filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled');
   const overdue = state().clients.filter(client => client.nextRecommendation && client.nextRecommendation <= today);
   const unconfirmed = state().appointments.filter(item => item.date >= today && item.status === 'scheduled');
+  const currentMonth = today.slice(5, 7);
+  const birthdayClientsMonth = state().clients.filter(client => {
+    if (!client.birthDate) return false;
+    return String(client.birthDate).slice(5, 7) === currentMonth;
+  });
+
   const alerts = [];
   if (pending.length) alerts.push({ icon:'fa-money-bill-wave', tone:'warning', title:`${pending.length} recebimento(s) pendente(s)`, text:`Total ${brl.format(pending.reduce((sum,item) => sum + Number(item.value),0))}`, action: 'financeiro' });
   if (overdue.length) alerts.push({ icon:'fa-rotate', tone:'info', title:`${overdue.length} cliente(s) para reativar`, text:'Recomendação de nova higienização vencida', action: 'clientes' });
   if (unconfirmed.length) alerts.push({ icon:'fa-calendar-check', tone:'warning', title:`${unconfirmed.length} serviço(s) sem confirmação`, text:'Confirme a rota com os clientes', action: 'agenda' });
+  if (birthdayClientsMonth.length) {
+    const monthName = monthFmt.format(new Date()).split(' ')[0];
+    alerts.push({ icon:'fa-cake-candles', tone:'info', title:`${birthdayClientsMonth.length} aniversariante(s) em ${monthName}`, text:'Envie os parabéns e ofereça uma condição especial', action: 'aniversariantes' });
+  }
   return alerts;
 }
 
@@ -123,11 +133,70 @@ function renderDashboard() {
   const dueClients = state().clients
     .filter(client => client.nextRecommendation)
     .sort((a,b) => a.nextRecommendation.localeCompare(b.nextRecommendation))
-    .slice(0,5);
+    .slice(0,6);
   document.getElementById('recurrenceList').innerHTML = dueClients.length ? dueClients.map(client => {
     const due = client.nextRecommendation <= today;
-    return `<div class="list-item"><span class="list-main"><strong>${esc(clientName(client))}</strong><span>${due ? 'Recomendação vencida' : `Previsto para ${dateFmt.format(parseDate(client.nextRecommendation))}`}</span></span><a class="whats-link" target="_blank" rel="noopener noreferrer" href="https://wa.me/55${phoneDigits(client.phone)}"><i class="fa-brands fa-whatsapp"></i></a></div>`;
+    const recDate = parseDate(client.nextRecommendation);
+    const diffDays = Math.round((recDate.getTime() - parseDate(today).getTime()) / (1000 * 60 * 60 * 24));
+    let statusText = `Previsto para ${dateFmt.format(recDate)}`;
+    if (due) {
+      statusText = diffDays === 0 ? 'Vence hoje!' : `Recomendação vencida (${dateFmt.format(recDate)})`;
+    } else if (diffDays <= 45) {
+      statusText = `Retorno em ${diffDays} dia(s) (${dateFmt.format(recDate)})`;
+    }
+    const reminderMsg = renderTemplate(getSettings().msgLembrete, { cliente: client.firstName });
+    return `<div class="list-item"><span class="list-main"><strong>${esc(clientName(client))}</strong><span style="${due ? 'color:var(--danger); font-weight:600;' : ''}">${esc(statusText)}</span></span><a class="whats-link" target="_blank" rel="noopener noreferrer" href="${whatsappLink(client.phone, reminderMsg)}" title="Enviar lembrete pelo WhatsApp"><i class="fa-brands fa-whatsapp"></i></a></div>`;
   }).join('') : empty('Cadastre clientes para acompanhar a recorrência.');
+
+  // Aniversariantes próximos
+  const birthdayItems = state().clients
+    .map(client => {
+      const info = getBirthdayInfo(client.birthDate);
+      return info ? { client, info } : null;
+    })
+    .filter(Boolean)
+    .filter(({ info }) => info.daysUntil <= 35 || info.isThisMonth)
+    .sort((a, b) => a.info.daysUntil - b.info.daysUntil);
+
+  const totalInMonth = state().clients.filter(c => {
+    const info = getBirthdayInfo(c.birthDate);
+    return info && info.isThisMonth;
+  }).length;
+
+  const birthdaysBadge = document.getElementById('birthdaysBadge');
+  if (birthdaysBadge) {
+    const monthName = monthFmt.format(parseDate(today)).split(' ')[0];
+    birthdaysBadge.textContent = `${totalInMonth} em ${monthName}`;
+  }
+
+  const birthdaysList = document.getElementById('birthdaysList');
+  if (birthdaysList) {
+    birthdaysList.innerHTML = birthdayItems.length ? birthdayItems.map(({ client, info }) => {
+      let timeText = `Em ${info.daysUntil} dias`;
+      let badgeStyle = 'color:var(--muted); font-weight:700;';
+      if (info.isToday) {
+        timeText = 'Hoje! 🎉';
+        badgeStyle = 'color:#d97706; font-weight:800;';
+      } else if (info.isTomorrow) {
+        timeText = 'Amanhã';
+        badgeStyle = 'color:var(--blue); font-weight:700;';
+      }
+      const ageText = info.ageTurning ? ` · ${info.ageTurning} anos` : '';
+      const dateFormatted = dateFmt.format(info.nextDate);
+      const bdayMsg = `Olá ${client.firstName}! 🎂 A equipe da Hiper Higienizações deseja a você um Feliz Aniversário! Muita saúde, alegria e realizações. Conte conosco para deixar seus estofados sempre impecáveis!`;
+      return `<div class="list-item">
+        <span class="alert-icon" style="background:#fef3c7; color:#d97706; flex:0 0 38px; width:38px; height:38px; font-size:16px"><i class="fa-solid fa-cake-candles"></i></span>
+        <span class="list-main">
+          <strong>${esc(clientName(client))}</strong>
+          <span style="display:flex; align-items:center; gap:6px;">
+            <span style="${badgeStyle}">${timeText}</span>
+            <span>(${dateFormatted}${ageText})</span>
+          </span>
+        </span>
+        <a class="whats-link" target="_blank" rel="noopener noreferrer" href="${whatsappLink(client.phone, bdayMsg)}" title="Enviar parabéns pelo WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+      </div>`;
+    }).join('') : empty('Nenhum aniversariante nos próximos dias.');
+  }
 
   renderRevenueChart();
 }
@@ -280,7 +349,7 @@ function renderOrders() {
 
 function renderAll() {
   if (store.modo !== 'demo' && store.modo !== 'nuvem') return;
-  renderDashboard(); renderAgenda(); renderClients(); renderServices(); renderFinance(); renderOrders();
+  renderDashboard(); renderAgenda(); renderClients(); renderServices(); renderFinance(); renderOrders(); renderCompanySettings();
   bindDynamicActions();
 }
 
@@ -294,11 +363,33 @@ function bindDynamicActions() {
 }
 
 function getSettings() {
-  return state().settings?.find(s => s.id === 'empresa') || {
+  const padrao = {
+    id: 'empresa',
+    companyName: 'Hiper Higienizações',
+    companySubtitle: 'Higienização e impermeabilização de estofados',
+    companyPhone: '(16) 99760-3600',
+    companyEmail: 'hiperhigienizacoesrp@gmail.com',
+    companyInstagram: '@hiperhigienizacoesrp',
+    companyRegion: 'Ribeirão Preto e região',
+    companyHours: 'Seg-sex 08h-18h · Sáb 08h-14h',
     msgConfirmacao: 'Olá {{cliente}}! Passando para confirmar nosso agendamento de {{servico}} para o dia {{data}} às {{hora}}.',
     msgGarantia: 'Olá {{cliente}}! Seu serviço de {{servico}} foi concluído.\n\n⚠️ *Orientações:*\nDeixe o estofado secando em local ventilado por 12 a 24 horas. Evite usar durante a secagem.\nQualquer dúvida, estamos à disposição!',
     msgLembrete: 'Olá {{cliente}}! Como você está?\nJá faz um tempinho desde a última limpeza. Que tal agendar uma nova higienização para manter seus estofados limpos e livres de ácaros?'
   };
+  const salvo = state().settings?.find(s => s.id === 'empresa');
+  return salvo ? { ...padrao, ...salvo } : padrao;
+}
+
+function renderCompanySettings() {
+  const config = getSettings();
+  const el = id => document.getElementById(id);
+  if (el('companyNameDisplay')) el('companyNameDisplay').textContent = config.companyName || 'Hiper Higienizações';
+  if (el('companySubtitleDisplay')) el('companySubtitleDisplay').textContent = config.companySubtitle || 'Higienização e impermeabilização de estofados';
+  if (el('companyPhoneDisplay')) el('companyPhoneDisplay').textContent = config.companyPhone || '(16) 99760-3600';
+  if (el('companyEmailDisplay')) el('companyEmailDisplay').textContent = config.companyEmail || 'hiperhigienizacoesrp@gmail.com';
+  if (el('companyInstagramDisplay')) el('companyInstagramDisplay').textContent = config.companyInstagram || '@hiperhigienizacoesrp';
+  if (el('companyRegionDisplay')) el('companyRegionDisplay').textContent = config.companyRegion || 'Ribeirão Preto e região';
+  if (el('companyHoursDisplay')) el('companyHoursDisplay').textContent = config.companyHours || 'Seg-sex 08h-18h · Sáb 08h-14h';
 }
 
 function renderTemplate(templateStr, params) {
@@ -330,7 +421,23 @@ function showAppointmentDetail(id) {
   const returnDetail = item.returnDate && item.returnTime
     ? `<div><span>Devolução prevista</span><strong>${dateFmt.format(parseDate(item.returnDate))} · ${item.returnTime}</strong></div>`
     : '';
-  openDetail('ORDEM DE SERVIÇO', `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>Data e horário</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div>${returnDetail}<div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || 'Não informado')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" class="${item.status===key?'is-active':''}" style="--status:var(--${key})" aria-pressed="${item.status===key}" ${item.status===key?'disabled':''}>${item.status===key?'<i class="fa-solid fa-check"></i> ':''}${label}</button>`).join('')}</div><div class="detail-actions">${whatsButton}<button type="button" class="secondary-button reschedule-button" data-reschedule-appointment="${item.id}"><i class="fa-regular fa-calendar-days"></i> Alterar data</button><button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
+
+  const returnRecInterval = item.returnInterval ? (item.returnInterval === 'custom' ? 'Personalizado' : `${item.returnInterval} meses`) : '6 meses (padrão)';
+  const returnRecDate = item.nextRecommendation ? dateFmt.format(parseDate(item.nextRecommendation)) : '';
+  const returnRecDetail = returnRecDate
+    ? `<div><span>Retorno recomendado</span><strong>${returnRecDate} (${returnRecInterval})</strong></div>`
+    : `<div><span>Retorno recomendado</span><strong>${returnRecInterval}</strong></div>`;
+
+  const gcalUrl = googleCalendarLink({
+    title: `Hiper: ${service?.name || 'Higienização'} - ${clientName(client)}`,
+    date: item.date,
+    time: item.time,
+    duration: item.duration,
+    address: item.address,
+    details: `Cliente: ${clientName(client)}\nTelefone: ${client?.phone || ''}\nServiço: ${service?.name || ''}\nResponsável: ${item.team || 'Não informado'}\nValor: ${brl.format(item.value)}\nPagamento: ${item.paymentStatus === 'paid' ? 'Pago' : 'A receber'} (${item.paymentMethod})\nEndereço: ${item.address}\nObservações: ${item.notes || 'Sem observações'}`
+  });
+
+  openDetail('ORDEM DE SERVIÇO', `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>Data e horário</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div>${returnDetail}${returnRecDetail}<div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || 'Não informado')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" class="${item.status===key?'is-active':''}" style="--status:var(--${key})" aria-pressed="${item.status===key}" ${item.status===key?'disabled':''}>${item.status===key?'<i class="fa-solid fa-check"></i> ':''}${label}</button>`).join('')}</div><div class="detail-actions">${whatsButton}<a href="${gcalUrl}" target="_blank" rel="noopener noreferrer" class="secondary-button" style="color:var(--blue); border-color:#cfe4fb" title="Salvar no Google Agenda / Android"><i class="fa-solid fa-calendar-plus"></i> Salvar na Agenda</a><button type="button" class="secondary-button reschedule-button" data-reschedule-appointment="${item.id}"><i class="fa-regular fa-calendar-days"></i> Alterar data</button><button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
   document.querySelectorAll('[data-set-status]').forEach(button => button.onclick = () => updateAppointmentStatus(item.id, button.dataset.setStatus));
   document.querySelector('[data-reschedule-appointment]').onclick = () => openAppointmentReschedule(item.id);
   document.querySelector('[data-edit-appointment]').onclick = () => openForm('appointment', item.id);
@@ -366,21 +473,33 @@ function promptWhatsAppConfirmation(id) {
   const config = getSettings();
   const text = renderTemplate(config.msgConfirmacao, params);
   const link = whatsappLink(client?.phone, text);
+  const gcalUrl = googleCalendarLink({
+    title: `Hiper: ${service?.name || 'Higienização'} - ${clientName(client)}`,
+    date: item.date,
+    time: item.time,
+    duration: item.duration,
+    address: item.address,
+    details: `Cliente: ${clientName(client)}\nTelefone: ${client?.phone || ''}\nServiço: ${service?.name || ''}\nResponsável: ${item.team || 'Não informado'}\nValor: ${brl.format(item.value)}\nPagamento: ${item.paymentStatus === 'paid' ? 'Pago' : 'A receber'} (${item.paymentMethod})\nEndereço: ${item.address}\nObservações: ${item.notes || 'Sem observações'}`
+  });
 
   openDetail('WHATSAPP', 'Enviar confirmação?', `
     <div style="text-align: center; padding: 20px 0;">
-      <i class="fa-brands fa-whatsapp" style="font-size: 48px; color: var(--success); margin-bottom: 16px;"></i>
-      <p style="font-size: 16px; color: var(--ink); margin-bottom: 24px;">Agendamento salvo com sucesso!<br>Deseja avisar o cliente pelo WhatsApp?</p>
-      <div class="form-actions" style="justify-content: center; gap: 12px;">
-        <button type="button" class="secondary-button" id="whatsappDismiss">Agora não</button>
+      <i class="fa-solid fa-circle-check" style="font-size: 48px; color: var(--success); margin-bottom: 16px;"></i>
+      <p style="font-size: 16px; color: var(--ink); margin-bottom: 24px;">Agendamento registrado com sucesso!<br>Deseja avisar o cliente ou salvar na sua agenda?</p>
+      <div class="form-actions" style="justify-content: center; gap: 10px; flex-wrap: wrap;">
         <a target="_blank" rel="noopener noreferrer" href="${link}" class="primary-button" id="whatsappSend" style="background:var(--success); border-color:var(--success);">
-          <i class="fa-brands fa-whatsapp"></i> Enviar mensagem
+          <i class="fa-brands fa-whatsapp"></i> Avisar no WhatsApp
         </a>
+        <a target="_blank" rel="noopener noreferrer" href="${gcalUrl}" class="secondary-button" id="calendarSave" style="color:var(--blue); border-color:#cfe4fb;">
+          <i class="fa-solid fa-calendar-plus"></i> Salvar na Agenda
+        </a>
+        <button type="button" class="secondary-button" id="whatsappDismiss">Fechar</button>
       </div>
     </div>
   `);
   document.getElementById('whatsappDismiss').addEventListener('click', closeModal);
   document.getElementById('whatsappSend').addEventListener('click', closeModal);
+  document.getElementById('calendarSave')?.addEventListener('click', closeModal);
 }
 function showClientDetail(id) {
   const client = getClient(id); if (!client) return;
@@ -399,7 +518,15 @@ function showClientDetail(id) {
 
   const docStr = client.document ? `<div style="grid-column:1/-1"><span>CPF / CNPJ</span><strong>${esc(client.document)}</strong></div>` : '';
 
-  openDetail('FICHA DO CLIENTE', clientName(client), `<div class="detail-hero"><span class="initials">${esc((client.firstName?.[0]||'')+(client.lastName?.[0]||''))}</span><div><strong>${esc(clientName(client))}</strong><p>${esc(client.phone)}</p></div></div><div class="detail-grid"><div><span>Total gasto</span><strong>${brl.format(total)}</strong></div><div><span>Serviços concluídos</span><strong>${history.length}</strong></div><div><span>Última higienização</span><strong>${history[0]?dateFmt.format(parseDate(history[0].date)):'-'}</strong></div><div><span>Próxima recomendação</span><strong>${client.nextRecommendation?dateFmt.format(parseDate(client.nextRecommendation)):'Não definida'}</strong></div>${docStr}<div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(fullAddress)}</strong></div></div><h3>Histórico</h3><div class="stack-list" style="margin-top:10px">${history.length?history.map(item => `<div class="list-item"><span class="list-time">${dateFmt.format(parseDate(item.date))}</span><span class="list-main"><strong>${esc(getService(item.serviceId)?.name || '')}</strong><span>${esc(item.team || '')}</span></span><span class="list-value">${brl.format(item.value)}</span></div>`).join(''):empty('Ainda não há serviços concluídos.')}</div><div class="detail-actions">${whatsButton}<button type="button" class="secondary-button" data-edit-client="${client.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-client="${client.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
+  let birthDateStr = '';
+  if (client.birthDate) {
+    const bInfo = getBirthdayInfo(client.birthDate);
+    const bFormatted = dateFmt.format(parseDate(client.birthDate));
+    const bAge = bInfo?.ageTurning ? ` (${bInfo.ageTurning} anos)` : '';
+    birthDateStr = `<div><span>Data de nascimento</span><strong>${bFormatted}${bAge}</strong></div>`;
+  }
+
+  openDetail('FICHA DO CLIENTE', clientName(client), `<div class="detail-hero"><span class="initials">${esc((client.firstName?.[0]||'')+(client.lastName?.[0]||''))}</span><div><strong>${esc(clientName(client))}</strong><p>${esc(client.phone)}</p></div></div><div class="detail-grid"><div><span>Total gasto</span><strong>${brl.format(total)}</strong></div><div><span>Serviços concluídos</span><strong>${history.length}</strong></div><div><span>Última higienização</span><strong>${history[0]?dateFmt.format(parseDate(history[0].date)):'-'}</strong></div><div><span>Próxima recomendação</span><strong>${client.nextRecommendation?dateFmt.format(parseDate(client.nextRecommendation)):'Não definida'}</strong></div>${birthDateStr}${docStr}<div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(fullAddress)}</strong></div></div><h3>Histórico</h3><div class="stack-list" style="margin-top:10px">${history.length?history.map(item => `<div class="list-item"><span class="list-time">${dateFmt.format(parseDate(item.date))}</span><span class="list-main"><strong>${esc(getService(item.serviceId)?.name || '')}</strong><span>${esc(item.team || '')}</span></span><span class="list-value">${brl.format(item.value)}</span></div>`).join(''):empty('Ainda não há serviços concluídos.')}</div><div class="detail-actions">${whatsButton}<button type="button" class="secondary-button" data-edit-client="${client.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-client="${client.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
   document.querySelector('[data-edit-client]').onclick = () => openForm('client', client.id);
   document.querySelector('[data-delete-client]').onclick = () => excluirCliente(client.id);
 }
@@ -411,7 +538,10 @@ async function updateAppointmentStatus(id, status) {
   const operacoes = [{ tipo:'atualizar', chave:'appointments', id:item.id, dados:{ status } }];
   if (status === 'completed') {
     const client = getClient(item.clientId);
-    if (client) operacoes.push({ tipo:'atualizar', chave:'clients', id:client.id, dados:{ nextRecommendation: localISO(addMonths(parseDate(item.date),6)) } });
+    if (client) {
+      const nextRec = item.nextRecommendation || item.customReturnDate || localISO(addMonths(parseDate(item.date), Number(item.returnInterval || 6)));
+      operacoes.push({ tipo:'atualizar', chave:'clients', id:client.id, dados:{ nextRecommendation: nextRec } });
+    }
     if (item.paymentStatus === 'paid' && !state().transactions.some(tx => tx.appointmentId === item.id)) {
       const receita = incomeFromAppointment(item);
       operacoes.push({ tipo:'criar', chave:'transactions', id:receita.id, dados:receita });
@@ -438,7 +568,7 @@ function preencherForm(form, registro) {
     const campo = form.elements[chave];
     if (campo && valor !== undefined && valor !== null) {
       if (campo.classList.contains('mask-phone')) campo.value = maskPhone(valor);
-      else if (campo.classList.contains('mask-currency')) campo.value = maskCurrency(Number(valor).toFixed(2));
+      else if (campo.classList.contains('mask-currency')) campo.value = typeof valor === 'number' ? valor : maskCurrency(Number(valor).toFixed(2));
       else campo.value = valor;
     }
   });
@@ -523,9 +653,36 @@ function updateClientDocumentFields(form, reset = false) {
   input.placeholder = isCpf ? '000.000.000-00' : '00.000.000/0000-00';
 }
 
+function updateAppointmentRecommendationPreview(form) {
+  if (!form || !form.elements.returnInterval) return;
+  const isCustom = form.elements.returnInterval.value === 'custom';
+  const customGroup = document.getElementById('appointmentCustomReturnGroup');
+  if (customGroup) customGroup.hidden = !isCustom;
+  if (form.elements.customReturnDate) {
+    form.elements.customReturnDate.disabled = !isCustom;
+    form.elements.customReturnDate.required = isCustom;
+  }
+
+  const apptDateStr = form.elements.date.value;
+  let targetDate = null;
+  if (isCustom) {
+    if (form.elements.customReturnDate?.value) {
+      targetDate = parseDate(form.elements.customReturnDate.value);
+    }
+  } else if (apptDateStr) {
+    const months = Number(form.elements.returnInterval.value) || 6;
+    targetDate = addMonths(parseDate(apptDateStr), months);
+  }
+
+  const preview = document.getElementById('returnPreviewDate');
+  if (preview) {
+    preview.textContent = targetDate ? dateFmt.format(targetDate) : 'Defina a data';
+  }
+}
+
 function openForm(type, id = null) {
   let registro = null;
-  if (type === 'settings') {
+  if (type === 'settings' || type === 'company') {
     id = 'empresa';
     registro = getSettings();
   } else {
@@ -533,21 +690,22 @@ function openForm(type, id = null) {
     if (id && !registro) { toast('Registro não encontrado.'); return; }
   }
   
-  editando = registro && type !== 'settings' ? { type, id } : null; // settings usa o seu próprio handler sem depender do editando global
+  editando = registro && type !== 'settings' && type !== 'company' ? { type, id } : null;
 
   const configs = {
     appointment: { formId:'appointmentForm', criar:['NOVO SERVIÇO','Agendar atendimento','Salvar agendamento'], editar:['EDITAR SERVIÇO','Editar atendimento','Salvar alterações'] },
     client:      { formId:'clientForm',      criar:['NOVO CADASTRO','Adicionar cliente','Salvar cliente'],      editar:['EDITAR CADASTRO','Editar cliente','Salvar alterações'] },
     transaction: { formId:'transactionForm', criar:['FINANCEIRO','Novo lançamento','Salvar lançamento'],        editar:['FINANCEIRO','Editar lançamento','Salvar alterações'] },
     service:     { formId:'serviceForm',     criar:['CATÁLOGO','Novo serviço','Salvar serviço'],                editar:['CATÁLOGO','Editar serviço','Salvar alterações'] },
-    settings:    { formId:'settingsForm',    criar:['MENSAGENS','Editar mensagens do WhatsApp','Salvar alterações'], editar:['MENSAGENS','Editar mensagens do WhatsApp','Salvar alterações'] }
+    settings:    { formId:'settingsForm',    criar:['MENSAGENS','Editar mensagens do WhatsApp','Salvar alterações'], editar:['MENSAGENS','Editar mensagens do WhatsApp','Salvar alterações'] },
+    company:     { formId:'companyForm',     criar:['EMPRESA','Editar dados da empresa','Salvar dados'],         editar:['EMPRESA','Editar dados da empresa','Salvar dados'] }
   };
   const { formId } = configs[type];
   const [eyebrow, titulo, rotuloBotao] = registro ? configs[type].editar : configs[type].criar;
   document.getElementById('modalEyebrow').textContent = eyebrow;
   document.getElementById('modalTitle').textContent = titulo;
   document.getElementById('modalClientInvite').hidden = type !== 'appointment';
-  document.querySelectorAll('.modal-form, #detailContent, #guideContent').forEach(element => element.hidden = true);
+  document.querySelectorAll('.modal-form, #detailContent, #guideContent, #newsContent').forEach(element => element.hidden = true);
   const form = document.getElementById(formId); form.hidden = false; form.reset();
   form.querySelector('button[type="submit"]').textContent = rotuloBotao;
 
@@ -572,14 +730,25 @@ function openForm(type, id = null) {
         form.elements.address.value = clientAddress(client);
       }
     };
+    form.elements.returnInterval.onchange = () => updateAppointmentRecommendationPreview(form);
+    form.elements.customReturnDate.onchange = () => updateAppointmentRecommendationPreview(form);
+    form.elements.date.addEventListener('input', () => {
+      updateAppointmentReturnFields(form, true);
+      updateAppointmentRecommendationPreview(form);
+    });
     appointmentClientIds = new Set(state().clients.map(client => client.id));
     refreshAppointmentClients(false, true);
-    form.elements.date.onchange = () => updateAppointmentReturnFields(form, true);
+    form.elements.date.onchange = () => {
+      updateAppointmentReturnFields(form, true);
+      updateAppointmentRecommendationPreview(form);
+    };
     if (!registro) {
       form.elements.date.value = localISO(new Date()); form.elements.time.value = '08:00'; form.elements.duration.value = 180;
       form.elements.status.value = 'scheduled';
+      form.elements.returnInterval.value = '6';
       form.elements.serviceId.onchange();
       form.elements.clientId.onchange();
+      updateAppointmentRecommendationPreview(form);
     }
   }
   if (type === 'client') {
@@ -602,6 +771,9 @@ function openForm(type, id = null) {
     form.elements.requiresReturn.onchange = () => updateServiceReturnFields(form);
     form.elements.icon.onchange = () => updateServiceCategoryFields(form);
   }
+  if (type === 'company') {
+    preencherForm(form, registro || getSettings());
+  }
   if (registro) {
     preencherForm(form, registro);
     if (type === 'client') {
@@ -610,7 +782,12 @@ function openForm(type, id = null) {
       const documentDigits = String(registro.document || '').replace(/\D/g, '');
       form.elements.documentType.value = registro.documentType || (documentDigits.length > 11 ? 'cnpj' : 'cpf');
     }
-    if (type === 'appointment') updateAppointmentReturnFields(form, false);
+    if (type === 'appointment') {
+      updateAppointmentReturnFields(form, false);
+      if (registro.returnInterval) form.elements.returnInterval.value = registro.returnInterval;
+      if (registro.customReturnDate) form.elements.customReturnDate.value = registro.customReturnDate;
+      updateAppointmentRecommendationPreview(form);
+    }
     if (type === 'service') {
       form.elements.requiresReturn.value = String(serviceRequiresReturn(registro));
       form.elements.returnDays.value = Number(registro.returnDays) || 7;
@@ -633,7 +810,7 @@ function openDetail(eyebrow,title,html) {
   document.getElementById('modalEyebrow').textContent = eyebrow;
   document.getElementById('modalTitle').textContent = title;
   document.getElementById('modalClientInvite').hidden = true;
-  document.querySelectorAll('.modal-form, #guideContent').forEach(element => element.hidden = true);
+  document.querySelectorAll('.modal-form, #guideContent, #newsContent').forEach(element => element.hidden = true);
   const detail = document.getElementById('detailContent'); detail.hidden = false; detail.innerHTML = html;
   document.querySelector('#modalBackdrop .modal').dataset.kind = 'detail';
   openModal();
@@ -642,11 +819,32 @@ function openGuide() {
   document.getElementById('modalEyebrow').textContent = 'AJUDA';
   document.getElementById('modalTitle').textContent = 'Guia rápido';
   document.getElementById('modalClientInvite').hidden = true;
-  document.querySelectorAll('.modal-form, #detailContent').forEach(element => element.hidden = true);
+  document.querySelectorAll('.modal-form, #detailContent, #newsContent').forEach(element => element.hidden = true);
   document.getElementById('guideContent').hidden = false;
   document.getElementById('guideDontShow').checked = localStorage.getItem(GUIDE_HIDDEN_KEY) === '1';
   document.querySelector('#modalBackdrop .modal').dataset.kind = 'guide';
   openModal();
+}
+const NEWS_SEEN_KEY = 'hiper-novidades-v2';
+let newsAutoOpened = false;
+
+function openNews() {
+  document.getElementById('modalEyebrow').textContent = 'ATUALIZAÇÃO';
+  document.getElementById('modalTitle').textContent = 'Novas funcionalidades';
+  document.getElementById('modalClientInvite').hidden = true;
+  document.querySelectorAll('.modal-form, #detailContent, #guideContent').forEach(element => element.hidden = true);
+  const news = document.getElementById('newsContent');
+  if (news) news.hidden = false;
+  document.querySelector('#modalBackdrop .modal').dataset.kind = 'news';
+  openModal();
+}
+
+function maybeOpenNews() {
+  if (newsAutoOpened || store.modo !== 'nuvem' || localStorage.getItem(NEWS_SEEN_KEY) === '1') return;
+  newsAutoOpened = true;
+  window.setTimeout(() => {
+    if (!document.getElementById('modalBackdrop').classList.contains('open')) openNews();
+  }, 450);
 }
 function maybeOpenGuide() {
   if (guideAutoOpened || store.modo !== 'nuvem' || localStorage.getItem(GUIDE_HIDDEN_KEY) === '1') return;
@@ -729,12 +927,24 @@ async function handleAppointmentSubmit(event) {
     }
   }
 
+  let nextRec = values.customReturnDate || '';
+  if (values.returnInterval !== 'custom' || !nextRec) {
+    const months = Number(values.returnInterval || 6);
+    nextRec = localISO(addMonths(parseDate(dados.date), months));
+  }
+  dados.returnInterval = values.returnInterval || '6';
+  dados.customReturnDate = values.customReturnDate || '';
+  dados.nextRecommendation = nextRec;
+
   closeModal();
 
   if (emEdicao) {
     const receita = state().transactions.find(tx => tx.appointmentId === emEdicao.id);
     await comFeedback(async () => {
-      const operacoes = [{ tipo:'atualizar', chave:'appointments', id:emEdicao.id, dados }];
+      const operacoes = [
+        { tipo:'atualizar', chave:'appointments', id:emEdicao.id, dados },
+        { tipo:'atualizar', chave:'clients', id:dados.clientId, dados:{ nextRecommendation: nextRec } }
+      ];
       // Mantém o financeiro coerente com o pagamento informado aqui.
       if (dados.paymentStatus === 'paid' && !receita) {
         const nova = incomeFromAppointment({ ...dados, id:emEdicao.id });
@@ -751,7 +961,10 @@ async function handleAppointmentSubmit(event) {
 
   const appointment = { id:uid('apt'), ...dados };
   await comFeedback(async () => {
-    const operacoes = [{ tipo:'criar', chave:'appointments', id:appointment.id, dados:appointment }];
+    const operacoes = [
+      { tipo:'criar', chave:'appointments', id:appointment.id, dados:appointment },
+      { tipo:'atualizar', chave:'clients', id:dados.clientId, dados:{ nextRecommendation: nextRec } }
+    ];
     if (appointment.paymentStatus === 'paid') {
       const receita = incomeFromAppointment(appointment);
       operacoes.push({ tipo:'criar', chave:'transactions', id:receita.id, dados:receita });
@@ -812,6 +1025,17 @@ async function handleSettingsSubmit(event) {
     await comFeedback(() => atualizar('settings', 'empresa', values), 'Mensagens atualizadas.');
   } else {
     await comFeedback(() => criar('settings', { id: 'empresa', ...values }), 'Mensagens configuradas.');
+  }
+}
+async function handleCompanySubmit(event) {
+  event.preventDefault();
+  const values = Object.fromEntries(new FormData(event.currentTarget));
+  closeModal();
+  const settingsDoc = state().settings?.find(s => s.id === 'empresa');
+  if (settingsDoc) {
+    await comFeedback(() => atualizar('settings', 'empresa', values), 'Dados da empresa atualizados.');
+  } else {
+    await comFeedback(() => criar('settings', { id: 'empresa', ...values }), 'Dados da empresa salvos.');
   }
 }
 
@@ -1122,6 +1346,7 @@ document.getElementById('clientForm').addEventListener('submit', handleClientSub
 document.getElementById('transactionForm').addEventListener('submit', handleTransactionSubmit);
 document.getElementById('serviceForm').addEventListener('submit', handleServiceSubmit);
 document.getElementById('settingsForm').addEventListener('submit', handleSettingsSubmit);
+document.getElementById('companyForm')?.addEventListener('submit', handleCompanySubmit);
 document.getElementById('clientSearch').addEventListener('input', renderClients);
 document.getElementById('orderSearch').addEventListener('input', renderOrders);
 document.getElementById('financeMonth').addEventListener('change', renderFinance);
@@ -1144,6 +1369,13 @@ document.addEventListener('click', event => {
         agendaDate = new Date();
         renderAgenda();
         bindDynamicActions();
+      } else if (action === 'aniversariantes') {
+        closeAlerts();
+        navigate('dashboard');
+        setTimeout(() => {
+          document.getElementById('birthdaysPanel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+        return;
       }
       navigate(action);
     }
@@ -1217,6 +1449,12 @@ async function recarregarApp() {
   setTimeout(() => window.location.reload(true), 250);
 }
 document.getElementById('reloadAppButton')?.addEventListener('click', recarregarApp);
+document.getElementById('newsButton')?.addEventListener('click', openNews);
+document.getElementById('newsConfigButton')?.addEventListener('click', openNews);
+document.getElementById('newsDismissButton')?.addEventListener('click', () => {
+  localStorage.setItem(NEWS_SEEN_KEY, '1');
+  closeModal();
+});
 document.getElementById('helpGuideButton')?.addEventListener('click', openGuide);
 document.getElementById('mobileHelpGuideButton')?.addEventListener('click', openGuide);
 document.getElementById('guideDontShow')?.addEventListener('change', event => {
@@ -1242,7 +1480,7 @@ async function confirmarSaida() {
 document.getElementById('signOut').addEventListener('click', confirmarSaida);
 document.getElementById('profileSignOut')?.addEventListener('click', confirmarSaida);
 document.getElementById('googleButton').addEventListener('click', handleGoogleLogin);
-// document.getElementById('demoButton').addEventListener('click', iniciarDemo);
+document.getElementById('demoButton')?.addEventListener('click', iniciarDemo);
 document.getElementById('deniedSignOut').addEventListener('click', () => comFeedback(() => sair()));
 // document.getElementById('deniedDemo').addEventListener('click', async () => { await sair(); iniciarDemo(); });
 
@@ -1362,6 +1600,7 @@ aoMudar(() => {
   refreshAppointmentClients(true);
   renderSync();
   renderAppPanel();
+  maybeOpenNews();
   maybeOpenGuide();
   // Mantém o resumo que o service worker lê para lembrar dos serviços do dia.
   if (store.modo === 'demo' || store.modo === 'nuvem') {
@@ -1408,3 +1647,5 @@ if (permissaoAtual() === 'granted') {
 window.navigate = navigate;
 window.closeAlerts = closeAlerts;
 window.closeModal = closeModal;
+window.maybeOpenGuide = maybeOpenGuide;
+window.openNews = openNews;

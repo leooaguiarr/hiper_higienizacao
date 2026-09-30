@@ -83,6 +83,21 @@ FCM. Nada disso é preciso para o uso atual.
 
 ---
 
+## Integração com a Agenda do Celular (Google Agenda / Android)
+
+Para que a equipe tenha alarmes e compromissos sincronizados com o calendário do próprio aparelho:
+
+- Ao salvar um novo agendamento ou abrir uma Ordem de Serviço existente, toque em **Salvar na Agenda**.
+- No Android, o sistema intercepta o link e abre diretamente a tela do aplicativo **Google Agenda (Google Calendar)**.
+- O evento já vem preenchido com:
+  - **Título:** `Hiper: [Serviço] - [Cliente]`
+  - **Horário:** data e hora de início até o término previsto (calculado pela duração do serviço).
+  - **Local:** endereço completo de atendimento.
+  - **Descrição:** contato do cliente, valor, pagamento e observações técnicas.
+- Basta tocar em **Salvar** para registrar na sua agenda pessoal com os alarmes de notificação do celular.
+
+---
+
 ## Notas técnicas
 
 - `public/manifest.webmanifest` — identidade, ícones e atalhos do aplicativo.

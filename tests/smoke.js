@@ -276,7 +276,7 @@ async function main() {
     document.querySelector('[data-open="client"]').click();
     const form = document.getElementById('clientForm');
     const camposIguaisAoPublico = !!form.elements.documentType && !!document.getElementById('clientCepSearch')
-      && !form.elements.birthDate && !form.elements.notes;
+      && !!form.elements.birthDate && !form.elements.notes;
     form.elements.firstName.value = 'Teste';
     form.elements.lastName.value = 'Headless';
     form.elements.phone.value = '(16) 90000-0000';

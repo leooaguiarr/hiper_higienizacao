@@ -53,6 +53,13 @@ export function seedData() {
   const settings = [
     {
       id: 'empresa',
+      companyName: 'Hiper Higienizações',
+      companySubtitle: 'Higienização e impermeabilização de estofados',
+      companyPhone: '(16) 99760-3600',
+      companyEmail: 'hiperhigienizacoesrp@gmail.com',
+      companyInstagram: '@hiperhigienizacoesrp',
+      companyRegion: 'Ribeirão Preto e região',
+      companyHours: 'Seg-sex 08h-18h · Sáb 08h-14h',
       msgConfirmacao: 'Olá {{cliente}}! Passando para confirmar nosso agendamento de {{servico}} para o dia {{data}} às {{hora}}.',
       msgGarantia: 'Olá {{cliente}}! Seu serviço de {{servico}} foi concluído.\n\n⚠️ *Orientações:*\nDeixe o estofado secando em local ventilado por 12 a 24 horas. Evite usar durante a secagem.\nQualquer dúvida, estamos à disposição!',
       msgLembrete: 'Olá {{cliente}}! Como você está?\nJá faz um tempinho desde a última limpeza. Que tal agendar uma nova higienização para manter seus estofados limpos e livres de ácaros?'

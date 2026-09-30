@@ -275,3 +275,4 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 24/09/2026 | Landing colocada em **standby** e raiz devolvida ao login Google, redesenhado com imagem institucional, marca e cores da Hiper. |
 | 24/09/2026 | Botão de **modo demonstração removido da interface de login**; o modo permanece acessível apenas aos testes automatizados. |
 | 24/09/2026 | **Base compartilhada da Hiper** ativada para todas as contas autorizadas, mantendo os dados no UID original da empresa; dashboard responsivo e menu de perfil Google adicionados. |
+| 30/09/2026 | **Novas funcionalidades do cliente:** Data de nascimento no cadastro com alerta e card de aniversariantes próximos no Dashboard (WhatsApp em 1 clique); dados da empresa editáveis em Configurações; ciclo de retorno personalizável por agendamento; integração com Google Agenda (Android); popup de novidades e atualização do guia. Versão `hiper-v43`. |

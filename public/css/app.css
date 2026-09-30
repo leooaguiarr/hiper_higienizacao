@@ -397,8 +397,8 @@ main { padding: 26px 30px 50px; }
 .metric-card small { position: absolute; right: 15px; top: 18px; color: var(--success); font-size: 12px; font-weight: 700; }
 .dashboard-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
 .dashboard-grid > *, .panel, .panel-heading > *, .stack-list, .list-item { min-width: 0; }
-.panel { overflow: hidden; padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
 .span-2 { grid-column: span 2; }
+.span-3 { grid-column: span 3; }
 .panel-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
 .panel-heading .overline { display: block; margin-bottom: 5px; }
 .stack-list { display: grid; gap: 10px; }
@@ -503,8 +503,8 @@ main { padding: 26px 30px 50px; }
 .service-category { display: inline-flex; align-items: center; gap: 5px; margin-bottom: 8px; color: var(--blue); font-size: 11px; font-weight: 800; }
 .service-card p { min-height: 45px; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .service-meta { display: flex; justify-content: space-between; padding-top: 13px; border-top: 1px solid var(--line); font-size: 12px; font-weight: 700; }
-.service-actions { display: flex; gap: 8px; margin-top: 13px; }
-.service-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; flex: 1 1 0; min-width: 0; min-height: 44px; margin: 0; padding: 8px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; }
+.service-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 13px; }
+.service-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; width: 100%; min-width: 0; min-height: 44px; margin: 0; padding: 8px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; }
 .service-card.is-inactive { opacity: 0.72; background: #fafbfc; border-style: dashed; }
 .period-filter label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 700; }
 .period-filter input { padding: 9px 11px; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; }
@@ -624,7 +624,7 @@ td.expense { color: var(--danger); font-weight: 800; }
 }
 @media (min-width: 801px) and (max-width: 1250px) {
   .dashboard-grid { grid-template-columns: minmax(0,1fr); }
-  .dashboard-grid .span-2 { grid-column: auto; }
+  .dashboard-grid .span-2, .dashboard-grid .span-3 { grid-column: auto; }
 }
 @media (max-width: 800px) {
   :root { --sidebar: 0px; }
@@ -648,9 +648,10 @@ td.expense { color: var(--danger); font-weight: 800; }
   #view-dashboard.active .dashboard-grid { display: contents; }
   #upcomingPanel { order: 1; }
   #alertsPanel { order: 2; }
-  #recurrencePanel { order: 3; }
-  #revenuePanel { order: 4; }
-  #dashboardMetrics { order: 5; margin: 0; }
+  #birthdaysPanel { order: 3; }
+  #recurrencePanel { order: 4; }
+  #revenuePanel { order: 5; }
+  #dashboardMetrics { order: 6; margin: 0; }
   .settings-grid { grid-template-columns: 1fr; }
   .span-2 { grid-column: auto; }
   .toolbar { align-items: flex-start; flex-direction: column; }

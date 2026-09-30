@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="/css/app.css?v=29">
+  <link rel="stylesheet" href="/css/app.css?v=30">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Hiper Higienizações","url":"https://hiper-higienizacoes.web.app/","telephone":"+55 16 99760-3600","email":"hiperhigienizacoesrp@gmail.com","description":"Serviços de limpeza, higienização e impermeabilização de estofados.","areaServed":"Ribeirão Preto e região","sameAs":["https://www.instagram.com/hiperhigienizacoesrp"]}</script>
 </head>
 <body>
@@ -331,6 +331,7 @@
           <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
           Continuar com Google
         </button>
+        <button type="button" id="demoButton" hidden style="display:none"></button>
         <small class="auth-hint"><i class="fa-solid fa-shield-halved"></i> Acesso seguro para contas autorizadas</small>
       </div>
 
@@ -383,6 +384,10 @@
       </nav>
 
       <footer>
+        <button type="button" class="sidebar-footer-btn" id="newsButton" title="Novidades do sistema" style="margin-bottom: 6px;">
+          <i class="fa-solid fa-sparkles" style="color: #f59e0b;"></i>
+          <span><strong>Novidades</strong><small>O que há de novo</small></span>
+        </button>
         <button type="button" class="sidebar-footer-btn" id="helpGuideButton" title="Abrir guia rápido">
           <i class="fa-regular fa-circle-question"></i>
           <span><strong>Guia rápido</strong><small>Ajuda e suporte</small></span>
@@ -450,6 +455,7 @@
             <article class="panel" id="alertsPanel"><div class="panel-heading"><div><span class="overline">ATENÇÃO</span><h3>Alertas</h3></div></div><div id="alertsList" class="stack-list compact"></div></article>
             <article class="panel span-2" id="revenuePanel"><div class="panel-heading"><div><span class="overline">DESEMPENHO</span><h3>Faturamento - últimos 6 meses</h3></div><span class="muted">Receitas recebidas</span></div><div id="revenueChart" class="bar-chart"></div></article>
             <article class="panel" id="recurrencePanel"><div class="panel-heading"><div><span class="overline">RECORRÊNCIA</span><h3>Hora de chamar</h3></div></div><div id="recurrenceList" class="stack-list compact"></div></article>
+            <article class="panel span-3" id="birthdaysPanel"><div class="panel-heading"><div><span class="overline">COMEMORAÇÕES</span><h3>Aniversariantes próximos</h3></div><span class="badge" id="birthdaysBadge" style="--status:var(--blue)">0 no mês</span></div><div id="birthdaysList" class="stack-list compact"></div></article>
           </div>
         </section>
 
@@ -489,10 +495,10 @@
 
         <section class="view" id="view-configuracoes">
           <div class="settings-grid">
-            <article class="panel" id="companyPanel"><div class="panel-heading"><div><span class="overline">EMPRESA</span><h3>Dados da Hiper</h3></div></div><div class="company-card"><img src="/assets/logo-hiper.png" alt="Logo Hiper"><div><strong>Hiper Higienizações</strong><p>Higienização e impermeabilização de estofados</p></div></div><dl class="data-list"><div><dt>Telefone</dt><dd>(16) 99760-3600</dd></div><div><dt>E-mail</dt><dd>hiperhigienizacoesrp@gmail.com</dd></div><div><dt>Instagram</dt><dd>@hiperhigienizacoesrp</dd></div><div><dt>Região</dt><dd>Ribeirão Preto e região</dd></div><div><dt>Horário</dt><dd>Seg-sex 08h-18h · Sáb 08h-14h</dd></div></dl></article>
+            <article class="panel" id="companyPanel"><div class="panel-heading"><div><span class="overline">EMPRESA</span><h3>Dados da Hiper</h3></div><button type="button" class="secondary-button" id="btnEditCompany" data-open="company"><i class="fa-solid fa-pen"></i> Editar dados</button></div><div class="company-card"><img src="/assets/logo-hiper.png" alt="Logo Hiper"><div><strong id="companyNameDisplay">Hiper Higienizações</strong><p id="companySubtitleDisplay">Higienização e impermeabilização de estofados</p></div></div><dl class="data-list"><div><dt>Telefone</dt><dd id="companyPhoneDisplay">(16) 99760-3600</dd></div><div><dt>E-mail</dt><dd id="companyEmailDisplay">hiperhigienizacoesrp@gmail.com</dd></div><div><dt>Instagram</dt><dd id="companyInstagramDisplay">@hiperhigienizacoesrp</dd></div><div><dt>Região</dt><dd id="companyRegionDisplay">Ribeirão Preto e região</dd></div><div><dt>Horário</dt><dd id="companyHoursDisplay">Seg-sex 08h-18h · Sáb 08h-14h</dd></div></dl></article>
             <article class="panel" id="templatesPanel"><div class="panel-heading"><div><span class="overline">MENSAGENS</span><h3>WhatsApp Automático</h3></div></div><p class="muted">Textos padrão de confirmação, garantia e lembretes enviados aos clientes.</p><div class="settings-actions"><button type="button" class="primary-button" data-open="settings"><i class="fa-brands fa-whatsapp"></i> Editar mensagens</button></div></article>
             <article class="panel" id="notifyPanel"><div class="panel-heading"><div><span class="overline">LEMBRETES</span><h3>Agenda e horários</h3></div></div><p class="muted">Mostra o resumo do dia e avisa 30 minutos antes de atendimentos e devoluções. Com o app fechado, o Android tenta verificar em segundo plano, conforme permitido pelo sistema.</p><div class="auth-notice aviso" id="notifyDeniedAlert" hidden><i class="fa-solid fa-triangle-exclamation"></i><span>Lembretes bloqueados no aparelho. Para reativar, abra os <strong>Ajustes do iPhone &gt; Notificações &gt; Hiper</strong> e ative <strong>Permitir Notificações</strong>.</span></div><div class="settings-actions"><button type="button" class="primary-button" id="notifyButton"><i class="fa-regular fa-bell"></i> Ativar lembretes</button><button type="button" class="secondary-button" id="notifyTest" hidden><i class="fa-solid fa-vial"></i> Testar agora</button></div><dl class="data-list"><div><dt>Permissão</dt><dd id="notifyStatus">-</dd></div><div><dt>Em segundo plano</dt><dd id="notifyBackground">-</dd></div></dl></article>
-            <article class="panel" id="appPanel"><div class="panel-heading"><div><span class="overline">APLICATIVO</span><h3>Instalar no celular</h3></div></div><p class="muted" id="installText">Instale a Hiper no celular da equipe para abrir em tela cheia, com ícone próprio, e continuar funcionando sem sinal na casa do cliente.</p><div class="settings-actions"><button type="button" class="primary-button" id="installButton" hidden><i class="fa-solid fa-download"></i> Instalar aplicativo</button><button type="button" class="secondary-button" id="reloadAppButton"><i class="fa-solid fa-arrows-rotate"></i> Atualizar aplicativo</button></div><dl class="data-list"><div><dt>Instalação</dt><dd id="installStatus">-</dd></div><div><dt>Uso offline</dt><dd id="offlineStatus">-</dd></div></dl></article>
+            <article class="panel" id="appPanel"><div class="panel-heading"><div><span class="overline">APLICATIVO</span><h3>Instalar no celular</h3></div></div><p class="muted" id="installText">Instale a Hiper no celular da equipe para abrir em tela cheia, com ícone próprio, e continuar funcionando sem sinal na casa do cliente.</p><div class="settings-actions"><button type="button" class="primary-button" id="installButton" hidden><i class="fa-solid fa-download"></i> Instalar aplicativo</button><button type="button" class="secondary-button" id="reloadAppButton"><i class="fa-solid fa-arrows-rotate"></i> Atualizar aplicativo</button><button type="button" class="secondary-button" id="newsConfigButton"><i class="fa-solid fa-sparkles"></i> Ver novidades</button></div><dl class="data-list"><div><dt>Instalação</dt><dd id="installStatus">-</dd></div><div><dt>Uso offline</dt><dd id="offlineStatus">-</dd></div></dl></article>
 
             <article class="panel" id="cloudPanel"><div class="panel-heading"><div><span class="overline">CONTA</span><h3>Dados na nuvem</h3></div></div><p class="muted">Esta conta tem acesso à base compartilhada da Hiper, sincronizada em tempo real entre os dispositivos da equipe.</p><dl class="data-list"><div><dt>Nome</dt><dd id="accountName">-</dd></div><div><dt>E-mail</dt><dd id="accountEmail">-</dd></div></dl><div class="settings-actions"><a class="secondary-button" href="https://myaccount.google.com/profile" target="_blank" rel="noopener noreferrer"><i class="fa-regular fa-pen-to-square"></i> Editar perfil Google</a><button type="button" class="danger-button" id="signOut"><i class="fa-solid fa-right-from-bracket"></i> Sair da conta</button></div></article>
           </div>
@@ -515,7 +521,7 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-heading"><div class="modal-heading-copy"><span class="overline" id="modalEyebrow">NOVO REGISTRO</span><h2 id="modalTitle">Cadastro</h2></div><button type="button" class="secondary-button modal-client-invite" id="modalClientInvite" hidden><i class="fa-regular fa-address-card"></i><span>Enviar cadastro</span></button><button class="icon-button" id="modalClose" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
       <form id="appointmentForm" class="modal-form" hidden>
-        <div class="form-grid"><label class="span-2">Cliente<select name="clientId" required></select><small class="appointment-client-status" id="appointmentClientStatus" hidden></small></label><label>Serviço<select name="serviceId" required></select></label><label>Responsável/equipe<input name="team" placeholder="Opcional (Ex.: Rafael)"></label><label>Data<input type="date" name="date" required></label><label>Horário<input type="time" name="time" required></label><label>Duração estimada<input type="number" name="duration" min="30" step="30" required></label><label>Valor (R$)<input type="tel" name="value" class="mask-currency" required></label><div class="return-schedule span-2" id="returnSchedule" hidden><div class="return-schedule-heading"><i class="fa-solid fa-truck-fast"></i><div><strong>Devolução ao cliente</strong><span>Será adicionada à agenda e aos lembretes.</span></div></div><div class="return-schedule-fields"><label>Data da devolução<input type="date" name="returnDate"></label><label>Horário<input type="time" name="returnTime" value="17:00"></label></div></div><label>Status<select name="status"><option value="scheduled">Agendado</option><option value="confirmed">Confirmado</option><option value="in_service">Em atendimento</option><option value="completed">Concluído</option><option value="canceled">Cancelado</option></select></label><label>Pagamento<select name="paymentStatus"><option value="pending">A receber</option><option value="paid">Pago</option></select></label><label>Forma de pagamento<select name="paymentMethod"><option>PIX</option><option>Cartão</option><option>Dinheiro</option><option>Transferência</option></select></label><label class="span-2">Endereço do atendimento<input name="address" required></label><label class="span-2">Observações<textarea name="notes" rows="3" placeholder="Tecido, nível de sujidade, acesso, pets..."></textarea></label></div><div class="form-actions"><button type="button" class="secondary-button" data-close>Cancelar</button><button class="primary-button" type="submit">Salvar agendamento</button></div>
+        <div class="form-grid"><label class="span-2">Cliente<select name="clientId" required></select><small class="appointment-client-status" id="appointmentClientStatus" hidden></small></label><label>Serviço<select name="serviceId" required></select></label><label>Responsável/equipe<input name="team" placeholder="Opcional (Ex.: Rafael)"></label><label>Data<input type="date" name="date" required></label><label>Horário<input type="time" name="time" required></label><label>Duração estimada<input type="number" name="duration" min="30" step="30" required></label><label>Valor (R$)<input type="tel" name="value" class="mask-currency" required></label><div class="return-schedule span-2" id="returnSchedule" hidden><div class="return-schedule-heading"><i class="fa-solid fa-truck-fast"></i><div><strong>Devolução ao cliente</strong><span>Será adicionada à agenda e aos lembretes.</span></div></div><div class="return-schedule-fields"><label>Data da devolução<input type="date" name="returnDate"></label><label>Horário<input type="time" name="returnTime" value="17:00"></label></div></div><label>Status<select name="status"><option value="scheduled">Agendado</option><option value="confirmed">Confirmado</option><option value="in_service">Em atendimento</option><option value="completed">Concluído</option><option value="canceled">Cancelado</option></select></label><label>Pagamento<select name="paymentStatus"><option value="pending">A receber</option><option value="paid">Pago</option></select></label><label>Forma de pagamento<select name="paymentMethod"><option>PIX</option><option>Cartão</option><option>Dinheiro</option><option>Transferência</option></select></label><label>Retorno estimado para nova higienização<select name="returnInterval" id="appointmentReturnInterval"><option value="1">1 mês</option><option value="2">2 meses</option><option value="3">3 meses</option><option value="4">4 meses</option><option value="6" selected>6 meses (padrão)</option><option value="9">9 meses</option><option value="12">12 meses (1 ano)</option><option value="custom">Personalizado (escolher data)</option></select></label><label id="appointmentCustomReturnGroup" hidden>Data personalizada do retorno<input type="date" name="customReturnDate" id="appointmentCustomReturnDate"></label><div class="span-2" style="margin-top:-6px; margin-bottom:2px;"><small id="returnRecommendationPreview" style="color:var(--muted); font-size:12px; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-calendar-check" style="color:var(--blue)"></i> Próximo retorno previsto: <strong id="returnPreviewDate">-</strong></small></div><label class="span-2">Endereço do atendimento<input name="address" required></label><label class="span-2">Observações<textarea name="notes" rows="3" placeholder="Tecido, nível de sujidade, acesso, pets..."></textarea></label></div><div class="form-actions"><button type="button" class="secondary-button" data-close>Cancelar</button><button class="primary-button" type="submit">Salvar agendamento</button></div>
       </form>
       <form id="clientForm" class="modal-form" hidden>
         <div class="form-grid">
@@ -524,10 +530,11 @@
           <label class="span-2">WhatsApp<input type="tel" name="phone" class="mask-phone" inputmode="numeric" required placeholder="(00) 00000-0000" maxlength="15"></label>
           <label>Tipo de pessoa<select name="documentType"><option value="cpf">Pessoa Física (CPF)</option><option value="cnpj">Pessoa Jurídica (CNPJ)</option></select></label>
           <label>Documento (opcional)<input type="tel" name="document" class="mask-document" inputmode="numeric" placeholder="000.000.000-00" maxlength="14"></label>
-          <label>CEP<div class="input-with-action"><input type="tel" name="cep" class="mask-cep" inputmode="numeric" required placeholder="00000-000" maxlength="9"><button type="button" class="secondary-button" id="clientCepSearch" aria-label="Buscar CEP" title="Buscar CEP"><i class="fa-solid fa-magnifying-glass"></i></button></div></label>
+          <label>Data de nascimento<input type="date" name="birthDate"></label>
+          <label>CEP<div class="input-with-action"><input type="tel" name="cep" class="mask-cep" inputmode="numeric" placeholder="00000-000" maxlength="9"><button type="button" class="secondary-button" id="clientCepSearch" aria-label="Buscar CEP" title="Buscar CEP"><i class="fa-solid fa-magnifying-glass"></i></button></div></label>
           <label>Bairro<input name="neighborhood" required placeholder="Bairro"></label>
           <label class="span-2">Rua / Avenida<input name="address" required placeholder="Nome da rua"></label>
-          <label>Número<input name="number" class="numbers-only" inputmode="numeric" required placeholder="Ex.: 123"></label>
+          <label>Número<input name="number" class="numbers-only" inputmode="numeric" placeholder="Ex.: 123"></label>
           <label>Complemento<input name="complement" placeholder="Apto, Casa 2..."></label>
           <label class="span-2">Cidade<input name="city" required placeholder="Cidade"></label>
         </div>
@@ -542,25 +549,97 @@
       <form id="settingsForm" class="modal-form" hidden>
         <div class="form-grid"><label class="span-2">Mensagem de Confirmação<textarea name="msgConfirmacao" rows="3" required></textarea><small>Use <code>{{cliente}}</code>, <code>{{servico}}</code>, <code>{{data}}</code>, <code>{{hora}}</code></small></label><label class="span-2">Comprovante e Garantia<textarea name="msgGarantia" rows="5" required></textarea><small>Use <code>{{cliente}}</code>, <code>{{servico}}</code></small></label><label class="span-2">Lembrete de Retorno<textarea name="msgLembrete" rows="3" required></textarea><small>Use <code>{{cliente}}</code></small></label></div><div class="form-actions"><button type="button" class="secondary-button" data-close>Cancelar</button><button class="primary-button" type="submit">Salvar mensagens</button></div>
       </form>
+      <form id="companyForm" class="modal-form" hidden>
+        <div class="form-grid">
+          <label class="span-2">Nome da empresa<input name="companyName" required placeholder="Hiper Higienizações"></label>
+          <label class="span-2">Ramo / Descrição<input name="companySubtitle" placeholder="Higienização e impermeabilização de estofados"></label>
+          <label>Telefone / WhatsApp<input type="tel" name="companyPhone" class="mask-phone" required placeholder="(16) 99760-3600"></label>
+          <label>E-mail<input type="email" name="companyEmail" placeholder="hiperhigienizacoesrp@gmail.com"></label>
+          <label>Instagram<input name="companyInstagram" placeholder="@hiperhigienizacoesrp"></label>
+          <label>Região de atendimento<input name="companyRegion" placeholder="Ribeirão Preto e região"></label>
+          <label class="span-2">Horário de funcionamento<input name="companyHours" placeholder="Seg-sex 08h-18h · Sáb 08h-14h"></label>
+        </div>
+        <div class="form-actions"><button type="button" class="secondary-button" data-close>Cancelar</button><button class="primary-button" type="submit">Salvar dados da empresa</button></div>
+      </form>
       <div id="detailContent" hidden></div>
+      <div id="newsContent" hidden>
+        <section class="guide-intro" style="background: linear-gradient(135deg, #eff6ff 0%, #ecfeff 100%); border-color: #bfdbfe;">
+          <span class="guide-icon" style="background: linear-gradient(145deg, var(--blue), var(--cyan));">
+            <i class="fa-solid fa-sparkles"></i>
+          </span>
+          <div>
+            <span class="overline" style="color: var(--blue);">ATUALIZAÇÃO DO SISTEMA</span>
+            <h3>Novas funcionalidades liberadas!</h3>
+            <p>Confira os novos recursos adicionados para agilizar o atendimento e a gestão da Hiper Higienizações.</p>
+          </div>
+        </section>
+
+        <div class="guide-details" style="gap: 10px; margin-top: 14px;">
+          <article style="padding: 13px 15px; background: #f8fafc; border: 1px solid var(--line); border-radius: 13px; display: flex; gap: 13px; align-items: flex-start;">
+            <div style="width: 38px; height: 38px; border-radius: 11px; background: #fef3c7; color: #d97706; display: grid; place-items: center; font-size: 17px; flex-shrink: 0;">
+              <i class="fa-solid fa-cake-candles"></i>
+            </div>
+            <div>
+              <strong style="display: block; font-size: 13.5px; color: var(--ink);">Aniversariantes & Parabéns no WhatsApp</strong>
+              <p style="margin: 3px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5;">Campo de nascimento no cadastro e link público. No Início, novo card de <strong>Aniversariantes próximos</strong> com envio de parabéns no WhatsApp em 1 clique e alerta no mês.</p>
+            </div>
+          </article>
+
+          <article style="padding: 13px 15px; background: #f8fafc; border: 1px solid var(--line); border-radius: 13px; display: flex; gap: 13px; align-items: flex-start;">
+            <div style="width: 38px; height: 38px; border-radius: 11px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center; font-size: 17px; flex-shrink: 0;">
+              <i class="fa-solid fa-calendar-plus"></i>
+            </div>
+            <div>
+              <strong style="display: block; font-size: 13.5px; color: var(--ink);">Integração com Google Agenda (Android)</strong>
+              <p style="margin: 3px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5;">Botão <strong>"Salvar na Agenda"</strong> ao agendar ou na OS aberta. No celular Android, abre direto o app da Google Agenda com horários, cliente, endereço e detalhes preenchidos.</p>
+            </div>
+          </article>
+
+          <article style="padding: 13px 15px; background: #f8fafc; border: 1px solid var(--line); border-radius: 13px; display: flex; gap: 13px; align-items: flex-start;">
+            <div style="width: 38px; height: 38px; border-radius: 11px; background: #f3e8ff; color: #7e22ce; display: grid; place-items: center; font-size: 17px; flex-shrink: 0;">
+              <i class="fa-solid fa-arrows-rotate"></i>
+            </div>
+            <div>
+              <strong style="display: block; font-size: 13.5px; color: var(--ink);">Retorno estimado personalizado por serviço</strong>
+              <p style="margin: 3px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5;">Escolha o intervalo de retorno no agendamento (1 a 12 meses ou data manual). O sistema calcula a data em tempo real e avisa no card "Hora de chamar" quando vencer.</p>
+            </div>
+          </article>
+
+          <article style="padding: 13px 15px; background: #f8fafc; border: 1px solid var(--line); border-radius: 13px; display: flex; gap: 13px; align-items: flex-start;">
+            <div style="width: 38px; height: 38px; border-radius: 11px; background: #ecfdf5; color: #059669; display: grid; place-items: center; font-size: 17px; flex-shrink: 0;">
+              <i class="fa-solid fa-building"></i>
+            </div>
+            <div>
+              <strong style="display: block; font-size: 13.5px; color: var(--ink);">Edição dos Dados da Empresa</strong>
+              <p style="margin: 3px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5;">Na aba Configurações, edite telefone, WhatsApp, e-mail, Instagram, horários de funcionamento e região atendida, sincronizados em tempo real em todos os aparelhos.</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="form-actions" style="margin-top: 18px;">
+          <button type="button" class="primary-button" id="newsDismissButton" style="width: 100%; justify-content: center;">
+            <i class="fa-solid fa-check"></i> Entendi, começar a usar!
+          </button>
+        </div>
+      </div>
       <div id="guideContent" hidden>
         <section class="guide-intro"><span class="guide-icon"><i class="fa-solid fa-compass"></i></span><div><span class="overline">BEM-VINDO À HIPER</span><h3>Seu sistema de operação, do cadastro ao recebimento</h3><p>Comece pelos passos abaixo e consulte os detalhes sempre que precisar.</p></div></section>
 
         <div class="guide-steps">
           <article><span>1</span><div><strong>Configure os serviços</strong><small>Serviços → Novo serviço</small><p>Cadastre preço, duração e categoria. Para tapetes ou itens levados para lavagem, ative a devolução e defina o prazo padrão.</p></div></article>
-          <article><span>2</span><div><strong>Cadastre ou convide o cliente</strong><small>Clientes ou Novo agendamento</small><p>Cadastre manualmente com busca automática de CEP ou envie o formulário ao cliente. O cadastro recebido aparece em tempo real no agendamento.</p></div></article>
-          <article><span>3</span><div><strong>Crie o agendamento</strong><small>Botão + no cabeçalho</small><p>Escolha cliente, serviço, equipe, data, pagamento e endereço. O sistema impede conflitos e sugere a devolução quando necessária.</p></div></article>
-          <article><span>4</span><div><strong>Acompanhe a execução</strong><small>Agenda e Atendimentos</small><p>Use as visões de dia, semana ou mês. Abra a OS para confirmar, iniciar, concluir ou cancelar o serviço.</p></div></article>
+          <article><span>2</span><div><strong>Cadastre ou convide o cliente</strong><small>Clientes ou Novo agendamento</small><p>Cadastre manualmente com data de nascimento e busca de CEP, ou envie o formulário ao cliente. O cadastro recebido aparece em tempo real no agendamento.</p></div></article>
+          <article><span>3</span><div><strong>Crie o agendamento</strong><small>Botão + no cabeçalho</small><p>Escolha cliente, serviço, equipe, data, pagamento e o prazo de retorno previsto. O sistema impede conflitos e integra com a agenda do Android.</p></div></article>
+          <article><span>4</span><div><strong>Acompanhe a execução</strong><small>Agenda e Atendimentos</small><p>Use as visões de dia, semana ou mês. Abra a OS para confirmar, salvar no Google Agenda, iniciar, concluir ou cancelar o serviço.</p></div></article>
         </div>
 
         <section class="guide-details" aria-label="Funcionalidades do sistema">
-          <details open><summary><i class="fa-solid fa-house"></i> Início e alertas <i class="fa-solid fa-chevron-down"></i></summary><p>O painel resume faturamento, serviços concluídos, recorrência e ticket médio. Também mostra próximos atendimentos, cobranças pendentes, clientes para reativar e serviços sem confirmação.</p></details>
-          <details><summary><i class="fa-regular fa-calendar"></i> Agenda, devoluções e WhatsApp <i class="fa-solid fa-chevron-down"></i></summary><p>Os atendimentos aparecem por horário e status. Devoluções são exibidas em roxo e abrem a mesma ordem de serviço. Após salvar um agendamento, você pode enviar ao cliente a confirmação pronta pelo WhatsApp.</p></details>
-          <details><summary><i class="fa-solid fa-users"></i> Clientes e recorrência <i class="fa-solid fa-chevron-down"></i></summary><p>A ficha reúne contato, endereço, histórico e total gasto. Os atalhos abrem WhatsApp e Maps. Ao concluir serviços, o sistema atualiza a recomendação de retorno para apoiar novos contatos.</p></details>
+          <details open><summary><i class="fa-solid fa-house"></i> Início, alertas e aniversariantes <i class="fa-solid fa-chevron-down"></i></summary><p>O painel resume faturamento, serviços concluídos, recorrência e ticket médio. Também mostra próximos atendimentos, cobranças pendentes, clientes para reativar, serviços sem confirmação e o card de <strong>Aniversariantes próximos</strong>, com atalho de felicitações no WhatsApp em 1 clique.</p></details>
+          <details><summary><i class="fa-regular fa-calendar"></i> Agenda, Google Agenda (Android) e WhatsApp <i class="fa-solid fa-chevron-down"></i></summary><p>Os atendimentos aparecem por horário e status. Devoluções são exibidas em roxo e abrem a mesma ordem de serviço. Após salvar um agendamento ou abrir uma OS, você pode enviar a confirmação pelo WhatsApp e tocar em <strong>"Salvar na Agenda"</strong> para abrir diretamente o app do Google Agenda no celular Android.</p></details>
+          <details><summary><i class="fa-solid fa-users"></i> Clientes, aniversários e retorno <i class="fa-solid fa-chevron-down"></i></summary><p>A ficha reúne contato, data de nascimento e idade, endereço, histórico e total gasto. Os atalhos abrem WhatsApp e Maps. Ao cadastrar ou agendar, defina o prazo de retorno estimado (1 a 12 meses ou data manual) para o sistema alertar no momento certo.</p></details>
           <details><summary><i class="fa-solid fa-clipboard-check"></i> Ordens e financeiro <i class="fa-solid fa-chevron-down"></i></summary><p>Em Atendimentos, pesquise e atualize cada OS. Quando um serviço é marcado como pago, a receita é criada automaticamente; ao voltar para “a receber”, o lançamento vinculado é removido.</p></details>
           <details><summary><i class="fa-regular fa-bell"></i> Lembretes e notificações <i class="fa-solid fa-chevron-down"></i></summary><p>Em Configurações, ative as notificações. O app mostra o resumo do dia e avisa 30 minutos antes de atendimentos e devoluções. No Android instalado, também tenta verificar em segundo plano; o horário exato depende do sistema do aparelho.</p></details>
           <details><summary><i class="fa-solid fa-mobile-screen-button"></i> Aplicativo, nuvem e uso offline <i class="fa-solid fa-chevron-down"></i></summary><p>Instale a PWA pelo painel de Configurações. A interface abre sem internet e as alterações são sincronizadas com o Firebase quando a conexão volta. Use “Atualizar aplicativo” para buscar uma nova versão.</p></details>
-          <details><summary><i class="fa-solid fa-gear"></i> Mensagens, perfil e acesso <i class="fa-solid fa-chevron-down"></i></summary><p>Personalize os textos de confirmação, garantia e retorno em Configurações. O menu de perfil permite consultar a conta e sair; somente contas Google autorizadas acessam a operação.</p></details>
+          <details><summary><i class="fa-solid fa-gear"></i> Dados da empresa, mensagens e acesso <i class="fa-solid fa-chevron-down"></i></summary><p>Em Configurações, você pode editar diretamente os <strong>dados oficiais da empresa</strong> (telefone/WhatsApp, e-mail, Instagram, horários e região) e personalizar os textos de confirmação, garantia e retorno. O menu de perfil permite consultar a conta Google autorizada e sair.</p></details>
         </section>
 
         <aside class="guide-support"><i class="fa-brands fa-whatsapp"></i><div><strong>Precisa de ajuda?</strong><span>Suporte: <a href="https://wa.me/5516997603600" target="_blank" rel="noopener noreferrer">(16) 99760-3600</a></span></div></aside>
@@ -570,6 +649,6 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
-  <script type="module" src="/js/app.js?v=28"></script>
+  <script type="module" src="/js/app.js?v=29"></script>
 </body>
 </html>
