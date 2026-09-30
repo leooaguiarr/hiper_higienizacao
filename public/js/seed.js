@@ -25,7 +25,7 @@ export function seedData() {
     { id:'cli-ana', firstName:'Ana', lastName:'Martins', phone:'(16) 99142-3058', address:'Rua das Acácias, 182', neighborhood:'Jardim Botânico', city:'Ribeirão Preto', birthDate:'1988-04-18', nextRecommendation:d(5), notes:'Tem dois gatos. Avisar 30 min antes.' },
     { id:'cli-carlos', firstName:'Carlos', lastName:'Menezes', phone:'(16) 99774-1180', address:'Av. Portugal, 940', neighborhood:'Jardim São Luiz', city:'Ribeirão Preto', birthDate:'1979-10-02', nextRecommendation:d(-7), notes:'Portaria exige identificação.' },
     { id:'cli-beatriz', firstName:'Beatriz', lastName:'Almeida', phone:'(16) 98834-7201', address:'Rua Chile, 61', neighborhood:'Vila Seixas', city:'Ribeirão Preto', birthDate:'1992-01-27', nextRecommendation:monthDate(4,15), notes:'' },
-    { id:'cli-clinica', firstName:'Clínica', lastName:'Vitta', phone:'(16) 3234-9901', address:'Av. Nove de Julho, 1550', neighborhood:'Centro', city:'Ribeirão Preto', birthDate:'', nextRecommendation:d(18), notes:'Atender após o expediente.' },
+    { id:'cli-clinica', firstName:'Clínica', lastName:'Vitta', phone:'(16) 3234-9901', address:'Av. Nove de Julho, 1550', neighborhood:'Centro', city:'Ribeirão Preto', birthDate:'2018-03-10', nextRecommendation:d(18), notes:'Atender após o expediente.' },
     { id:'cli-marcos', firstName:'Marcos', lastName:'Ferreira', phone:'(16) 99210-4482', address:'Rua Garibaldi, 715', neighborhood:'Alto da Boa Vista', city:'Ribeirão Preto', birthDate:'1985-07-12', nextRecommendation:d(-2), notes:'Cachorro de grande porte.' }
   ];
   const appointments = [

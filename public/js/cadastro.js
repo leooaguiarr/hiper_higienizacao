@@ -118,6 +118,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
+      const birthDate = document.getElementById('clientBirthDate')?.value || '';
+      if (!birthDate) {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        showError("Por favor, preencha sua data de nascimento.");
+        document.getElementById('clientBirthDate')?.focus();
+        return;
+      }
+
       const clientData = {
         firstName: document.getElementById('clientFirstName').value.trim(),
         lastName: document.getElementById('clientLastName').value.trim(),

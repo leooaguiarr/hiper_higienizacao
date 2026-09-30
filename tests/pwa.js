@@ -264,6 +264,7 @@ async function main() {
     form.elements.firstName.value = 'Offline';
     form.elements.lastName.value = 'Teste';
     form.elements.phone.value = '(16) 91111-1111';
+    form.elements.birthDate.value = '1995-11-20';
     form.elements.address.value = 'Rua Sem Sinal, 0';
     form.elements.number.value = '100';
     form.elements.neighborhood.value = 'Centro';

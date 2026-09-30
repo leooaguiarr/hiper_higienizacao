@@ -978,6 +978,11 @@ async function handleAppointmentSubmit(event) {
 async function handleClientSubmit(event) {
   event.preventDefault();
   const values = Object.fromEntries(new FormData(event.currentTarget));
+  if (!values.birthDate) {
+    toast('Data de nascimento é obrigatória.');
+    event.currentTarget.elements.birthDate?.focus();
+    return;
+  }
   const emEdicao = editando;
   closeModal();
   if (emEdicao) await comFeedback(() => atualizar('clients', emEdicao.id, values), 'Cliente atualizado.');

@@ -276,10 +276,11 @@ async function main() {
     document.querySelector('[data-open="client"]').click();
     const form = document.getElementById('clientForm');
     const camposIguaisAoPublico = !!form.elements.documentType && !!document.getElementById('clientCepSearch')
-      && !!form.elements.birthDate && !form.elements.notes;
+      && !!form.elements.birthDate && form.elements.birthDate.required && !form.elements.notes;
     form.elements.firstName.value = 'Teste';
     form.elements.lastName.value = 'Headless';
     form.elements.phone.value = '(16) 90000-0000';
+    form.elements.birthDate.value = '1990-05-15';
     form.elements.documentType.value = 'cnpj';
     form.elements.documentType.dispatchEvent(new Event('change'));
     form.elements.document.value = '12345678000199';

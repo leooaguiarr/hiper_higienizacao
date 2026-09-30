@@ -345,6 +345,7 @@ async function main() {
     form.elements.firstName.value = 'Novo';
     form.elements.lastName.value = 'Cliente';
     form.elements.phone.value = '(16) 92222-2222';
+    form.elements.birthDate.value = '1988-12-10';
     form.elements.address.value = 'Rua Nova, 2';
     form.elements.neighborhood.value = 'Centro';
     form.elements.city.value = 'Ribeirao Preto';
