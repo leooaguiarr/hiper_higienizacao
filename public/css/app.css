@@ -652,6 +652,7 @@ td.expense { color: var(--danger); font-weight: 800; }
   #recurrencePanel { order: 4; }
   #revenuePanel { order: 5; }
   #dashboardMetrics { order: 6; margin: 0; }
+  #view-financeiro .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
   .settings-grid { grid-template-columns: 1fr; }
   .span-2 { grid-column: auto; }
   .toolbar { align-items: flex-start; flex-direction: column; }
