@@ -461,8 +461,7 @@ main { padding: 26px 30px 50px; }
 .day-heading .day-name { display: block; color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
 .day-heading strong { font-size: 18px; }
 .day-heading.today strong { display: inline-grid; place-items: center; width: 32px; height: 32px; color: #fff; background: var(--blue); border-radius: 50%; font-size: 16px; }
-.duty-tag, .duty-strip { display: flex; align-items: center; justify-content: center; gap: 4px; color: var(--duty-ink); background: var(--duty); font-weight: 800; line-height: 1; }
-.duty-tag { width: fit-content; margin: 7px auto 0; padding: 4px 7px; border-radius: 999px; font-size: 9px; }
+.duty-tag { display: flex; align-items: center; justify-content: center; gap: 4px; width: fit-content; margin: 7px auto 0; padding: 4px 7px; color: var(--duty-ink); background: var(--duty); border-radius: 999px; font-size: 9px; font-weight: 800; line-height: 1; }
 .duty-tag > i { width: 5px; height: 5px; background: currentColor; border-radius: 50%; opacity: .72; }
 .day-appointments { display: grid; gap: 7px; padding: 9px; }
 .appointment-card { position: relative; padding: 10px 10px 10px 12px; background: color-mix(in srgb,var(--status) 9%,white); border: 1px solid color-mix(in srgb,var(--status) 20%,white); border-left: 3px solid var(--status); border-radius: 10px; text-align: left; }
@@ -489,9 +488,6 @@ main { padding: 26px 30px 50px; }
 .month-day.outside.duty-yellow, .month-day.outside.duty-blue, .month-day.outside.duty-green { background: color-mix(in srgb,var(--duty) 4%,#fafbfc); }
 .month-day .day-number { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 700; }
 .month-day.today .day-number { width: 26px; height: 26px; display: grid; place-items: center; color: #fff; background: var(--blue); border-radius: 50%; }
-.duty-strip { min-height: 18px; margin-bottom: 6px; padding: 3px 5px; border-radius: 5px; font-size: 9px; }
-.duty-strip > i { display: none; }
-.month-day.outside .duty-strip { opacity: .5; }
 .month-event { overflow: hidden; display: block; margin-bottom: 4px; padding: 4px 6px; color: var(--status); background: color-mix(in srgb,var(--status) 10%,white); border-left: 2px solid var(--status); border-radius: 4px; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 
 .appointment-duty-preview { display: flex; align-items: center; gap: 6px; margin-top: 1px; padding: 7px 8px; color: var(--duty-ink) !important; background: var(--duty); border-radius: 7px; font-size: 11px !important; font-weight: 800 !important; line-height: 1.3; text-transform: none; letter-spacing: 0; }
@@ -722,8 +718,6 @@ td.expense { color: var(--danger); font-weight: 800; }
   .month-day { min-height: 85px; padding: 4px; }
   .month-day .day-number { font-size: 12px; margin-bottom: 4px; }
   .month-day.today .day-number { width: 22px; height: 22px; }
-  .duty-strip { min-height: 9px; padding: 0; border-radius: 3px; }
-  .duty-strip > span { font-size: 0; }
   .month-event { padding: 3px; font-size: 10px; letter-spacing: -0.2px; }
 
   .list-item { padding: 12px 10px; gap: 8px; }

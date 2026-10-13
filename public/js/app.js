@@ -277,7 +277,7 @@ function renderMonth() {
     const date = addDays(gridStart,index), key = localISO(date);
     const duty = dutyShiftFor(date);
     const items = agendaItems().filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
-    html += `<div class="month-day duty-${duty.key} ${date.getMonth()!==agendaDate.getMonth()?'outside':''} ${key===today?'today':''}"><span class="day-number">${date.getDate()}</span>${dutyMarker(date, 'duty-strip')}${items.slice(0,3).map(item => eventCard(item,true)).join('')}${items.length>3?`<span class="muted">+${items.length-3}</span>`:''}</div>`;
+    html += `<div class="month-day duty-${duty.key} ${date.getMonth()!==agendaDate.getMonth()?'outside':''} ${key===today?'today':''}" data-duty="${duty.key}" data-duty-date="${key}" title="Prontidão ${duty.label}"><span class="day-number">${date.getDate()}</span>${items.slice(0,3).map(item => eventCard(item,true)).join('')}${items.length>3?`<span class="muted">+${items.length-3}</span>`:''}</div>`;
   }
   document.getElementById('calendar').innerHTML = `${html}</div>`;
 }
