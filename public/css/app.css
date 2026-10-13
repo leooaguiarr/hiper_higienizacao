@@ -433,7 +433,8 @@ main { padding: 26px 30px 50px; }
 .segmented { display: flex; padding: 4px; background: #e8eef5; border-radius: 11px; }
 .segmented button { padding: 8px 14px; color: var(--muted); background: transparent; border: 0; border-radius: 8px; font-size: 13px; font-weight: 700; }
 .segmented button.active { color: var(--blue); background: #fff; box-shadow: 0 3px 10px rgba(30,70,110,.1); }
-.status-legend { display: flex; align-items: center; gap: 16px; margin: 0 0 12px 4px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.agenda-legends { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 18px; margin: 0 0 12px 4px; }
+.status-legend { display: flex; align-items: center; gap: 16px; color: var(--muted); font-size: 12px; font-weight: 600; }
 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
 .dot.scheduled, .appointment-card.scheduled { --status: #f59e0b; }
 .dot.confirmed, .appointment-card.confirmed { --status: #087ff5; }
@@ -441,14 +442,24 @@ main { padding: 26px 30px 50px; }
 .dot.completed, .appointment-card.completed { --status: #159b63; }
 .dot.canceled, .appointment-card.canceled { --status: #94a3b8; }
 .dot { background: var(--status); }
+.duty-yellow { --duty: #ffb800; --duty-ink: #5b4200; --duty-soft: #fff7d6; }
+.duty-blue { --duty: #1c9ee4; --duty-ink: #fff; --duty-soft: #e6f5fd; }
+.duty-green { --duty: #47bd18; --duty-ink: #fff; --duty-soft: #ebf9e5; }
+.duty-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; color: var(--muted); font-size: 11px; font-weight: 700; }
+.duty-legend strong { display: inline-flex; align-items: center; gap: 6px; margin-right: 2px; color: var(--ink); font-size: 11px; }
+.duty-legend > span { display: inline-flex; align-items: center; gap: 5px; padding: 5px 7px; background: var(--duty-soft); border: 1px solid color-mix(in srgb,var(--duty) 28%,white); border-radius: 999px; }
+.duty-legend > span > i { width: 9px; height: 9px; background: var(--duty); border-radius: 3px; }
 .calendar { overflow: auto; padding: 0; }
 .week-grid { min-width: 850px; display: grid; grid-template-columns: repeat(7,1fr); }
 .week-day { min-height: 280px; border-right: 1px solid var(--line); }
 .week-day:last-child { border-right: 0; }
 .day-heading { position: sticky; top: 0; z-index: 2; padding: 14px 10px; background: #fbfcfe; border-bottom: 1px solid var(--line); text-align: center; }
-.day-heading span { display: block; color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.day-heading .day-name { display: block; color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
 .day-heading strong { font-size: 18px; }
 .day-heading.today strong { display: inline-grid; place-items: center; width: 32px; height: 32px; color: #fff; background: var(--blue); border-radius: 50%; font-size: 16px; }
+.duty-tag, .duty-strip { display: flex; align-items: center; justify-content: center; gap: 4px; color: var(--duty-ink); background: var(--duty); font-weight: 800; line-height: 1; }
+.duty-tag { width: fit-content; margin: 7px auto 0; padding: 4px 7px; border-radius: 999px; font-size: 9px; }
+.duty-tag > i { width: 5px; height: 5px; background: currentColor; border-radius: 50%; opacity: .72; }
 .day-appointments { display: grid; gap: 7px; padding: 9px; }
 .appointment-card { position: relative; padding: 10px 10px 10px 12px; background: color-mix(in srgb,var(--status) 9%,white); border: 1px solid color-mix(in srgb,var(--status) 20%,white); border-left: 3px solid var(--status); border-radius: 10px; text-align: left; }
 .appointment-card:hover { transform: translateY(-1px); box-shadow: 0 5px 12px rgba(20,50,80,.08); }
@@ -458,6 +469,9 @@ main { padding: 26px 30px 50px; }
 .appointment-card.return-event { --status: #7c3aed; background: #f5f0ff; border-color: #ded3ff; }
 .month-event.return-event { --status: #7c3aed; }
 .appointment-card span { color: var(--muted); font-size: 12px; }
+.duty-day-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 16px 0; padding: 12px 14px; color: var(--duty-ink); background: var(--duty); border-radius: 11px; }
+.duty-day-banner span { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; }
+.duty-day-banner strong { font-size: 13px; }
 .day-list { display: grid; gap: 10px; padding: 16px; }
 .day-list .appointment-card { display: grid; grid-template-columns: 85px 1fr auto; align-items: center; padding: 16px; }
 .day-list .appointment-card strong { font-size: 15px; }
@@ -470,7 +484,12 @@ main { padding: 26px 30px 50px; }
 .month-day.outside { color: #b5c0ce; background: #fafbfc; }
 .month-day .day-number { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 700; }
 .month-day.today .day-number { width: 26px; height: 26px; display: grid; place-items: center; color: #fff; background: var(--blue); border-radius: 50%; }
+.duty-strip { min-height: 18px; margin-bottom: 6px; padding: 3px 5px; border-radius: 5px; font-size: 9px; }
+.duty-strip > i { display: none; }
+.month-day.outside .duty-strip { opacity: .5; }
 .month-event { overflow: hidden; display: block; margin-bottom: 4px; padding: 4px 6px; color: var(--status); background: color-mix(in srgb,var(--status) 10%,white); border-left: 2px solid var(--status); border-radius: 4px; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+
+.appointment-duty-preview { display: flex; align-items: center; gap: 6px; margin-top: 1px; padding: 7px 8px; color: var(--duty-ink) !important; background: var(--duty); border-radius: 7px; font-size: 11px !important; font-weight: 800 !important; line-height: 1.3; text-transform: none; letter-spacing: 0; }
 
 .search-box { min-width: 340px; display: flex; align-items: center; gap: 9px; padding: 0 13px; background: #fff; border: 1px solid var(--line); border-radius: 11px; }
 .search-box i { color: #9aabbf; font-size: 15px; }
@@ -671,6 +690,7 @@ td.expense { color: var(--danger); font-weight: 800; }
   .metric-grid.financial { grid-template-columns: 1fr; }
   .metric-card { min-height: 110px; }
   .hero-panel .light-button { width: 100%; }
+  .agenda-legends, .status-legend, .duty-legend { width: 100%; }
   .status-legend { overflow-x: auto; padding-bottom: 5px; white-space: nowrap; }
   .section-actions { flex-direction: column; }
   .form-grid, .detail-grid { grid-template-columns: 1fr; }
@@ -694,6 +714,8 @@ td.expense { color: var(--danger); font-weight: 800; }
   .month-day { min-height: 85px; padding: 4px; }
   .month-day .day-number { font-size: 12px; margin-bottom: 4px; }
   .month-day.today .day-number { width: 22px; height: 22px; }
+  .duty-strip { min-height: 9px; padding: 0; border-radius: 3px; }
+  .duty-strip > span { font-size: 0; }
   .month-event { padding: 3px; font-size: 10px; letter-spacing: -0.2px; }
 
   .list-item { padding: 12px 10px; gap: 8px; }

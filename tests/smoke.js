@@ -227,12 +227,20 @@ async function main() {
     const r = {};
     document.querySelectorAll('[data-mode]').forEach(b => {
       b.click();
-      r[b.dataset.mode] = { periodo: document.getElementById('agendaPeriod').textContent, itens: document.querySelectorAll('#calendar [data-detail]').length };
+      r[b.dataset.mode] = {
+        periodo: document.getElementById('agendaPeriod').textContent,
+        itens: document.querySelectorAll('#calendar [data-detail]').length,
+        prontidoes: document.querySelectorAll('#calendar [data-duty]').length,
+        ciclo: Array.from(document.querySelectorAll('#calendar [data-duty]')).slice(0, 4).map(item => item.dataset.duty)
+      };
     });
     return r;
   })()`);
   console.log('\n=== AGENDA ===');
   console.log(JSON.stringify(agenda, null, 2));
+  if (agenda.day.prontidoes !== 1 || agenda.week.prontidoes !== 7 || agenda.month.prontidoes !== 42 || agenda.month.ciclo[0] !== agenda.month.ciclo[3]) {
+    erros.push('escala de prontidões não foi renderizada corretamente na agenda');
+  }
 
   // Abrir detalhe de uma OS
   await enviar('Emulation.setDeviceMetricsOverride', { width: 1200, height: 820, deviceScaleFactor: 1, mobile: false });

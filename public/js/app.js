@@ -28,6 +28,13 @@ const SERVICE_CATEGORY_LABELS = {
   shield: 'Impermeabilização / Proteção', pet: 'Pet / Manchas e odores', baby: 'Infantil / Carrinhos',
   business: 'Empresarial / Corporativo', sparkles: 'Geral / Outros'
 };
+const DUTY_SHIFTS = [
+  { key: 'yellow', label: 'Amarela' },
+  { key: 'blue', label: 'Azul' },
+  { key: 'green', label: 'Verde' }
+];
+const DUTY_REFERENCE_UTC = Date.UTC(2026, 10, 1);
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 let currentView = 'dashboard';
 let agendaMode = 'week';
@@ -54,6 +61,16 @@ function serviceRequiresReturn(service) {
 }
 function serviceCategory(service) {
   return service?.category || SERVICE_CATEGORY_LABELS[service?.icon] || 'Geral / Outros';
+}
+function dutyShiftFor(date) {
+  const dateUtc = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  const elapsedDays = Math.round((dateUtc - DUTY_REFERENCE_UTC) / DAY_MS);
+  const index = ((elapsedDays % DUTY_SHIFTS.length) + DUTY_SHIFTS.length) % DUTY_SHIFTS.length;
+  return DUTY_SHIFTS[index];
+}
+function dutyMarker(date, className = 'duty-tag') {
+  const duty = dutyShiftFor(date);
+  return `<span class="${className} duty-${duty.key}" data-duty="${duty.key}" data-duty-date="${localISO(date)}" title="Prontidão ${duty.label}" aria-label="Prontidão ${duty.label}"><i></i><span>${duty.label}</span></span>`;
 }
 function agendaItems() {
   return state().appointments.flatMap(item => {
@@ -242,13 +259,14 @@ function renderWeek() {
   document.getElementById('calendar').innerHTML = `<div class="week-grid">${Array.from({length:7},(_,index) => {
     const date = addDays(start,index), key = localISO(date);
     const appointments = agendaItems().filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
-    return `<div class="week-day"><div class="day-heading ${key===today?'today':''}"><span>${date.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><strong>${date.getDate()}</strong></div><div class="day-appointments">${appointments.map(item => eventCard(item)).join('') || '<span class="muted">Livre</span>'}</div></div>`;
+    return `<div class="week-day"><div class="day-heading ${key===today?'today':''}"><span class="day-name">${date.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><strong>${date.getDate()}</strong>${dutyMarker(date)}</div><div class="day-appointments">${appointments.map(item => eventCard(item)).join('') || '<span class="muted">Livre</span>'}</div></div>`;
   }).join('')}</div>`;
 }
 function renderDay() {
   const key = localISO(agendaDate);
+  const duty = dutyShiftFor(agendaDate);
   const appointments = agendaItems().filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
-  document.getElementById('calendar').innerHTML = `<div class="day-list">${appointments.map(item => eventCard(item)).join('') || empty('Nenhum serviço neste dia.')}</div>`;
+  document.getElementById('calendar').innerHTML = `<div class="duty-day-banner duty-${duty.key}" data-duty="${duty.key}" data-duty-date="${key}"><span><i class="fa-solid fa-fire-extinguisher"></i> Escala dos bombeiros</span><strong>Prontidão ${duty.label}</strong></div><div class="day-list">${appointments.map(item => eventCard(item)).join('') || empty('Nenhum serviço neste dia.')}</div>`;
 }
 function renderMonth() {
   const first = startOfMonth(agendaDate), gridStart = startOfWeek(first), today = localISO(new Date());
@@ -257,7 +275,7 @@ function renderMonth() {
   for (let index=0; index<42; index++) {
     const date = addDays(gridStart,index), key = localISO(date);
     const items = agendaItems().filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
-    html += `<div class="month-day ${date.getMonth()!==agendaDate.getMonth()?'outside':''} ${key===today?'today':''}"><span class="day-number">${date.getDate()}</span>${items.slice(0,3).map(item => eventCard(item,true)).join('')}${items.length>3?`<span class="muted">+${items.length-3}</span>`:''}</div>`;
+    html += `<div class="month-day ${date.getMonth()!==agendaDate.getMonth()?'outside':''} ${key===today?'today':''}"><span class="day-number">${date.getDate()}</span>${dutyMarker(date, 'duty-strip')}${items.slice(0,3).map(item => eventCard(item,true)).join('')}${items.length>3?`<span class="muted">+${items.length-3}</span>`:''}</div>`;
   }
   document.getElementById('calendar').innerHTML = `${html}</div>`;
 }
@@ -678,6 +696,20 @@ function updateAppointmentRecommendationPreview(form) {
   if (preview) {
     preview.textContent = targetDate ? dateFmt.format(targetDate) : 'Defina a data';
   }
+  updateAppointmentDutyPreview(form);
+}
+
+function updateAppointmentDutyPreview(form) {
+  const preview = document.getElementById('appointmentDutyPreview');
+  const dateValue = form?.elements.date?.value;
+  if (!preview || !dateValue) {
+    if (preview) preview.hidden = true;
+    return;
+  }
+  const duty = dutyShiftFor(parseDate(dateValue));
+  preview.className = `appointment-duty-preview duty-${duty.key}`;
+  preview.innerHTML = `<i class="fa-solid fa-fire-extinguisher"></i> Prontidão ${duty.label} na escala dos bombeiros`;
+  preview.hidden = false;
 }
 
 function openForm(type, id = null) {
