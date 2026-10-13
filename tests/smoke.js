@@ -232,7 +232,7 @@ async function main() {
         itens: document.querySelectorAll('#calendar [data-detail]').length,
         prontidoes: document.querySelectorAll('#calendar [data-duty]').length,
         ciclo: Array.from(document.querySelectorAll('#calendar [data-duty]')).slice(0, 4).map(item => item.dataset.duty),
-        fundos: Array.from(document.querySelectorAll('#calendar .week-day, #calendar .month-day, #calendar .duty-day-view')).slice(0, 4).map(item => getComputedStyle(item).backgroundColor)
+        fundos: Array.from(document.querySelectorAll('#calendar .week-day .day-heading, #calendar .month-day, #calendar .duty-day-view')).slice(0, 4).map(item => getComputedStyle(item).backgroundColor)
       };
     });
     return r;
