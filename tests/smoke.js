@@ -232,7 +232,8 @@ async function main() {
         itens: document.querySelectorAll('#calendar [data-detail]').length,
         prontidoes: document.querySelectorAll('#calendar [data-duty]').length,
         ciclo: Array.from(document.querySelectorAll('#calendar [data-duty]')).slice(0, 4).map(item => item.dataset.duty),
-        fundos: Array.from(document.querySelectorAll('#calendar .week-day .day-heading, #calendar .month-day, #calendar .duty-day-view')).slice(0, 4).map(item => getComputedStyle(item).backgroundColor)
+        fundos: Array.from(document.querySelectorAll('#calendar .week-day .day-heading, #calendar .month-day, #calendar .duty-day-view')).slice(0, 4).map(item => getComputedStyle(item).backgroundColor),
+        areasSemana: Array.from(document.querySelectorAll('#calendar .week-day')).slice(0, 4).map(item => getComputedStyle(item).backgroundColor)
       };
     });
     return r;
@@ -244,6 +245,9 @@ async function main() {
   }
   if (!agenda.day.fundos[0] || agenda.week.fundos[0] === agenda.week.fundos[1] || agenda.month.fundos[0] === agenda.month.fundos[1]) {
     erros.push('cores suaves das prontidões não preencheram os dias da agenda');
+  }
+  if (agenda.week.areasSemana.length !== 4 || agenda.week.areasSemana[0] === agenda.week.areasSemana[1]) {
+    erros.push('fundo das prontidões não agrupou os dias da agenda semanal');
   }
 
   // Abrir detalhe de uma OS

@@ -452,11 +452,12 @@ main { padding: 26px 30px 50px; }
 .calendar { overflow: auto; padding: 0; }
 .week-grid { min-width: 850px; display: grid; grid-template-columns: repeat(7,1fr); }
 .week-day { min-height: 280px; border-right: 1px solid var(--line); }
+.week-day.duty-yellow, .week-day.duty-blue, .week-day.duty-green { background: color-mix(in srgb,var(--duty) 6%,white); }
 .month-day.duty-yellow, .month-day.duty-blue, .month-day.duty-green,
 .duty-day-view { background: color-mix(in srgb,var(--duty) 8%,white); }
 .week-day:last-child { border-right: 0; }
 .day-heading { position: sticky; top: 0; z-index: 2; padding: 14px 10px; background: #fbfcfe; border-bottom: 1px solid var(--line); text-align: center; }
-.week-day.duty-yellow .day-heading, .week-day.duty-blue .day-heading, .week-day.duty-green .day-heading { background: color-mix(in srgb,var(--duty) 6%,#fbfcfe); box-shadow: inset 0 3px 0 color-mix(in srgb,var(--duty) 75%,transparent); }
+.week-day.duty-yellow .day-heading, .week-day.duty-blue .day-heading, .week-day.duty-green .day-heading { background: color-mix(in srgb,var(--duty) 10%,#fbfcfe); box-shadow: inset 0 3px 0 color-mix(in srgb,var(--duty) 75%,transparent); }
 .day-heading .day-name { display: block; color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
 .day-heading strong { font-size: 18px; }
 .day-heading.today strong { display: inline-grid; place-items: center; width: 32px; height: 32px; color: #fff; background: var(--blue); border-radius: 50%; font-size: 16px; }
@@ -711,8 +712,11 @@ td.expense { color: var(--danger); font-weight: 800; }
   .modal-client-invite { grid-column: 1 / -1; grid-row: 2; justify-content: center; width: 100%; }
   .date-nav strong { max-width: 145px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  .week-grid { min-width: 0; grid-template-columns: 1fr; }
-  .week-day { min-height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+  .week-grid { min-width: 0; grid-template-columns: 1fr; gap: 10px; padding: 8px; background: #f4f7fb; }
+  .week-day { min-height: auto; overflow: hidden; border: 1px solid color-mix(in srgb,var(--duty) 22%,var(--line)); border-radius: 12px; box-shadow: 0 3px 10px rgba(20,50,80,.045); }
+  .week-day:last-child { border-right: 1px solid color-mix(in srgb,var(--duty) 22%,var(--line)); }
+  .week-day .day-heading { position: static; border-bottom-color: color-mix(in srgb,var(--duty) 16%,var(--line)); }
+  .week-day .day-appointments { min-height: 43px; }
   .month-grid { min-width: 0; }
   .month-weekday { padding: 8px 2px; font-size: 11px; }
   .month-day { min-height: 85px; padding: 4px; }
