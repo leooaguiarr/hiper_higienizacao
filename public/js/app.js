@@ -258,15 +258,16 @@ function renderWeek() {
   const start = startOfWeek(agendaDate), today = localISO(new Date());
   document.getElementById('calendar').innerHTML = `<div class="week-grid">${Array.from({length:7},(_,index) => {
     const date = addDays(start,index), key = localISO(date);
+    const duty = dutyShiftFor(date);
     const appointments = agendaItems().filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
-    return `<div class="week-day"><div class="day-heading ${key===today?'today':''}"><span class="day-name">${date.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><strong>${date.getDate()}</strong>${dutyMarker(date)}</div><div class="day-appointments">${appointments.map(item => eventCard(item)).join('') || '<span class="muted">Livre</span>'}</div></div>`;
+    return `<div class="week-day duty-${duty.key}"><div class="day-heading ${key===today?'today':''}"><span class="day-name">${date.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><strong>${date.getDate()}</strong>${dutyMarker(date)}</div><div class="day-appointments">${appointments.map(item => eventCard(item)).join('') || '<span class="muted">Livre</span>'}</div></div>`;
   }).join('')}</div>`;
 }
 function renderDay() {
   const key = localISO(agendaDate);
   const duty = dutyShiftFor(agendaDate);
   const appointments = agendaItems().filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
-  document.getElementById('calendar').innerHTML = `<div class="duty-day-banner duty-${duty.key}" data-duty="${duty.key}" data-duty-date="${key}"><span><i class="fa-solid fa-fire-extinguisher"></i> Escala dos bombeiros</span><strong>Prontidão ${duty.label}</strong></div><div class="day-list">${appointments.map(item => eventCard(item)).join('') || empty('Nenhum serviço neste dia.')}</div>`;
+  document.getElementById('calendar').innerHTML = `<div class="duty-day-view duty-${duty.key}"><div class="duty-day-banner duty-${duty.key}" data-duty="${duty.key}" data-duty-date="${key}"><span><i class="fa-solid fa-fire-extinguisher"></i> Escala dos bombeiros</span><strong>Prontidão ${duty.label}</strong></div><div class="day-list">${appointments.map(item => eventCard(item)).join('') || empty('Nenhum serviço neste dia.')}</div></div>`;
 }
 function renderMonth() {
   const first = startOfMonth(agendaDate), gridStart = startOfWeek(first), today = localISO(new Date());
@@ -274,8 +275,9 @@ function renderMonth() {
   let html = `<div class="month-grid">${weekdays.map(day => `<div class="month-weekday">${day}</div>`).join('')}`;
   for (let index=0; index<42; index++) {
     const date = addDays(gridStart,index), key = localISO(date);
+    const duty = dutyShiftFor(date);
     const items = agendaItems().filter(item => item.date === key && item.status !== 'canceled').sort((a,b) => a.time.localeCompare(b.time));
-    html += `<div class="month-day ${date.getMonth()!==agendaDate.getMonth()?'outside':''} ${key===today?'today':''}"><span class="day-number">${date.getDate()}</span>${dutyMarker(date, 'duty-strip')}${items.slice(0,3).map(item => eventCard(item,true)).join('')}${items.length>3?`<span class="muted">+${items.length-3}</span>`:''}</div>`;
+    html += `<div class="month-day duty-${duty.key} ${date.getMonth()!==agendaDate.getMonth()?'outside':''} ${key===today?'today':''}"><span class="day-number">${date.getDate()}</span>${dutyMarker(date, 'duty-strip')}${items.slice(0,3).map(item => eventCard(item,true)).join('')}${items.length>3?`<span class="muted">+${items.length-3}</span>`:''}</div>`;
   }
   document.getElementById('calendar').innerHTML = `${html}</div>`;
 }

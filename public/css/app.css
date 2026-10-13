@@ -452,8 +452,12 @@ main { padding: 26px 30px 50px; }
 .calendar { overflow: auto; padding: 0; }
 .week-grid { min-width: 850px; display: grid; grid-template-columns: repeat(7,1fr); }
 .week-day { min-height: 280px; border-right: 1px solid var(--line); }
+.week-day.duty-yellow, .week-day.duty-blue, .week-day.duty-green,
+.month-day.duty-yellow, .month-day.duty-blue, .month-day.duty-green,
+.duty-day-view { background: color-mix(in srgb,var(--duty) 8%,white); }
 .week-day:last-child { border-right: 0; }
 .day-heading { position: sticky; top: 0; z-index: 2; padding: 14px 10px; background: #fbfcfe; border-bottom: 1px solid var(--line); text-align: center; }
+.week-day.duty-yellow .day-heading, .week-day.duty-blue .day-heading, .week-day.duty-green .day-heading { background: color-mix(in srgb,var(--duty) 11%,#fbfcfe); }
 .day-heading .day-name { display: block; color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
 .day-heading strong { font-size: 18px; }
 .day-heading.today strong { display: inline-grid; place-items: center; width: 32px; height: 32px; color: #fff; background: var(--blue); border-radius: 50%; font-size: 16px; }
@@ -482,6 +486,7 @@ main { padding: 26px 30px 50px; }
 .month-day { min-height: 115px; padding: 8px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .month-day:nth-child(7n) { border-right: 0; }
 .month-day.outside { color: #b5c0ce; background: #fafbfc; }
+.month-day.outside.duty-yellow, .month-day.outside.duty-blue, .month-day.outside.duty-green { background: color-mix(in srgb,var(--duty) 4%,#fafbfc); }
 .month-day .day-number { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 700; }
 .month-day.today .day-number { width: 26px; height: 26px; display: grid; place-items: center; color: #fff; background: var(--blue); border-radius: 50%; }
 .duty-strip { min-height: 18px; margin-bottom: 6px; padding: 3px 5px; border-radius: 5px; font-size: 9px; }

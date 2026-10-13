@@ -231,7 +231,8 @@ async function main() {
         periodo: document.getElementById('agendaPeriod').textContent,
         itens: document.querySelectorAll('#calendar [data-detail]').length,
         prontidoes: document.querySelectorAll('#calendar [data-duty]').length,
-        ciclo: Array.from(document.querySelectorAll('#calendar [data-duty]')).slice(0, 4).map(item => item.dataset.duty)
+        ciclo: Array.from(document.querySelectorAll('#calendar [data-duty]')).slice(0, 4).map(item => item.dataset.duty),
+        fundos: Array.from(document.querySelectorAll('#calendar .week-day, #calendar .month-day, #calendar .duty-day-view')).slice(0, 4).map(item => getComputedStyle(item).backgroundColor)
       };
     });
     return r;
@@ -240,6 +241,9 @@ async function main() {
   console.log(JSON.stringify(agenda, null, 2));
   if (agenda.day.prontidoes !== 1 || agenda.week.prontidoes !== 7 || agenda.month.prontidoes !== 42 || agenda.month.ciclo[0] !== agenda.month.ciclo[3]) {
     erros.push('escala de prontidões não foi renderizada corretamente na agenda');
+  }
+  if (!agenda.day.fundos[0] || agenda.week.fundos[0] === agenda.week.fundos[1] || agenda.month.fundos[0] === agenda.month.fundos[1]) {
+    erros.push('cores suaves das prontidões não preencheram os dias da agenda');
   }
 
   // Abrir detalhe de uma OS
