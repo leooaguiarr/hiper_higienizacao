@@ -713,12 +713,13 @@ td.expense { color: var(--danger); font-weight: 800; }
   .week-day:last-child { border-right: 1px solid color-mix(in srgb,var(--duty) 22%,var(--line)); }
   .week-day .day-heading { position: static; border-bottom-color: color-mix(in srgb,var(--duty) 16%,var(--line)); }
   .week-day .day-appointments { min-height: 43px; }
-  .month-grid { min-width: 0; }
-  .month-weekday { padding: 8px 2px; font-size: 11px; }
-  .month-day { min-height: 85px; padding: 4px; }
+  .calendar { width: 100%; max-width: 100%; overflow-x: hidden; }
+  .month-grid { width: 100%; min-width: 0; grid-template-columns: repeat(7,minmax(0,1fr)); }
+  .month-weekday { min-width: 0; padding: 8px 1px; font-size: 9px; }
+  .month-day { min-width: 0; min-height: 85px; overflow: hidden; padding: 4px 2px; }
   .month-day .day-number { font-size: 12px; margin-bottom: 4px; }
   .month-day.today .day-number { width: 22px; height: 22px; }
-  .month-event { padding: 3px; font-size: 10px; letter-spacing: -0.2px; }
+  .month-event { width: 100%; max-width: 100%; padding: 3px 2px; font-size: 9px; letter-spacing: -.25px; }
 
   .list-item { padding: 12px 10px; gap: 8px; }
   .list-time { flex: 0 0 60px; }

@@ -454,6 +454,10 @@ async function main() {
       const rect = el.getBoundingClientRect();
       return [Math.round(rect.width), Math.round(rect.height)];
     });
+    document.querySelector('.bottom-nav-item[data-view="agenda"]').click();
+    document.querySelector('[data-mode="month"]').click();
+    const calendar = document.getElementById('calendar');
+    const monthGrid = calendar.querySelector('.month-grid');
     return {
       scrollHorizontal: document.documentElement.scrollWidth > window.innerWidth + 1,
       larguraDoc: document.documentElement.scrollWidth,
@@ -463,14 +467,16 @@ async function main() {
       cabecalhoContido: topbar.scrollWidth <= topbar.clientWidth,
       acoesUniformes: tamanhos.every(([largura, altura]) => largura === 40 && altura === 40),
       indicadorRedundanteOculto: getComputedStyle(document.getElementById('modeBadge')).display === 'none',
+      mesSemRolagemHorizontal: calendar.scrollWidth <= calendar.clientWidth + 1,
+      seteColunasNoMes: getComputedStyle(monthGrid).gridTemplateColumns.split(' ').length === 7,
       conviteCadastroClaro: document.getElementById('shareClientLinkButton').getAttribute('aria-label') === 'Enviar cadastro ao cliente'
         && document.querySelector('#shareClientLinkButton .fa-address-card') !== null
     };
   })()`);
   console.log('\n=== MOBILE 390px ===');
   console.log(JSON.stringify(mobile, null, 2));
-  if (!mobile.cabecalhoContido || !mobile.acoesUniformes || !mobile.indicadorRedundanteOculto || !mobile.conviteCadastroClaro) {
-    erros.push('cabeçalho mobile perdeu alinhamento ou ultrapassou a largura disponível');
+  if (!mobile.cabecalhoContido || !mobile.acoesUniformes || !mobile.indicadorRedundanteOculto || !mobile.conviteCadastroClaro || !mobile.mesSemRolagemHorizontal || !mobile.seteColunasNoMes) {
+    erros.push('layout mobile ou calendário mensal ultrapassou a largura disponível');
   }
 
   console.log('\n=== ERROS DE CONSOLE ===');
