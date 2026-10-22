@@ -474,6 +474,12 @@ async function main() {
       const rect = el.getBoundingClientRect();
       return [Math.round(rect.width), Math.round(rect.height)];
     });
+    document.querySelector('.nav-item[data-view="financeiro"]').click();
+    const financeiro = document.getElementById('view-financeiro');
+    const paineisFinanceiros = [...financeiro.querySelectorAll('.dashboard-grid > article')].map(item => item.getBoundingClientRect());
+    const financeiroSemSobreposicao = paineisFinanceiros.every((item, index) => index === 0 || item.top >= paineisFinanceiros[index - 1].bottom - 1);
+    const financeiroContido = financeiro.scrollWidth <= financeiro.clientWidth + 1
+      && paineisFinanceiros.every(item => item.left >= -1 && item.right <= window.innerWidth + 1);
     document.querySelector('.bottom-nav-item[data-view="agenda"]').click();
     document.querySelector('[data-mode="month"]').click();
     const calendar = document.getElementById('calendar');
@@ -487,6 +493,8 @@ async function main() {
       cabecalhoContido: topbar.scrollWidth <= topbar.clientWidth,
       acoesUniformes: tamanhos.every(([largura, altura]) => largura === 40 && altura === 40),
       indicadorRedundanteOculto: getComputedStyle(document.getElementById('modeBadge')).display === 'none',
+      financeiroSemSobreposicao,
+      financeiroContido,
       mesSemRolagemHorizontal: calendar.scrollWidth <= calendar.clientWidth + 1,
       seteColunasNoMes: getComputedStyle(monthGrid).gridTemplateColumns.split(' ').length === 7,
       conviteCadastroClaro: document.getElementById('shareClientLinkButton').getAttribute('aria-label') === 'Enviar cadastro ao cliente'
@@ -495,7 +503,7 @@ async function main() {
   })()`);
   console.log('\n=== MOBILE 390px ===');
   console.log(JSON.stringify(mobile, null, 2));
-  if (!mobile.cabecalhoContido || !mobile.acoesUniformes || !mobile.indicadorRedundanteOculto || !mobile.conviteCadastroClaro || !mobile.mesSemRolagemHorizontal || !mobile.seteColunasNoMes) {
+  if (!mobile.cabecalhoContido || !mobile.acoesUniformes || !mobile.indicadorRedundanteOculto || !mobile.financeiroSemSobreposicao || !mobile.financeiroContido || !mobile.conviteCadastroClaro || !mobile.mesSemRolagemHorizontal || !mobile.seteColunasNoMes) {
     erros.push('layout mobile ou calendário mensal ultrapassou a largura disponível');
   }
 

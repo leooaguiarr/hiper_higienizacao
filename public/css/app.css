@@ -674,7 +674,10 @@ td.expense { color: var(--danger); font-weight: 800; }
   #dashboardMetrics { order: 6; margin: 0; }
   #view-financeiro .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
   .settings-grid { grid-template-columns: 1fr; }
-  .span-2 { grid-column: auto; }
+  .span-2, .span-3 { grid-column: auto; }
+  #view-financeiro { width: 100%; max-width: 100%; overflow-x: hidden; }
+  #view-financeiro .dashboard-grid > * { grid-column: 1; width: 100%; max-width: 100%; }
+  #view-financeiro .table-wrap { width: 100%; max-width: 100%; overflow-x: auto; }
   .toolbar { align-items: flex-start; flex-direction: column; }
   .section-actions { align-items: stretch; }
   .search-box { min-width: 0; flex: 1; }
