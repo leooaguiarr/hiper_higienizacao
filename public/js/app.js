@@ -211,7 +211,10 @@ function renderDashboard() {
   const birthdaysList = document.getElementById('birthdaysList');
   if (birthdaysList) {
     birthdaysList.innerHTML = birthdayItems.length ? birthdayItems.map(({ client, info }) => {
-      let timeText = `Em ${info.daysUntil} dias`;
+      const todayDate = parseDate(today);
+      const birthdayThisYear = new Date(todayDate.getFullYear(), info.month - 1, info.day);
+      const alreadyPassedThisMonth = info.isThisMonth && birthdayThisYear < todayDate;
+      let timeText = alreadyPassedThisMonth ? '' : `Em ${info.daysUntil} dias`;
       let badgeStyle = 'color:var(--muted); font-weight:700;';
       if (info.isToday) {
         timeText = 'Hoje! 🎉';
@@ -220,16 +223,17 @@ function renderDashboard() {
         timeText = 'Amanhã';
         badgeStyle = 'color:var(--blue); font-weight:700;';
       }
-      const ageText = info.ageTurning ? ` · ${info.ageTurning} anos` : '';
-      const dateFormatted = dateFmt.format(info.nextDate);
+      const dateFormatted = dateFmt.format(alreadyPassedThisMonth ? birthdayThisYear : info.nextDate);
+      const birthdayTiming = timeText
+        ? `<span style="${badgeStyle}">${timeText}</span><span>(${dateFormatted})</span>`
+        : `<span>${dateFormatted}</span>`;
       const bdayMsg = `Olá ${client.firstName}! 🎂 A equipe da Hiper Higienizações deseja a você um Feliz Aniversário! Muita saúde, alegria e realizações. Conte conosco para deixar seus estofados sempre impecáveis!`;
-      return `<div class="list-item">
+      return `<div class="list-item" data-birthday-client="${client.id}">
         <span class="alert-icon" style="background:#fef3c7; color:#d97706; flex:0 0 38px; width:38px; height:38px; font-size:16px"><i class="fa-solid fa-cake-candles"></i></span>
         <span class="list-main">
           <strong>${esc(clientName(client))}</strong>
           <span style="display:flex; align-items:center; gap:6px;">
-            <span style="${badgeStyle}">${timeText}</span>
-            <span>(${dateFormatted}${ageText})</span>
+            ${birthdayTiming}
           </span>
         </span>
         <a class="whats-link" target="_blank" rel="noopener noreferrer" href="${whatsappLink(client.phone, bdayMsg)}" title="Enviar parabéns pelo WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
@@ -588,10 +592,8 @@ function showClientDetail(id) {
 
   let birthDateStr = '';
   if (client.birthDate) {
-    const bInfo = getBirthdayInfo(client.birthDate);
     const bFormatted = dateFmt.format(parseDate(client.birthDate));
-    const bAge = bInfo?.ageTurning ? ` (${bInfo.ageTurning} anos)` : '';
-    birthDateStr = `<div><span>Data de nascimento</span><strong>${bFormatted}${bAge}</strong></div>`;
+    birthDateStr = `<div><span>Data de nascimento</span><strong>${bFormatted}</strong></div>`;
   }
 
   openDetail('FICHA DO CLIENTE', clientName(client), `<div class="detail-hero"><span class="initials">${esc((client.firstName?.[0]||'')+(client.lastName?.[0]||''))}</span><div><strong>${esc(clientName(client))}</strong><p>${esc(client.phone)}</p></div></div><div class="detail-grid"><div><span>Total gasto</span><strong>${brl.format(total)}</strong></div><div><span>Serviços concluídos</span><strong>${history.length}</strong></div><div><span>Última higienização</span><strong>${history[0]?dateFmt.format(parseDate(history[0].date)):'-'}</strong></div><div><span>Próxima recomendação</span><strong>${client.nextRecommendation?dateFmt.format(parseDate(client.nextRecommendation)):'Não definida'}</strong></div>${birthDateStr}${docStr}<div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(fullAddress)}</strong></div></div><h3>Histórico</h3><div class="stack-list" style="margin-top:10px">${history.length?history.map(item => `<div class="list-item"><span class="list-time">${dateFmt.format(parseDate(item.date))}</span><span class="list-main"><strong>${esc(getService(item.serviceId)?.name || '')}</strong><span>${esc(item.team || '')}</span></span><span class="list-value">${brl.format(item.value)}</span></div>`).join(''):empty('Ainda não há serviços concluídos.')}</div><div class="detail-actions">${whatsButton}<button type="button" class="secondary-button" data-edit-client="${client.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-client="${client.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);

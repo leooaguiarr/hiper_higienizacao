@@ -122,6 +122,15 @@ async function main() {
     const agora = new Date();
     const hoje = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0') + '-' + String(agora.getDate()).padStart(2, '0');
     const clientesParaChamar = [...document.querySelectorAll('#recurrenceList [data-client-due]')].map(element => window.__store.state.clients.find(client => client.id === element.dataset.clientDue));
+    const aniversariantePassado = window.__store.state.clients.find(client => {
+      if (!client.birthDate) return false;
+      const [, mes, dia] = client.birthDate.slice(0, 10).split('-').map(Number);
+      return mes === agora.getMonth() + 1 && dia < agora.getDate();
+    });
+    const cardAniversariantePassado = aniversariantePassado
+      ? document.querySelector('#birthdaysList [data-birthday-client="' + aniversariantePassado.id + '"]')
+      : null;
+    const textoAniversariantes = document.getElementById('birthdaysList').textContent;
     return {
       modo: window.__store ? window.__store.modo : 'sem-store',
       appVisivel: visivel('.app-shell'),
@@ -132,6 +141,8 @@ async function main() {
       clientesParaChamar: clientesParaChamar.length,
       quantidadeParaChamarEsperada: Math.min(6, window.__store.state.clients.filter(client => client.nextRecommendation && client.nextRecommendation <= hoje).length),
       somenteClientesVencidos: clientesParaChamar.every(client => client?.nextRecommendation <= hoje),
+      aniversariosSemIdade: !textoAniversariantes.includes(' anos'),
+      aniversarioPassadoSemContagem: !aniversariantePassado || (!!cardAniversariantePassado && !/Hoje|Amanhã|Em \d+ dias/.test(cardAniversariantePassado.textContent)),
       clientes: document.querySelectorAll('#clientGrid .client-card').length,
       servicos: document.querySelectorAll('#serviceGrid .service-card').length,
       ordens: document.querySelectorAll('#orderList .order-card').length,
@@ -149,7 +160,7 @@ async function main() {
 
   console.log('\n=== ESTADO INICIAL ===');
   console.log(JSON.stringify(relatorio, null, 2));
-  if (!relatorio.creditoLoginLegivel || !relatorio.linkLgpd || !relatorio.painelDevolucoesRemovido || relatorio.clientesParaChamar !== relatorio.quantidadeParaChamarEsperada || !relatorio.somenteClientesVencidos) erros.push('rodapé, LGPD ou organização do início não está correta');
+  if (!relatorio.creditoLoginLegivel || !relatorio.linkLgpd || !relatorio.painelDevolucoesRemovido || relatorio.clientesParaChamar !== relatorio.quantidadeParaChamarEsperada || !relatorio.somenteClientesVencidos || !relatorio.aniversariosSemIdade || !relatorio.aniversarioPassadoSemContagem) erros.push('rodapé, LGPD ou organização do início não está correta');
 
   const recebimentosPendentes = await avaliar(`(() => {
     const isoOffset = offset => {

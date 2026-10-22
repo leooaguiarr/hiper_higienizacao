@@ -286,3 +286,4 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 22/10/2026 | O status da **devolução** foi separado do atendimento principal: cada evento agora pode ser confirmado ou concluído isoladamente, inclusive nos lembretes. |
 | 22/10/2026 | **Recebimentos pendentes** passaram a considerar somente valores vencidos, usando a data da devolução quando o serviço tiver retirada; o alerta da próxima devolução abre a agenda diretamente na data correta. O painel separado de devoluções foi removido para não confundir com os próximos agendamentos. |
 | 22/10/2026 | O painel **Hora de chamar** passou a exibir somente clientes cuja recomendação já venceu; recomendações futuras continuam fora da fila de contato. |
+| 22/10/2026 | O card de **aniversariantes** passou a manter no mês quem já fez aniversário sem projetar a data para o ano seguinte; a contagem aparece somente para datas próximas e a idade foi removida da interface. |
