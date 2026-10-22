@@ -78,9 +78,12 @@ function returnStatusFor(item) {
   if (item.status === 'canceled') return 'canceled';
   return item.returnStatus || 'scheduled';
 }
+function receivableDueDate(item) {
+  return item.returnDate || item.date;
+}
 function overdueReceivables() {
   const today = localISO(new Date());
-  return state().appointments.filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled' && item.date < today);
+  return state().appointments.filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled' && receivableDueDate(item) < today);
 }
 function upcomingReturns() {
   const today = localISO(new Date());
@@ -375,7 +378,7 @@ function renderFinance() {
   const transactions = state().transactions.filter(item => item.date.startsWith(month)).sort((a,b) => b.date.localeCompare(a.date));
   const income = transactions.filter(item => item.type === 'income' && item.status === 'paid').reduce((sum,item) => sum + Number(item.value),0);
   const expenses = transactions.filter(item => item.type === 'expense' && item.status === 'paid').reduce((sum,item) => sum + Number(item.value),0);
-  const receivable = state().appointments.filter(item => item.paymentStatus === 'pending' && item.date.startsWith(month) && item.status !== 'canceled').reduce((sum,item) => sum + Number(item.value),0);
+  const receivable = state().appointments.filter(item => item.paymentStatus === 'pending' && receivableDueDate(item).startsWith(month) && item.status !== 'canceled').reduce((sum,item) => sum + Number(item.value),0);
   const paidServices = transactions.filter(item => item.type === 'income' && item.status === 'paid').length;
   const metrics = [
     ['fa-arrow-trend-up', brl.format(income), 'Receitas recebidas'],
@@ -386,11 +389,12 @@ function renderFinance() {
   ];
   document.getElementById('financeMetrics').innerHTML = metrics.map(([icon,value,label]) => `<article class="metric-card"><div class="metric-icon"><i class="fa-solid ${icon}"></i></div><strong>${value}</strong><span>${label}</span></article>`).join('');
   const receivables = overdueReceivables()
-    .sort((a,b) => `${a.date}${a.time || ''}`.localeCompare(`${b.date}${b.time || ''}`));
+    .sort((a,b) => `${receivableDueDate(a)}${a.returnDate ? a.returnTime || '' : a.time || ''}`.localeCompare(`${receivableDueDate(b)}${b.returnDate ? b.returnTime || '' : b.time || ''}`));
   document.getElementById('receivableCount').textContent = `${receivables.length} pendente${receivables.length === 1 ? '' : 's'}`;
   document.getElementById('receivableRows').innerHTML = receivables.length ? receivables.map(item => {
     const client = getClient(item.clientId), service = getService(item.serviceId);
-    return `<tr><td>${dateFmt.format(parseDate(item.date))}</td><td><strong>${esc(clientName(client))}</strong><br><span class="muted">${esc(service?.name || 'Serviço')}</span></td><td>${esc(item.paymentMethod || '-')}</td><td><span class="badge" style="--status:var(--warning)">A receber</span></td><td class="income">${brl.format(item.value)}</td><td class="row-actions"><button type="button" class="secondary-button" data-detail="${item.id}">Abrir atendimento</button></td></tr>`;
+    const dueDate = receivableDueDate(item);
+    return `<tr><td>${dateFmt.format(parseDate(dueDate))}${item.returnDate ? '<br><span class="muted">Devolução</span>' : ''}</td><td><strong>${esc(clientName(client))}</strong><br><span class="muted">${esc(service?.name || 'Serviço')}</span></td><td>${esc(item.paymentMethod || '-')}</td><td><span class="badge" style="--status:var(--warning)">A receber</span></td><td class="income">${brl.format(item.value)}</td><td class="row-actions"><button type="button" class="secondary-button" data-detail="${item.id}">Abrir atendimento</button></td></tr>`;
   }).join('') : `<tr><td colspan="6">${empty('Nenhum recebimento pendente.')}</td></tr>`;
   document.getElementById('transactionRows').innerHTML = transactions.length ? transactions.map(item => `<tr><td>${dateFmt.format(parseDate(item.date))}</td><td><strong>${esc(item.description)}</strong><br><span class="muted">${esc(item.category || 'Geral')}</span></td><td>${esc(item.paymentMethod)}</td><td><span class="badge" style="--status:${item.status==='paid'?'var(--success)':'var(--warning)'}">${item.status==='paid'?'Pago':'Pendente'}</span></td><td class="${item.type}">${item.type==='expense'?'- ':'+ '}${brl.format(item.value)}</td><td class="row-actions"><button type="button" class="icon-button" data-edit-transaction="${item.id}" aria-label="Editar lançamento" title="Editar"><i class="fa-solid fa-pen"></i></button><button type="button" class="icon-button danger" data-delete-transaction="${item.id}" aria-label="Excluir lançamento" title="Excluir"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : `<tr><td colspan="6">${empty('Nenhuma movimentação no período.')}</td></tr>`;
   renderServiceRevenue(month);

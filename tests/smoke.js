@@ -145,27 +145,40 @@ async function main() {
   if (!relatorio.creditoLoginLegivel || !relatorio.linkLgpd) erros.push('rodapé do login ou link da LGPD não está correto');
 
   const recebimentosPendentes = await avaliar(`(() => {
-    const alerta = document.querySelector('#alertsList [data-alert-action="recebimentos"]');
-    if (alerta) alerta.click();
-    else document.querySelector('.nav-item[data-view="financeiro"]').click();
-    const agora = new Date();
-    const hoje = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0') + '-' + String(agora.getDate()).padStart(2, '0');
-    const pendentes = window.__store.state.appointments.filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled' && item.date < hoje);
+    const isoOffset = offset => {
+      const data = new Date();
+      data.setDate(data.getDate() + offset);
+      return data.getFullYear() + '-' + String(data.getMonth() + 1).padStart(2, '0') + '-' + String(data.getDate()).padStart(2, '0');
+    };
+    const hoje = isoOffset(0), ontem = isoOffset(-1), anteontem = isoOffset(-2), amanha = isoOffset(1);
+    const candidatos = window.__store.state.appointments.filter(item => item.paymentStatus === 'pending').slice(0, 3);
+    const originais = candidatos.map(item => ({ item, date:item.date, returnDate:item.returnDate, returnTime:item.returnTime }));
+    Object.assign(candidatos[0], { date:ontem, returnDate:amanha, returnTime:'10:00' });
+    Object.assign(candidatos[1], { date:ontem, returnDate:'', returnTime:'' });
+    Object.assign(candidatos[2], { date:anteontem, returnDate:ontem, returnTime:'15:00' });
+    document.getElementById('financeMonth').dispatchEvent(new Event('change'));
+    document.querySelector('.nav-item[data-view="financeiro"]').click();
+    const pendentes = window.__store.state.appointments.filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled' && (item.returnDate || item.date) < hoje);
     const exibidos = [...document.querySelectorAll('#receivableRows [data-detail]')].map(button => window.__store.state.appointments.find(item => item.id === button.dataset.detail));
-    return {
-      alertaCoerente: !!alerta === (pendentes.length > 0),
+    const resultado = {
       financeiroVisivel: document.getElementById('view-financeiro').classList.contains('active'),
       quantidadeExibida: exibidos.length,
       quantidadeEsperada: pendentes.length,
-      somenteVencidos: exibidos.every(item => item?.date < hoje),
-      futurosExcluidos: !exibidos.some(item => item?.date >= hoje),
+      somenteVencidos: exibidos.every(item => (item?.returnDate || item?.date) < hoje),
+      devolucaoFuturaExcluida: !exibidos.includes(candidatos[0]),
+      atendimentoVencidoIncluido: exibidos.includes(candidatos[1]),
+      devolucaoVencidaIncluida: exibidos.includes(candidatos[2]),
+      dataDevolucaoIndicada: document.querySelector('#receivableRows [data-detail="' + candidatos[2].id + '"]')?.closest('tr')?.textContent.includes('Devolução'),
       abreAtendimento: pendentes.length === 0 || !!document.querySelector('#receivableRows [data-detail]')
     };
+    originais.forEach(original => Object.assign(original.item, { date:original.date, returnDate:original.returnDate, returnTime:original.returnTime }));
+    document.getElementById('financeMonth').dispatchEvent(new Event('change'));
+    return resultado;
   })()`);
   console.log('\n=== RECEBIMENTOS PENDENTES ===');
   console.log(JSON.stringify(recebimentosPendentes, null, 2));
-  if (!recebimentosPendentes.alertaCoerente || !recebimentosPendentes.financeiroVisivel || recebimentosPendentes.quantidadeExibida !== recebimentosPendentes.quantidadeEsperada || !recebimentosPendentes.somenteVencidos || !recebimentosPendentes.futurosExcluidos || !recebimentosPendentes.abreAtendimento) {
-    erros.push('recebimentos pendentes exibiram valores que ainda não venceram');
+  if (!recebimentosPendentes.financeiroVisivel || recebimentosPendentes.quantidadeExibida !== recebimentosPendentes.quantidadeEsperada || !recebimentosPendentes.somenteVencidos || !recebimentosPendentes.devolucaoFuturaExcluida || !recebimentosPendentes.atendimentoVencidoIncluido || !recebimentosPendentes.devolucaoVencidaIncluida || !recebimentosPendentes.dataDevolucaoIndicada || !recebimentosPendentes.abreAtendimento) {
+    erros.push('recebimentos pendentes não respeitaram a data efetiva de atendimento ou devolução');
   }
 
   const politica = await avaliar(`(async () => {

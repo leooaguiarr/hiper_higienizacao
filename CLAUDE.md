@@ -284,4 +284,4 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 22/10/2026 | Devoluções concluídas passaram a usar o estado visual verde de **Concluído** na agenda; roxo ficou reservado às devoluções ainda pendentes. |
 | 22/10/2026 | A tela de **Clientes** foi simplificada para exibir somente o total, ganhou ordem alfabética e paginação visual de dez cards; a coleção continua global em memória porque agenda, OS, alertas e novos agendamentos dependem dela. |
 | 22/10/2026 | O status da **devolução** foi separado do atendimento principal: cada evento agora pode ser confirmado ou concluído isoladamente, inclusive nos lembretes. |
-| 22/10/2026 | **Recebimentos pendentes** passaram a considerar somente atendimentos vencidos; o início ganhou um painel com as próximas devoluções e um alerta que abre a agenda diretamente na data da devolução mais próxima. |
+| 22/10/2026 | **Recebimentos pendentes** passaram a considerar somente valores vencidos, usando a data da devolução quando o serviço tiver retirada; o início ganhou um painel com as próximas devoluções e um alerta que abre a agenda diretamente na data da devolução mais próxima. |
