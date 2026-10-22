@@ -162,12 +162,6 @@ function renderDashboard() {
     return `<button class="list-item" data-detail="${item.id}"><span class="list-time"><strong>${item.time}</strong><span>${dateFmt.format(parseDate(item.date))}</span></span><span class="list-main"><strong>${esc(clientName(client))}</strong><span>${subtexto}</span></span><span class="list-value">${brl.format(item.value)}${statusBadge(item.status)}</span></button>`;
   }).join('') : empty('Nenhum serviço à frente. Aproveite para prospectar.');
 
-  const nextReturns = upcomingReturns().slice(0,5);
-  document.getElementById('returnList').innerHTML = nextReturns.length ? nextReturns.map(item => {
-    const client = getClient(item.clientId), service = getService(item.serviceId);
-    return `<button class="list-item" data-detail="${item.id}" data-detail-type="return"><span class="list-time"><strong>${item.returnTime}</strong><span>${dateFmt.format(parseDate(item.returnDate))}</span></span><span class="list-main"><strong>${esc(clientName(client))}</strong><span>${esc(service?.name || 'Serviço')}</span></span>${statusBadge(returnStatusFor(item))}</button>`;
-  }).join('') : empty('Nenhuma devolução agendada.');
-
   const alerts = buildAlerts();
   document.getElementById('notificationCount').textContent = alerts.length;
   document.getElementById('notificationCount').style.display = alerts.length ? 'grid' : 'none';

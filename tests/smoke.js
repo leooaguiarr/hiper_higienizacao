@@ -125,6 +125,7 @@ async function main() {
       authVisivel: visivel('#authScreen'),
       metricas: document.querySelectorAll('#dashboardMetrics .metric-card').length,
       proximos: document.querySelectorAll('#upcomingList .list-item').length,
+      painelDevolucoesRemovido: !document.getElementById('returnsPanel'),
       clientes: document.querySelectorAll('#clientGrid .client-card').length,
       servicos: document.querySelectorAll('#serviceGrid .service-card').length,
       ordens: document.querySelectorAll('#orderList .order-card').length,
@@ -142,7 +143,7 @@ async function main() {
 
   console.log('\n=== ESTADO INICIAL ===');
   console.log(JSON.stringify(relatorio, null, 2));
-  if (!relatorio.creditoLoginLegivel || !relatorio.linkLgpd) erros.push('rodapé do login ou link da LGPD não está correto');
+  if (!relatorio.creditoLoginLegivel || !relatorio.linkLgpd || !relatorio.painelDevolucoesRemovido) erros.push('rodapé, LGPD ou organização do início não está correta');
 
   const recebimentosPendentes = await avaliar(`(() => {
     const isoOffset = offset => {
@@ -397,7 +398,6 @@ async function main() {
     const abriu = modal.classList.contains('open') && !!botao;
     if (botao) botao.click();
     const criado = window.__store.state.appointments.find(item => item.date === '2099-12-31' && item.serviceId === 'svc-rug');
-    const devolucaoNoInicio = document.querySelector('#returnList [data-detail-type="return"][data-detail="' + criado?.id + '"]');
     const alertaDevolucao = document.querySelector('#alertsList [data-alert-action="devolucoes"]');
     alertaDevolucao?.click();
     const alertaAbriuDia = document.getElementById('view-agenda').classList.contains('active')
@@ -414,7 +414,6 @@ async function main() {
       statusInicialAgendado: criado?.status === 'scheduled',
       statusInicialDevolucao: criado?.returnStatus === 'scheduled',
       devolucaoSalva: criado?.returnDate === '2100-01-07' && criado?.returnTime === '17:00',
-      devolucaoNoInicio: !!devolucaoNoInicio && devolucaoNoInicio.textContent.includes('7 de jan.'),
       alertaDevolucao: !!alertaDevolucao && !!alertaAbriuDia,
       devolucaoNaAgenda,
       abriu,
@@ -423,7 +422,7 @@ async function main() {
   })()`);
   console.log('\n=== CONVITE DO WHATSAPP ===');
   console.log(JSON.stringify(conviteWhatsApp, null, 2));
-  if (!conviteWhatsApp.criou || !conviteWhatsApp.conviteCadastroVisivel || !conviteWhatsApp.clientesSincronizados || !conviteWhatsApp.devolucaoVisivel || !conviteWhatsApp.prazoSugerido || !conviteWhatsApp.statusInicialAgendado || !conviteWhatsApp.statusInicialDevolucao || !conviteWhatsApp.devolucaoSalva || !conviteWhatsApp.devolucaoNoInicio || !conviteWhatsApp.alertaDevolucao || !conviteWhatsApp.devolucaoNaAgenda || !conviteWhatsApp.abriu || !conviteWhatsApp.fechou) {
+  if (!conviteWhatsApp.criou || !conviteWhatsApp.conviteCadastroVisivel || !conviteWhatsApp.clientesSincronizados || !conviteWhatsApp.devolucaoVisivel || !conviteWhatsApp.prazoSugerido || !conviteWhatsApp.statusInicialAgendado || !conviteWhatsApp.statusInicialDevolucao || !conviteWhatsApp.devolucaoSalva || !conviteWhatsApp.alertaDevolucao || !conviteWhatsApp.devolucaoNaAgenda || !conviteWhatsApp.abriu || !conviteWhatsApp.fechou) {
     erros.push('fluxo integrado de cadastro e agendamento não funcionou corretamente');
   }
 
