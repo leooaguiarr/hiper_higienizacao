@@ -164,6 +164,7 @@ sozinho depois. O indicador no topo mostra *Sem conexão*, *Sincronizando* ou
 **Funciona e está testado:** as sete telas, agenda em dia/semana/mês, ficha do
 cliente com histórico, ordens de serviço com os cinco estados, financeiro por
 período e listagem completa de recebimentos pendentes com acesso ao atendimento,
+clientes em ordem alfabética com paginação visual de dez registros,
 **criar, editar e excluir** cliente/agendamento/lançamento/serviço, conclusão
 de serviço em lote (status + recorrência + receita), catálogo de serviços gerenciável
 (com ativação/desativação e proteção de histórico), login com Google e o
@@ -279,3 +280,4 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 30/09/2026 | **Novas funcionalidades do cliente:** Data de nascimento obrigatória no cadastro interno e link público, com alerta e card de aniversariantes próximos no Dashboard (WhatsApp em 1 clique); dados da empresa editáveis em Configurações; ciclo de retorno personalizável por agendamento; integração com Google Agenda (Android); popup de novidades e atualização do guia. Versão `hiper-v44`. |
 | 22/10/2026 | O alerta de **recebimentos pendentes** passou a abrir, no Financeiro, a listagem completa das contas a receber com acesso direto ao atendimento; o grid mobile foi ajustado para impedir sobreposição e rolagem horizontal da página. |
 | 22/10/2026 | Devoluções concluídas passaram a usar o estado visual verde de **Concluído** na agenda; roxo ficou reservado às devoluções ainda pendentes. |
+| 22/10/2026 | A tela de **Clientes** foi simplificada para exibir somente o total, ganhou ordem alfabética e paginação visual de dez cards; a coleção continua global em memória porque agenda, OS, alertas e novos agendamentos dependem dela. |

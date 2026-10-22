@@ -500,6 +500,7 @@ main { padding: 26px 30px 50px; }
 .mini-metric { padding: 16px 18px; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
 .mini-metric strong { display: block; font-size: 22px; }
 .mini-metric span { color: var(--muted); font-size: 12px; font-weight: 600; }
+#clientMetrics { grid-template-columns: minmax(0,1fr); }
 .card-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
 .client-card { padding: 18px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
 .client-head { display: flex; align-items: center; gap: 11px; }
@@ -514,6 +515,13 @@ main { padding: 26px 30px 50px; }
 .client-address { min-height: 34px; color: var(--muted); font-size: 12px; line-height: 1.4; }
 .client-actions { display: flex; gap: 8px; margin-top: 14px; }
 .client-actions a, .client-actions button { flex: 1; padding: 9px; color: var(--blue); background: var(--blue-soft); border: 0; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; text-decoration: none; }
+.client-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 18px; }
+.client-pagination > div { min-width: 120px; text-align: center; }
+.client-pagination strong, .client-pagination span { display: block; }
+.client-pagination strong { font-size: 13px; }
+.client-pagination span { margin-top: 2px; color: var(--muted); font-size: 11px; }
+.client-pagination button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 112px; }
+.client-pagination button:disabled { cursor: default; opacity: .45; transform: none; }
 .service-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; }
 .service-card { position: relative; overflow: hidden; padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
 .service-card::after { content: ""; position: absolute; width: 85px; height: 85px; right: -38px; top: -38px; background: var(--blue-soft); border-radius: 50%; pointer-events: none; }
@@ -731,6 +739,9 @@ td.expense { color: var(--danger); font-weight: 800; }
   .list-main strong { font-size: 14px; }
   .list-value { font-size: 14px; }
   .badge { padding: 3px 6px; font-size: 10px; }
+  .client-pagination { gap: 8px; }
+  .client-pagination > div { min-width: 96px; }
+  .client-pagination button { min-width: 0; padding: 10px 12px; font-size: 12px; }
 }
 @media (max-width: 380px) {
   .topbar { gap: 9px; padding-inline: 12px; }

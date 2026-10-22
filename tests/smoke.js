@@ -483,6 +483,42 @@ async function main() {
     erros.push('botões de editar e excluir serviço estão desalinhados');
   }
 
+  const paginacaoClientes = await avaliar(`(() => {
+    while (window.__store.state.clients.length < 23) {
+      const numero = String(window.__store.state.clients.length + 1).padStart(2, '0');
+      window.__store.state.clients.push({ id:'cli-page-' + numero, firstName:'Z Cliente', lastName:numero, phone:'(16) 90000-0000', neighborhood:'Teste', city:'Ribeirão Preto' });
+    }
+    document.querySelector('.nav-item[data-view="clientes"]').click();
+    const input = document.getElementById('clientSearch');
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    const nomesPrimeira = [...document.querySelectorAll('#clientGrid .client-card h3')].map(el => el.textContent.trim());
+    const ordenados = [...nomesPrimeira].sort((a,b) => a.localeCompare(b, 'pt-BR', { sensitivity:'base' }));
+    document.getElementById('clientNext').click();
+    const nomesSegunda = [...document.querySelectorAll('#clientGrid .client-card h3')].map(el => el.textContent.trim());
+    const segundaPagina = document.getElementById('clientPageCurrent').textContent;
+    input.value = 'Z Cliente 18';
+    input.dispatchEvent(new Event('input'));
+    const buscaReiniciou = document.getElementById('clientPageCurrent').textContent === 'Página 1 de 1'
+      && document.querySelectorAll('#clientGrid .client-card').length === 1;
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    return {
+      somenteTotal: document.querySelectorAll('#clientMetrics .mini-metric').length === 1
+        && !document.getElementById('clientMetrics').textContent.includes('Valor histórico')
+        && !document.getElementById('clientMetrics').textContent.includes('Contatos de recorrência'),
+      dezNaPrimeira: nomesPrimeira.length === 10,
+      ordemAlfabetica: nomesPrimeira.join('|') === ordenados.join('|'),
+      dezNaSegunda: nomesSegunda.length === 10,
+      paginasDiferentes: nomesPrimeira.join('|') !== nomesSegunda.join('|'),
+      segundaPagina: segundaPagina === 'Página 2 de 3',
+      buscaReiniciou
+    };
+  })()`);
+  console.log('\n=== PAGINACAO DE CLIENTES ===');
+  console.log(JSON.stringify(paginacaoClientes, null, 2));
+  if (!Object.values(paginacaoClientes).every(Boolean)) erros.push('ordenação ou paginação de clientes falhou');
+
   // Responsivo mobile
   await enviar('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await esperar(600);

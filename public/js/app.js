@@ -39,9 +39,11 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 let currentView = 'dashboard';
 let agendaMode = 'week';
 let agendaDate = new Date();
+let clientPage = 1;
 let appointmentClientIds = new Set();
 let guideAutoOpened = false;
 const GUIDE_HIDDEN_KEY = 'hiper-guide-hidden';
+const CLIENTS_PER_PAGE = 10;
 
 const state = () => store.state;
 
@@ -286,16 +288,29 @@ function renderMonth() {
 
 function renderClients() {
   const query = document.getElementById('clientSearch').value.trim().toLowerCase();
-  const filtered = state().clients.filter(client => `${clientName(client)} ${client.phone} ${client.neighborhood}`.toLowerCase().includes(query));
-  const totalSpend = state().appointments.filter(item => item.status === 'completed').reduce((sum,item) => sum + Number(item.value),0);
-  const due = state().clients.filter(client => client.nextRecommendation && client.nextRecommendation <= localISO(new Date())).length;
-  document.getElementById('clientMetrics').innerHTML = `<div class="mini-metric"><strong>${state().clients.length}</strong><span>Clientes cadastrados</span></div><div class="mini-metric"><strong>${brl.format(totalSpend)}</strong><span>Valor histórico concluído</span></div><div class="mini-metric"><strong>${due}</strong><span>Contatos de recorrência</span></div>`;
-  document.getElementById('clientGrid').innerHTML = filtered.length ? filtered.map(client => {
+  const filtered = state().clients
+    .filter(client => `${clientName(client)} ${client.phone} ${client.neighborhood}`.toLowerCase().includes(query))
+    .sort((a,b) => clientName(a).localeCompare(clientName(b), 'pt-BR', { sensitivity:'base' }));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / CLIENTS_PER_PAGE));
+  clientPage = Math.min(Math.max(clientPage, 1), totalPages);
+  const pageStart = (clientPage - 1) * CLIENTS_PER_PAGE;
+  const visibleClients = filtered.slice(pageStart, pageStart + CLIENTS_PER_PAGE);
+  document.getElementById('clientMetrics').innerHTML = `<div class="mini-metric"><strong>${state().clients.length}</strong><span>Clientes cadastrados</span></div>`;
+  document.getElementById('clientGrid').innerHTML = visibleClients.length ? visibleClients.map(client => {
     const history = clientHistory(client.id), total = history.reduce((sum,item) => sum + Number(item.value),0), last = history[0];
     const initials = `${client.firstName?.[0] || ''}${client.lastName?.[0] || ''}`.toUpperCase();
     const address = clientAddress(client);
     return `<article class="client-card"><div class="client-head"><span class="initials">${esc(initials)}</span><div><h3>${esc(clientName(client))}</h3><span>${esc(client.phone)}</span></div></div><div class="client-stats"><div><strong>${history.length}</strong><span>serviços</span></div><div><strong>${brl.format(total)}</strong><span>total gasto</span></div><div><strong>${last?dateFmt.format(parseDate(last.date)):'-'}</strong><span>última higiene</span></div></div><p class="client-address"><i class="fa-solid fa-location-dot"></i> ${esc(address)}</p><div class="client-actions"><a target="_blank" rel="noopener noreferrer" href="https://wa.me/55${phoneDigits(client.phone)}"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a><a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}"><i class="fa-solid fa-route"></i> Maps</a><button data-client-detail="${client.id}">Ver ficha</button></div></article>`;
   }).join('') : empty('Nenhum cliente encontrado.');
+  const pagination = document.getElementById('clientPagination');
+  pagination.hidden = filtered.length <= CLIENTS_PER_PAGE;
+  document.getElementById('clientPageInfo').textContent = filtered.length
+    ? `${pageStart + 1}–${Math.min(pageStart + CLIENTS_PER_PAGE, filtered.length)} de ${filtered.length}`
+    : '0 clientes';
+  document.getElementById('clientPageCurrent').textContent = `Página ${clientPage} de ${totalPages}`;
+  document.getElementById('clientPrev').disabled = clientPage === 1;
+  document.getElementById('clientNext').disabled = clientPage === totalPages;
+  bindDynamicActions();
 }
 
 function renderServices() {
@@ -1397,7 +1412,9 @@ document.getElementById('transactionForm').addEventListener('submit', handleTran
 document.getElementById('serviceForm').addEventListener('submit', handleServiceSubmit);
 document.getElementById('settingsForm').addEventListener('submit', handleSettingsSubmit);
 document.getElementById('companyForm')?.addEventListener('submit', handleCompanySubmit);
-document.getElementById('clientSearch').addEventListener('input', renderClients);
+document.getElementById('clientSearch').addEventListener('input', () => { clientPage = 1; renderClients(); });
+document.getElementById('clientPrev').addEventListener('click', () => { clientPage--; renderClients(); document.getElementById('view-clientes').scrollIntoView({ behavior:'smooth', block:'start' }); });
+document.getElementById('clientNext').addEventListener('click', () => { clientPage++; renderClients(); document.getElementById('view-clientes').scrollIntoView({ behavior:'smooth', block:'start' }); });
 document.getElementById('orderSearch').addEventListener('input', renderOrders);
 document.getElementById('financeMonth').addEventListener('change', renderFinance);
 document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => { agendaMode = button.dataset.mode; renderAgenda(); bindDynamicActions(); }));

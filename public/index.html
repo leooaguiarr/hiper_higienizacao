@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="/css/app.css?v=38">
+  <link rel="stylesheet" href="/css/app.css?v=39">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Hiper Higienizações","url":"https://hiper-higienizacoes.web.app/","telephone":"+55 16 99760-3600","email":"hiperhigienizacoesrp@gmail.com","description":"Serviços de limpeza, higienização e impermeabilização de estofados.","areaServed":"Ribeirão Preto e região","sameAs":["https://www.instagram.com/hiperhigienizacoesrp"]}</script>
 </head>
 <body>
@@ -475,6 +475,7 @@
           <div class="section-actions"><label class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input id="clientSearch" type="search" placeholder="Buscar por nome, telefone ou bairro"></label><button class="secondary-button" id="copyClientLink"><i class="fa-solid fa-link"></i> Link público</button><button class="primary-button" data-open="client"><i class="fa-solid fa-user-plus"></i> Novo cliente</button></div>
           <div class="mini-metrics" id="clientMetrics"></div>
           <div class="card-grid" id="clientGrid"></div>
+          <nav class="client-pagination" id="clientPagination" aria-label="Paginação de clientes" hidden><button type="button" class="secondary-button" id="clientPrev"><i class="fa-solid fa-chevron-left"></i> Anterior</button><div><strong id="clientPageCurrent">Página 1 de 1</strong><span id="clientPageInfo">0 clientes</span></div><button type="button" class="secondary-button" id="clientNext">Próxima <i class="fa-solid fa-chevron-right"></i></button></nav>
         </section>
 
         <section class="view" id="view-servicos">
@@ -653,6 +654,6 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
-  <script type="module" src="/js/app.js?v=37"></script>
+  <script type="module" src="/js/app.js?v=38"></script>
 </body>
 </html>
