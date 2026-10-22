@@ -144,6 +144,26 @@ async function main() {
   console.log(JSON.stringify(relatorio, null, 2));
   if (!relatorio.creditoLoginLegivel || !relatorio.linkLgpd) erros.push('rodapé do login ou link da LGPD não está correto');
 
+  const recebimentosPendentes = await avaliar(`(() => {
+    const alerta = document.querySelector('#alertsList [data-alert-action="recebimentos"]');
+    if (!alerta) return { alertaEncontrado: false };
+    alerta.click();
+    const linhas = [...document.querySelectorAll('#receivableRows tr')];
+    const pendentes = window.__store.state.appointments.filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled');
+    return {
+      alertaEncontrado: true,
+      financeiroVisivel: document.getElementById('view-financeiro').classList.contains('active'),
+      quantidadeExibida: document.querySelectorAll('#receivableRows [data-detail]').length,
+      quantidadeEsperada: pendentes.length,
+      abreAtendimento: !!document.querySelector('#receivableRows [data-detail]')
+    };
+  })()`);
+  console.log('\n=== RECEBIMENTOS PENDENTES ===');
+  console.log(JSON.stringify(recebimentosPendentes, null, 2));
+  if (!recebimentosPendentes.alertaEncontrado || !recebimentosPendentes.financeiroVisivel || recebimentosPendentes.quantidadeExibida !== recebimentosPendentes.quantidadeEsperada || !recebimentosPendentes.abreAtendimento) {
+    erros.push('alerta de recebimentos pendentes não abriu a listagem completa');
+  }
+
   const politica = await avaliar(`(async () => {
     const resposta = await fetch('/lgpd.html');
     const html = await resposta.text();

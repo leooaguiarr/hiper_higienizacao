@@ -103,7 +103,7 @@ function buildAlerts() {
   });
 
   const alerts = [];
-  if (pending.length) alerts.push({ icon:'fa-money-bill-wave', tone:'warning', title:`${pending.length} recebimento(s) pendente(s)`, text:`Total ${brl.format(pending.reduce((sum,item) => sum + Number(item.value),0))}`, action: 'financeiro' });
+  if (pending.length) alerts.push({ icon:'fa-money-bill-wave', tone:'warning', title:`${pending.length} recebimento(s) pendente(s)`, text:`Total ${brl.format(pending.reduce((sum,item) => sum + Number(item.value),0))}`, action: 'recebimentos' });
   if (overdue.length) alerts.push({ icon:'fa-rotate', tone:'info', title:`${overdue.length} cliente(s) para reativar`, text:'Recomendação de nova higienização vencida', action: 'clientes' });
   if (unconfirmed.length) alerts.push({ icon:'fa-calendar-check', tone:'warning', title:`${unconfirmed.length} serviço(s) sem confirmação`, text:'Confirme a rota com os clientes', action: 'agenda' });
   if (birthdayClientsMonth.length) {
@@ -341,12 +341,21 @@ function renderFinance() {
     ['fa-arrow-trend-up', brl.format(income), 'Receitas recebidas'],
     ['fa-arrow-trend-down', brl.format(expenses), 'Despesas pagas'],
     ['fa-sack-dollar', brl.format(income-expenses), 'Lucro estimado'],
-    ['fa-clock', brl.format(receivable), 'Contas a receber'],
+    ['fa-clock', brl.format(receivable), 'A receber no período'],
     ['fa-receipt', brl.format(paidServices?income/paidServices:0), 'Ticket médio recebido']
   ];
   document.getElementById('financeMetrics').innerHTML = metrics.map(([icon,value,label]) => `<article class="metric-card"><div class="metric-icon"><i class="fa-solid ${icon}"></i></div><strong>${value}</strong><span>${label}</span></article>`).join('');
+  const receivables = state().appointments
+    .filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled')
+    .sort((a,b) => `${a.date}${a.time || ''}`.localeCompare(`${b.date}${b.time || ''}`));
+  document.getElementById('receivableCount').textContent = `${receivables.length} pendente${receivables.length === 1 ? '' : 's'}`;
+  document.getElementById('receivableRows').innerHTML = receivables.length ? receivables.map(item => {
+    const client = getClient(item.clientId), service = getService(item.serviceId);
+    return `<tr><td>${dateFmt.format(parseDate(item.date))}</td><td><strong>${esc(clientName(client))}</strong><br><span class="muted">${esc(service?.name || 'Serviço')}</span></td><td>${esc(item.paymentMethod || '-')}</td><td><span class="badge" style="--status:var(--warning)">A receber</span></td><td class="income">${brl.format(item.value)}</td><td class="row-actions"><button type="button" class="secondary-button" data-detail="${item.id}">Abrir atendimento</button></td></tr>`;
+  }).join('') : `<tr><td colspan="6">${empty('Nenhum recebimento pendente.')}</td></tr>`;
   document.getElementById('transactionRows').innerHTML = transactions.length ? transactions.map(item => `<tr><td>${dateFmt.format(parseDate(item.date))}</td><td><strong>${esc(item.description)}</strong><br><span class="muted">${esc(item.category || 'Geral')}</span></td><td>${esc(item.paymentMethod)}</td><td><span class="badge" style="--status:${item.status==='paid'?'var(--success)':'var(--warning)'}">${item.status==='paid'?'Pago':'Pendente'}</span></td><td class="${item.type}">${item.type==='expense'?'- ':'+ '}${brl.format(item.value)}</td><td class="row-actions"><button type="button" class="icon-button" data-edit-transaction="${item.id}" aria-label="Editar lançamento" title="Editar"><i class="fa-solid fa-pen"></i></button><button type="button" class="icon-button danger" data-delete-transaction="${item.id}" aria-label="Excluir lançamento" title="Excluir"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : `<tr><td colspan="6">${empty('Nenhuma movimentação no período.')}</td></tr>`;
   renderServiceRevenue(month);
+  bindDynamicActions();
 }
 function renderServiceRevenue(month) {
   const grouped = {};
@@ -1404,7 +1413,11 @@ document.addEventListener('click', event => {
   if (alertBtn) {
     const action = alertBtn.dataset.alertAction;
     if (action) {
-      if (action === 'agenda') {
+      if (action === 'recebimentos') {
+        navigate('financeiro');
+        setTimeout(() => document.getElementById('receivablesPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        return;
+      } else if (action === 'agenda') {
         agendaDate = new Date();
         renderAgenda();
         bindDynamicActions();

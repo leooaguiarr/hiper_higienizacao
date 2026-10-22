@@ -163,7 +163,8 @@ sozinho depois. O indicador no topo mostra *Sem conexão*, *Sincronizando* ou
 
 **Funciona e está testado:** as sete telas, agenda em dia/semana/mês, ficha do
 cliente com histórico, ordens de serviço com os cinco estados, financeiro por
-período, **criar, editar e excluir** cliente/agendamento/lançamento/serviço, conclusão
+período e listagem completa de recebimentos pendentes com acesso ao atendimento,
+**criar, editar e excluir** cliente/agendamento/lançamento/serviço, conclusão
 de serviço em lote (status + recorrência + receita), catálogo de serviços gerenciável
 (com ativação/desativação e proteção de histórico), login com Google e o
 bloqueio de quem não está autorizado, instalação como app, operação offline e
@@ -276,3 +277,4 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 24/09/2026 | Botão de **modo demonstração removido da interface de login**; o modo permanece acessível apenas aos testes automatizados. |
 | 24/09/2026 | **Base compartilhada da Hiper** ativada para todas as contas autorizadas, mantendo os dados no UID original da empresa; dashboard responsivo e menu de perfil Google adicionados. |
 | 30/09/2026 | **Novas funcionalidades do cliente:** Data de nascimento obrigatória no cadastro interno e link público, com alerta e card de aniversariantes próximos no Dashboard (WhatsApp em 1 clique); dados da empresa editáveis em Configurações; ciclo de retorno personalizável por agendamento; integração com Google Agenda (Android); popup de novidades e atualização do guia. Versão `hiper-v44`. |
+| 22/10/2026 | O alerta de **recebimentos pendentes** passou a abrir, no Financeiro, a listagem completa das contas a receber com acesso direto ao atendimento. |
