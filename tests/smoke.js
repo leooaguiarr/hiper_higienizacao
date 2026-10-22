@@ -119,6 +119,9 @@ async function main() {
 
   const relatorio = await avaliar(`(() => {
     const visivel = sel => { const el = document.querySelector(sel); return !!el && !el.hidden && getComputedStyle(el).display !== 'none'; };
+    const agora = new Date();
+    const hoje = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0') + '-' + String(agora.getDate()).padStart(2, '0');
+    const clientesParaChamar = [...document.querySelectorAll('#recurrenceList [data-client-due]')].map(element => window.__store.state.clients.find(client => client.id === element.dataset.clientDue));
     return {
       modo: window.__store ? window.__store.modo : 'sem-store',
       appVisivel: visivel('.app-shell'),
@@ -126,6 +129,9 @@ async function main() {
       metricas: document.querySelectorAll('#dashboardMetrics .metric-card').length,
       proximos: document.querySelectorAll('#upcomingList .list-item').length,
       painelDevolucoesRemovido: !document.getElementById('returnsPanel'),
+      clientesParaChamar: clientesParaChamar.length,
+      quantidadeParaChamarEsperada: Math.min(6, window.__store.state.clients.filter(client => client.nextRecommendation && client.nextRecommendation <= hoje).length),
+      somenteClientesVencidos: clientesParaChamar.every(client => client?.nextRecommendation <= hoje),
       clientes: document.querySelectorAll('#clientGrid .client-card').length,
       servicos: document.querySelectorAll('#serviceGrid .service-card').length,
       ordens: document.querySelectorAll('#orderList .order-card').length,
@@ -143,7 +149,7 @@ async function main() {
 
   console.log('\n=== ESTADO INICIAL ===');
   console.log(JSON.stringify(relatorio, null, 2));
-  if (!relatorio.creditoLoginLegivel || !relatorio.linkLgpd || !relatorio.painelDevolucoesRemovido) erros.push('rodapé, LGPD ou organização do início não está correta');
+  if (!relatorio.creditoLoginLegivel || !relatorio.linkLgpd || !relatorio.painelDevolucoesRemovido || relatorio.clientesParaChamar !== relatorio.quantidadeParaChamarEsperada || !relatorio.somenteClientesVencidos) erros.push('rodapé, LGPD ou organização do início não está correta');
 
   const recebimentosPendentes = await avaliar(`(() => {
     const isoOffset = offset => {

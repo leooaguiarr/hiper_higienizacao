@@ -170,7 +170,7 @@ function renderDashboard() {
   document.getElementById('drawerAlerts').innerHTML = alertsHtml;
 
   const dueClients = state().clients
-    .filter(client => client.nextRecommendation)
+    .filter(client => client.nextRecommendation && client.nextRecommendation <= today)
     .sort((a,b) => a.nextRecommendation.localeCompare(b.nextRecommendation))
     .slice(0,6);
   document.getElementById('recurrenceList').innerHTML = dueClients.length ? dueClients.map(client => {
@@ -184,8 +184,8 @@ function renderDashboard() {
       statusText = `Retorno em ${diffDays} dia(s) (${dateFmt.format(recDate)})`;
     }
     const reminderMsg = renderTemplate(getSettings().msgLembrete, { cliente: client.firstName });
-    return `<div class="list-item"><span class="list-main"><strong>${esc(clientName(client))}</strong><span style="${due ? 'color:var(--danger); font-weight:600;' : ''}">${esc(statusText)}</span></span><a class="whats-link" target="_blank" rel="noopener noreferrer" href="${whatsappLink(client.phone, reminderMsg)}" title="Enviar lembrete pelo WhatsApp"><i class="fa-brands fa-whatsapp"></i></a></div>`;
-  }).join('') : empty('Cadastre clientes para acompanhar a recorrência.');
+    return `<div class="list-item" data-client-due="${client.id}"><span class="list-main"><strong>${esc(clientName(client))}</strong><span style="${due ? 'color:var(--danger); font-weight:600;' : ''}">${esc(statusText)}</span></span><a class="whats-link" target="_blank" rel="noopener noreferrer" href="${whatsappLink(client.phone, reminderMsg)}" title="Enviar lembrete pelo WhatsApp"><i class="fa-brands fa-whatsapp"></i></a></div>`;
+  }).join('') : empty('Nenhum cliente para chamar agora.');
 
   // Aniversariantes próximos
   const birthdayItems = state().clients
