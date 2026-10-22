@@ -470,6 +470,7 @@ main { padding: 26px 30px 50px; }
 .appointment-card time { color: var(--status); font-size: 12px; font-weight: 800; }
 .appointment-card strong { margin: 4px 0 2px; font-size: 13px; font-weight: 700; }
 .appointment-card.return-event { --status: #7c3aed; background: #f5f0ff; border-color: #ded3ff; }
+.appointment-card.return-event.completed { --status: var(--completed); background: color-mix(in srgb,var(--completed) 9%,white); border-color: color-mix(in srgb,var(--completed) 20%,white); }
 .month-event.return-event { --status: #7c3aed; }
 .appointment-card span { color: var(--muted); font-size: 12px; }
 .duty-day-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 16px 0; padding: 12px 14px; color: var(--duty-ink); background: var(--duty); border-radius: 11px; }

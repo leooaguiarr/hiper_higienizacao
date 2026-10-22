@@ -402,6 +402,25 @@ async function main() {
     erros.push('fluxo integrado de cadastro e agendamento não funcionou corretamente');
   }
 
+  const devolucaoConcluida = await avaliar(`(async () => {
+    const card = document.querySelector('.return-event');
+    if (!card) return { encontrada: false };
+    card.click();
+    document.querySelector('[data-set-status="completed"]')?.click();
+    await new Promise(r => setTimeout(r, 700));
+    const atualizado = document.querySelector('.return-event.completed');
+    return {
+      encontrada: true,
+      statusConcluido: !!atualizado,
+      corConcluida: atualizado ? getComputedStyle(atualizado).color === 'rgb(21, 155, 99)' : false
+    };
+  })()`);
+  console.log('\n=== DEVOLUCAO CONCLUIDA ===');
+  console.log(JSON.stringify(devolucaoConcluida, null, 2));
+  if (!devolucaoConcluida.encontrada || !devolucaoConcluida.statusConcluido || !devolucaoConcluida.corConcluida) {
+    erros.push('devolução concluída continuou com a cor de pendência');
+  }
+
   // Conclusão de serviço (status + receita + recorrência)
   const conclusao = await avaliar(`(async () => {
     const pendente = window.__store.state.appointments.find(a => a.status !== 'completed' && a.status !== 'canceled');

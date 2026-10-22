@@ -249,9 +249,11 @@ function weekPeriodLabel() {
 function eventCard(item, month = false) {
   const client = getClient(item.clientId), service = getService(item.serviceId);
   const isReturn = item.agendaType === 'return';
-  const cssClass = isReturn ? 'return-event' : item.status;
-  const label = isReturn ? `Devolução · ${service?.name || 'Serviço'}` : service?.name || '';
-  if (month) return `<button class="month-event ${cssClass}" style="--status:${isReturn ? '#7c3aed' : `var(--${item.status})`}" data-detail="${item.sourceId || item.id}">${item.time} ${isReturn ? '↩ ' : ''}${esc(client?.firstName || '')}</button>`;
+  const returnCompleted = isReturn && item.status === 'completed';
+  const cssClass = isReturn ? `return-event ${item.status}` : item.status;
+  const label = isReturn ? `${returnCompleted ? 'Devolução concluída' : 'Devolução'} · ${service?.name || 'Serviço'}` : service?.name || '';
+  const eventColor = isReturn && !returnCompleted ? '#7c3aed' : `var(--${item.status})`;
+  if (month) return `<button class="month-event ${cssClass}" style="--status:${eventColor}" data-detail="${item.sourceId || item.id}">${item.time} ${isReturn ? '↩ ' : ''}${esc(client?.firstName || '')}</button>`;
   return `<button class="appointment-card ${cssClass}" data-detail="${item.sourceId || item.id}"><time>${item.time} · ${item.duration} min</time><strong>${esc(clientName(client))}</strong><span>${esc(label)}</span></button>`;
 }
 function renderWeek() {
