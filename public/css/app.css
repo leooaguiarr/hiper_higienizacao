@@ -676,11 +676,12 @@ td.expense { color: var(--danger); font-weight: 800; }
   #view-dashboard.active { display: flex; flex-direction: column; gap: 16px; }
   #view-dashboard.active .dashboard-grid { display: contents; }
   #upcomingPanel { order: 1; }
-  #alertsPanel { order: 2; }
-  #birthdaysPanel { order: 3; }
-  #recurrencePanel { order: 4; }
-  #revenuePanel { order: 5; }
-  #dashboardMetrics { order: 6; margin: 0; }
+  #returnsPanel { order: 2; }
+  #alertsPanel { order: 3; }
+  #birthdaysPanel { order: 4; }
+  #recurrencePanel { order: 5; }
+  #revenuePanel { order: 6; }
+  #dashboardMetrics { order: 7; margin: 0; }
   #view-financeiro .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
   .settings-grid { grid-template-columns: 1fr; }
   .span-2, .span-3 { grid-column: auto; }

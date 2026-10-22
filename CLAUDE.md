@@ -165,6 +165,8 @@ sozinho depois. O indicador no topo mostra *Sem conexão*, *Sincronizando* ou
 cliente com histórico, ordens de serviço com os cinco estados, financeiro por
 período e listagem completa de recebimentos pendentes com acesso ao atendimento,
 clientes em ordem alfabética com paginação visual de dez registros,
+status independente para atendimento e devolução (sem concluir um ao concluir o outro),
+recebimentos pendentes restritos aos vencidos e painel inicial de próximas devoluções,
 **criar, editar e excluir** cliente/agendamento/lançamento/serviço, conclusão
 de serviço em lote (status + recorrência + receita), catálogo de serviços gerenciável
 (com ativação/desativação e proteção de histórico), login com Google e o
@@ -281,3 +283,5 @@ Cada uma destas já custou tempo. Leia antes de repetir.
 | 22/10/2026 | O alerta de **recebimentos pendentes** passou a abrir, no Financeiro, a listagem completa das contas a receber com acesso direto ao atendimento; o grid mobile foi ajustado para impedir sobreposição e rolagem horizontal da página. |
 | 22/10/2026 | Devoluções concluídas passaram a usar o estado visual verde de **Concluído** na agenda; roxo ficou reservado às devoluções ainda pendentes. |
 | 22/10/2026 | A tela de **Clientes** foi simplificada para exibir somente o total, ganhou ordem alfabética e paginação visual de dez cards; a coleção continua global em memória porque agenda, OS, alertas e novos agendamentos dependem dela. |
+| 22/10/2026 | O status da **devolução** foi separado do atendimento principal: cada evento agora pode ser confirmado ou concluído isoladamente, inclusive nos lembretes. |
+| 22/10/2026 | **Recebimentos pendentes** passaram a considerar somente atendimentos vencidos; o início ganhou um painel com as próximas devoluções e um alerta que abre a agenda diretamente na data da devolução mais próxima. |

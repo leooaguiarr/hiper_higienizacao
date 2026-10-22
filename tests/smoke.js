@@ -146,22 +146,26 @@ async function main() {
 
   const recebimentosPendentes = await avaliar(`(() => {
     const alerta = document.querySelector('#alertsList [data-alert-action="recebimentos"]');
-    if (!alerta) return { alertaEncontrado: false };
-    alerta.click();
-    const linhas = [...document.querySelectorAll('#receivableRows tr')];
-    const pendentes = window.__store.state.appointments.filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled');
+    if (alerta) alerta.click();
+    else document.querySelector('.nav-item[data-view="financeiro"]').click();
+    const agora = new Date();
+    const hoje = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0') + '-' + String(agora.getDate()).padStart(2, '0');
+    const pendentes = window.__store.state.appointments.filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled' && item.date < hoje);
+    const exibidos = [...document.querySelectorAll('#receivableRows [data-detail]')].map(button => window.__store.state.appointments.find(item => item.id === button.dataset.detail));
     return {
-      alertaEncontrado: true,
+      alertaCoerente: !!alerta === (pendentes.length > 0),
       financeiroVisivel: document.getElementById('view-financeiro').classList.contains('active'),
-      quantidadeExibida: document.querySelectorAll('#receivableRows [data-detail]').length,
+      quantidadeExibida: exibidos.length,
       quantidadeEsperada: pendentes.length,
-      abreAtendimento: !!document.querySelector('#receivableRows [data-detail]')
+      somenteVencidos: exibidos.every(item => item?.date < hoje),
+      futurosExcluidos: !exibidos.some(item => item?.date >= hoje),
+      abreAtendimento: pendentes.length === 0 || !!document.querySelector('#receivableRows [data-detail]')
     };
   })()`);
   console.log('\n=== RECEBIMENTOS PENDENTES ===');
   console.log(JSON.stringify(recebimentosPendentes, null, 2));
-  if (!recebimentosPendentes.alertaEncontrado || !recebimentosPendentes.financeiroVisivel || recebimentosPendentes.quantidadeExibida !== recebimentosPendentes.quantidadeEsperada || !recebimentosPendentes.abreAtendimento) {
-    erros.push('alerta de recebimentos pendentes não abriu a listagem completa');
+  if (!recebimentosPendentes.alertaCoerente || !recebimentosPendentes.financeiroVisivel || recebimentosPendentes.quantidadeExibida !== recebimentosPendentes.quantidadeEsperada || !recebimentosPendentes.somenteVencidos || !recebimentosPendentes.futurosExcluidos || !recebimentosPendentes.abreAtendimento) {
+    erros.push('recebimentos pendentes exibiram valores que ainda não venceram');
   }
 
   const politica = await avaliar(`(async () => {
@@ -380,8 +384,13 @@ async function main() {
     const abriu = modal.classList.contains('open') && !!botao;
     if (botao) botao.click();
     const criado = window.__store.state.appointments.find(item => item.date === '2099-12-31' && item.serviceId === 'svc-rug');
+    const devolucaoNoInicio = document.querySelector('#returnList [data-detail-type="return"][data-detail="' + criado?.id + '"]');
+    const alertaDevolucao = document.querySelector('#alertsList [data-alert-action="devolucoes"]');
+    alertaDevolucao?.click();
+    const alertaAbriuDia = document.getElementById('view-agenda').classList.contains('active')
+      && document.querySelector('[data-mode="day"]').classList.contains('active')
+      && document.querySelector('.return-event[data-detail="' + criado?.id + '"]');
     document.querySelector('[data-mode="month"]').click();
-    document.getElementById('agendaNext').click();
     const devolucaoNaAgenda = document.querySelectorAll('.return-event').length > 0;
     return {
       criou: window.__store.state.appointments.length === antes + 1,
@@ -390,7 +399,10 @@ async function main() {
       devolucaoVisivel,
       prazoSugerido,
       statusInicialAgendado: criado?.status === 'scheduled',
+      statusInicialDevolucao: criado?.returnStatus === 'scheduled',
       devolucaoSalva: criado?.returnDate === '2100-01-07' && criado?.returnTime === '17:00',
+      devolucaoNoInicio: !!devolucaoNoInicio && devolucaoNoInicio.textContent.includes('7 de jan.'),
+      alertaDevolucao: !!alertaDevolucao && !!alertaAbriuDia,
       devolucaoNaAgenda,
       abriu,
       fechou: !modal.classList.contains('open')
@@ -398,7 +410,7 @@ async function main() {
   })()`);
   console.log('\n=== CONVITE DO WHATSAPP ===');
   console.log(JSON.stringify(conviteWhatsApp, null, 2));
-  if (!conviteWhatsApp.criou || !conviteWhatsApp.conviteCadastroVisivel || !conviteWhatsApp.clientesSincronizados || !conviteWhatsApp.devolucaoVisivel || !conviteWhatsApp.prazoSugerido || !conviteWhatsApp.statusInicialAgendado || !conviteWhatsApp.devolucaoSalva || !conviteWhatsApp.devolucaoNaAgenda || !conviteWhatsApp.abriu || !conviteWhatsApp.fechou) {
+  if (!conviteWhatsApp.criou || !conviteWhatsApp.conviteCadastroVisivel || !conviteWhatsApp.clientesSincronizados || !conviteWhatsApp.devolucaoVisivel || !conviteWhatsApp.prazoSugerido || !conviteWhatsApp.statusInicialAgendado || !conviteWhatsApp.statusInicialDevolucao || !conviteWhatsApp.devolucaoSalva || !conviteWhatsApp.devolucaoNoInicio || !conviteWhatsApp.alertaDevolucao || !conviteWhatsApp.devolucaoNaAgenda || !conviteWhatsApp.abriu || !conviteWhatsApp.fechou) {
     erros.push('fluxo integrado de cadastro e agendamento não funcionou corretamente');
   }
 
@@ -409,16 +421,34 @@ async function main() {
     document.querySelector('[data-set-status="completed"]')?.click();
     await new Promise(r => setTimeout(r, 700));
     const atualizado = document.querySelector('.return-event.completed');
+    const corConcluida = atualizado ? getComputedStyle(atualizado).color === 'rgb(21, 155, 99)' : false;
+    let registro = window.__store.state.appointments.find(item => item.date === '2099-12-31' && item.serviceId === 'svc-rug');
+    const statusDevolucaoConcluido = registro?.returnStatus === 'completed';
+    const atendimentoPermaneceuAgendado = registro?.status === 'scheduled';
+
+    atualizado?.click();
+    document.querySelector('[data-set-status="scheduled"]')?.click();
+    await new Promise(r => setTimeout(r, 700));
+    document.querySelector('.nav-item[data-view="ordens"]').click();
+    document.querySelector('[data-detail="' + registro.id + '"]')?.click();
+    document.querySelector('[data-set-status="completed"]')?.click();
+    await new Promise(r => setTimeout(r, 700));
+    document.querySelector('.nav-item[data-view="agenda"]').click();
+    registro = window.__store.state.appointments.find(item => item.id === registro.id);
     return {
       encontrada: true,
       statusConcluido: !!atualizado,
-      corConcluida: atualizado ? getComputedStyle(atualizado).color === 'rgb(21, 155, 99)' : false
+      statusDevolucaoConcluido,
+      atendimentoPermaneceuAgendado,
+      corConcluida,
+      atendimentoConcluidoSeparadamente: registro?.status === 'completed',
+      devolucaoPermaneceuAgendada: registro?.returnStatus === 'scheduled' && !!document.querySelector('.return-event.scheduled')
     };
   })()`);
   console.log('\n=== DEVOLUCAO CONCLUIDA ===');
   console.log(JSON.stringify(devolucaoConcluida, null, 2));
-  if (!devolucaoConcluida.encontrada || !devolucaoConcluida.statusConcluido || !devolucaoConcluida.corConcluida) {
-    erros.push('devolução concluída continuou com a cor de pendência');
+  if (!devolucaoConcluida.encontrada || !devolucaoConcluida.statusConcluido || !devolucaoConcluida.statusDevolucaoConcluido || !devolucaoConcluida.atendimentoPermaneceuAgendado || !devolucaoConcluida.corConcluida || !devolucaoConcluida.atendimentoConcluidoSeparadamente || !devolucaoConcluida.devolucaoPermaneceuAgendada) {
+    erros.push('status da devolução não ficou independente do atendimento');
   }
 
   // Conclusão de serviço (status + receita + recorrência)

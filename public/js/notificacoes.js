@@ -56,7 +56,7 @@ export async function publicarLembretes(estado, clientePorId) {
         tipo: 'devolucao',
         date: item.returnDate,
         time: item.returnTime,
-        status: item.status,
+        status: item.status === 'canceled' ? 'canceled' : item.returnStatus || 'scheduled',
         cliente,
         endereco: item.address
       });

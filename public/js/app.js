@@ -74,6 +74,20 @@ function dutyMarker(date, className = 'duty-tag') {
   const duty = dutyShiftFor(date);
   return `<span class="${className} duty-${duty.key}" data-duty="${duty.key}" data-duty-date="${localISO(date)}" title="Prontidão ${duty.label}" aria-label="Prontidão ${duty.label}"><i></i><span>${duty.label}</span></span>`;
 }
+function returnStatusFor(item) {
+  if (item.status === 'canceled') return 'canceled';
+  return item.returnStatus || 'scheduled';
+}
+function overdueReceivables() {
+  const today = localISO(new Date());
+  return state().appointments.filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled' && item.date < today);
+}
+function upcomingReturns() {
+  const today = localISO(new Date());
+  return state().appointments
+    .filter(item => item.returnDate && item.returnTime && item.returnDate >= today && !['completed', 'canceled'].includes(returnStatusFor(item)))
+    .sort((a,b) => `${a.returnDate}${a.returnTime}`.localeCompare(`${b.returnDate}${b.returnTime}`));
+}
 function agendaItems() {
   return state().appointments.flatMap(item => {
     const events = [{ ...item, sourceId:item.id, agendaType:'service' }];
@@ -84,7 +98,8 @@ function agendaItems() {
         agendaType: 'return',
         date: item.returnDate,
         time: item.returnTime,
-        duration: 30
+        duration: 30,
+        status: returnStatusFor(item)
       });
     }
     return events;
@@ -95,7 +110,8 @@ function statusBadge(status) { const config = STATUS[status]; return `<span clas
 
 function buildAlerts() {
   const today = localISO(new Date());
-  const pending = state().appointments.filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled');
+  const pending = overdueReceivables();
+  const nextReturn = upcomingReturns()[0];
   const overdue = state().clients.filter(client => client.nextRecommendation && client.nextRecommendation <= today);
   const unconfirmed = state().appointments.filter(item => item.date >= today && item.status === 'scheduled');
   const currentMonth = today.slice(5, 7);
@@ -108,6 +124,7 @@ function buildAlerts() {
   if (pending.length) alerts.push({ icon:'fa-money-bill-wave', tone:'warning', title:`${pending.length} recebimento(s) pendente(s)`, text:`Total ${brl.format(pending.reduce((sum,item) => sum + Number(item.value),0))}`, action: 'recebimentos' });
   if (overdue.length) alerts.push({ icon:'fa-rotate', tone:'info', title:`${overdue.length} cliente(s) para reativar`, text:'Recomendação de nova higienização vencida', action: 'clientes' });
   if (unconfirmed.length) alerts.push({ icon:'fa-calendar-check', tone:'warning', title:`${unconfirmed.length} serviço(s) sem confirmação`, text:'Confirme a rota com os clientes', action: 'agenda' });
+  if (nextReturn) alerts.push({ icon:'fa-truck-fast', tone:'info', title:'Próxima devolução', text:`${clientName(getClient(nextReturn.clientId))} · ${dateFmt.format(parseDate(nextReturn.returnDate))} às ${nextReturn.returnTime}`, action:'devolucoes' });
   if (birthdayClientsMonth.length) {
     const monthName = monthFmt.format(new Date()).split(' ')[0];
     alerts.push({ icon:'fa-cake-candles', tone:'info', title:`${birthdayClientsMonth.length} aniversariante(s) em ${monthName}`, text:'Envie os parabéns e ofereça uma condição especial', action: 'aniversariantes' });
@@ -141,6 +158,12 @@ function renderDashboard() {
     const subtexto = [service?.name, item.team].filter(Boolean).map(esc).join(' · ');
     return `<button class="list-item" data-detail="${item.id}"><span class="list-time"><strong>${item.time}</strong><span>${dateFmt.format(parseDate(item.date))}</span></span><span class="list-main"><strong>${esc(clientName(client))}</strong><span>${subtexto}</span></span><span class="list-value">${brl.format(item.value)}${statusBadge(item.status)}</span></button>`;
   }).join('') : empty('Nenhum serviço à frente. Aproveite para prospectar.');
+
+  const nextReturns = upcomingReturns().slice(0,5);
+  document.getElementById('returnList').innerHTML = nextReturns.length ? nextReturns.map(item => {
+    const client = getClient(item.clientId), service = getService(item.serviceId);
+    return `<button class="list-item" data-detail="${item.id}" data-detail-type="return"><span class="list-time"><strong>${item.returnTime}</strong><span>${dateFmt.format(parseDate(item.returnDate))}</span></span><span class="list-main"><strong>${esc(clientName(client))}</strong><span>${esc(service?.name || 'Serviço')}</span></span>${statusBadge(returnStatusFor(item))}</button>`;
+  }).join('') : empty('Nenhuma devolução agendada.');
 
   const alerts = buildAlerts();
   document.getElementById('notificationCount').textContent = alerts.length;
@@ -255,8 +278,8 @@ function eventCard(item, month = false) {
   const cssClass = isReturn ? `return-event ${item.status}` : item.status;
   const label = isReturn ? `${returnCompleted ? 'Devolução concluída' : 'Devolução'} · ${service?.name || 'Serviço'}` : service?.name || '';
   const eventColor = isReturn && !returnCompleted ? '#7c3aed' : `var(--${item.status})`;
-  if (month) return `<button class="month-event ${cssClass}" style="--status:${eventColor}" data-detail="${item.sourceId || item.id}">${item.time} ${isReturn ? '↩ ' : ''}${esc(client?.firstName || '')}</button>`;
-  return `<button class="appointment-card ${cssClass}" data-detail="${item.sourceId || item.id}"><time>${item.time} · ${item.duration} min</time><strong>${esc(clientName(client))}</strong><span>${esc(label)}</span></button>`;
+  if (month) return `<button class="month-event ${cssClass}" style="--status:${eventColor}" data-detail="${item.sourceId || item.id}" data-detail-type="${isReturn ? 'return' : 'service'}">${item.time} ${isReturn ? '↩ ' : ''}${esc(client?.firstName || '')}</button>`;
+  return `<button class="appointment-card ${cssClass}" data-detail="${item.sourceId || item.id}" data-detail-type="${isReturn ? 'return' : 'service'}"><time>${item.time} · ${item.duration} min</time><strong>${esc(clientName(client))}</strong><span>${esc(label)}</span></button>`;
 }
 function renderWeek() {
   const start = startOfWeek(agendaDate), today = localISO(new Date());
@@ -362,8 +385,7 @@ function renderFinance() {
     ['fa-receipt', brl.format(paidServices?income/paidServices:0), 'Ticket médio recebido']
   ];
   document.getElementById('financeMetrics').innerHTML = metrics.map(([icon,value,label]) => `<article class="metric-card"><div class="metric-icon"><i class="fa-solid ${icon}"></i></div><strong>${value}</strong><span>${label}</span></article>`).join('');
-  const receivables = state().appointments
-    .filter(item => item.paymentStatus === 'pending' && item.status !== 'canceled')
+  const receivables = overdueReceivables()
     .sort((a,b) => `${a.date}${a.time || ''}`.localeCompare(`${b.date}${b.time || ''}`));
   document.getElementById('receivableCount').textContent = `${receivables.length} pendente${receivables.length === 1 ? '' : 's'}`;
   document.getElementById('receivableRows').innerHTML = receivables.length ? receivables.map(item => {
@@ -400,7 +422,7 @@ function renderAll() {
 }
 
 function bindDynamicActions() {
-  document.querySelectorAll('[data-detail]').forEach(button => button.onclick = () => showAppointmentDetail(button.dataset.detail));
+  document.querySelectorAll('[data-detail]').forEach(button => button.onclick = () => showAppointmentDetail(button.dataset.detail, button.dataset.detailType || 'service'));
   document.querySelectorAll('[data-client-detail]').forEach(button => button.onclick = () => showClientDetail(button.dataset.clientDetail));
   document.querySelectorAll('[data-edit-transaction]').forEach(button => button.onclick = () => openForm('transaction', button.dataset.editTransaction));
   document.querySelectorAll('[data-delete-transaction]').forEach(button => button.onclick = () => excluirLancamento(button.dataset.deleteTransaction));
@@ -443,9 +465,11 @@ function renderTemplate(templateStr, params) {
   return templateStr.replace(/\{\{(\w+)\}\}/g, (match, key) => params[key] || match);
 }
 
-function showAppointmentDetail(id) {
+function showAppointmentDetail(id, detailType = 'service') {
   const item = state().appointments.find(appointment => appointment.id === id); if (!item) return;
   const client = getClient(item.clientId), service = getService(item.serviceId);
+  const isReturn = detailType === 'return' && item.returnDate && item.returnTime;
+  const activeStatus = isReturn ? returnStatusFor(item) : item.status;
   
   const params = {
     cliente: clientName(client),
@@ -456,10 +480,10 @@ function showAppointmentDetail(id) {
   
   let whatsButton = '';
   const config = getSettings();
-  if (item.status === 'scheduled') {
+  if (!isReturn && item.status === 'scheduled') {
     const text = renderTemplate(config.msgConfirmacao, params);
     whatsButton = `<a target="_blank" rel="noopener noreferrer" href="${whatsappLink(client?.phone, text)}" class="secondary-button" style="color:var(--success); border-color:var(--success)"><i class="fa-brands fa-whatsapp"></i> Confirmar</a>`;
-  } else if (item.status === 'completed') {
+  } else if (!isReturn && item.status === 'completed') {
     const text = renderTemplate(config.msgGarantia, params);
     whatsButton = `<a target="_blank" rel="noopener noreferrer" href="${whatsappLink(client?.phone, text)}" class="secondary-button" style="color:var(--success); border-color:var(--success)"><i class="fa-brands fa-whatsapp"></i> Garantia</a>`;
   }
@@ -475,16 +499,16 @@ function showAppointmentDetail(id) {
     : `<div><span>Retorno recomendado</span><strong>${returnRecInterval}</strong></div>`;
 
   const gcalUrl = googleCalendarLink({
-    title: `Hiper: ${service?.name || 'Higienização'} - ${clientName(client)}`,
-    date: item.date,
-    time: item.time,
-    duration: item.duration,
+    title: `Hiper: ${isReturn ? 'Devolução' : service?.name || 'Higienização'} - ${clientName(client)}`,
+    date: isReturn ? item.returnDate : item.date,
+    time: isReturn ? item.returnTime : item.time,
+    duration: isReturn ? 30 : item.duration,
     address: item.address,
     details: `Cliente: ${clientName(client)}\nTelefone: ${client?.phone || ''}\nServiço: ${service?.name || ''}\nResponsável: ${item.team || 'Não informado'}\nValor: ${brl.format(item.value)}\nPagamento: ${item.paymentStatus === 'paid' ? 'Pago' : 'A receber'} (${item.paymentMethod})\nEndereço: ${item.address}\nObservações: ${item.notes || 'Sem observações'}`
   });
 
-  openDetail('ORDEM DE SERVIÇO', `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>Data e horário</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div>${returnDetail}${returnRecDetail}<div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || 'Não informado')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" class="${item.status===key?'is-active':''}" style="--status:var(--${key})" aria-pressed="${item.status===key}" ${item.status===key?'disabled':''}>${item.status===key?'<i class="fa-solid fa-check"></i> ':''}${label}</button>`).join('')}</div><div class="detail-actions">${whatsButton}<a href="${gcalUrl}" target="_blank" rel="noopener noreferrer" class="secondary-button" style="color:var(--blue); border-color:#cfe4fb" title="Salvar no Google Agenda / Android"><i class="fa-solid fa-calendar-plus"></i> Salvar na Agenda</a><button type="button" class="secondary-button reschedule-button" data-reschedule-appointment="${item.id}"><i class="fa-regular fa-calendar-days"></i> Alterar data</button><button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
-  document.querySelectorAll('[data-set-status]').forEach(button => button.onclick = () => updateAppointmentStatus(item.id, button.dataset.setStatus));
+  openDetail(isReturn ? 'DEVOLUÇÃO' : 'ORDEM DE SERVIÇO', isReturn ? `Devolução · ${dateFmt.format(parseDate(item.returnDate))}` : `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>${isReturn ? 'Atendimento original' : 'Data e horário'}</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div>${returnDetail}${returnRecDetail}<div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || 'Não informado')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" class="${activeStatus===key?'is-active':''}" style="--status:var(--${key})" aria-pressed="${activeStatus===key}" ${activeStatus===key?'disabled':''}>${activeStatus===key?'<i class="fa-solid fa-check"></i> ':''}${label}</button>`).join('')}</div><div class="detail-actions">${whatsButton}<a href="${gcalUrl}" target="_blank" rel="noopener noreferrer" class="secondary-button" style="color:var(--blue); border-color:#cfe4fb" title="Salvar no Google Agenda / Android"><i class="fa-solid fa-calendar-plus"></i> Salvar na Agenda</a><button type="button" class="secondary-button reschedule-button" data-reschedule-appointment="${item.id}"><i class="fa-regular fa-calendar-days"></i> Alterar data</button><button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
+  document.querySelectorAll('[data-set-status]').forEach(button => button.onclick = () => updateAppointmentStatus(item.id, button.dataset.setStatus, isReturn ? 'return' : 'service'));
   document.querySelector('[data-reschedule-appointment]').onclick = () => openAppointmentReschedule(item.id);
   document.querySelector('[data-edit-appointment]').onclick = () => openForm('appointment', item.id);
   document.querySelector('[data-delete-appointment]').onclick = () => excluirAgendamento(item.id);
@@ -579,8 +603,13 @@ function showClientDetail(id) {
 
 // Concluir um serviço move três registros de uma vez: o agendamento, a
 // recomendação do cliente e a receita correspondente. Por isso vai em lote.
-async function updateAppointmentStatus(id, status) {
+async function updateAppointmentStatus(id, status, scope = 'service') {
   const item = state().appointments.find(appointment => appointment.id === id); if (!item) return;
+  if (scope === 'return') {
+    closeModal();
+    await comFeedback(() => atualizar('appointments', item.id, { returnStatus:status }), `Devolução atualizada para ${STATUS[status][0]}.`);
+    return;
+  }
   const operacoes = [{ tipo:'atualizar', chave:'appointments', id:item.id, dados:{ status } }];
   if (status === 'completed') {
     const client = getClient(item.clientId);
@@ -934,6 +963,9 @@ async function handleAppointmentSubmit(event) {
     dados.returnDate = '';
     dados.returnTime = '';
   }
+  const hasReturn = Boolean(dados.returnDate && dados.returnTime);
+  const returnScheduleChanged = Boolean(appointmentBeforeEdit) && (appointmentBeforeEdit.returnDate !== dados.returnDate || appointmentBeforeEdit.returnTime !== dados.returnTime);
+  dados.returnStatus = hasReturn ? (returnScheduleChanged ? 'scheduled' : appointmentBeforeEdit?.returnStatus || 'scheduled') : '';
 
   // Validação: data/hora no passado
   const apptDate = parseDate(dados.date);
@@ -1440,6 +1472,16 @@ document.addEventListener('click', event => {
         agendaDate = new Date();
         renderAgenda();
         bindDynamicActions();
+      } else if (action === 'devolucoes') {
+        const nextReturn = upcomingReturns()[0];
+        if (!nextReturn) return;
+        closeAlerts();
+        agendaDate = parseDate(nextReturn.returnDate);
+        agendaMode = 'day';
+        renderAgenda();
+        bindDynamicActions();
+        navigate('agenda');
+        return;
       } else if (action === 'aniversariantes') {
         closeAlerts();
         navigate('dashboard');

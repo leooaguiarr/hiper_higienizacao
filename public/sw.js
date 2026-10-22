@@ -7,7 +7,7 @@
 // Suba a VERSAO a cada alteração de arquivo estático: o cache antigo é
 // descartado no activate.
 
-const VERSAO = 'hiper-v54';
+const VERSAO = 'hiper-v56';
 const CACHE_APP = `${VERSAO}-app`;
 const CACHE_EXTERNO = `${VERSAO}-externo`;
 const CACHE_DADOS = 'hiper-dados';
@@ -17,8 +17,8 @@ const CHAVE_LEMBRETES = '/__lembretes';
 const APP_SHELL = [
   '/',
   '/index.html',
-  '/css/app.css?v=39',
-  '/js/app.js?v=38',
+  '/css/app.css?v=40',
+  '/js/app.js?v=40',
   '/js/store.js',
   '/js/seed.js',
   '/js/utils.js?v=3',
@@ -132,7 +132,7 @@ async function verificarLembretes() {
 
   const hoje = hojeISO();
   const doDia = dados.agendamentos
-    .filter(item => item.date === hoje && item.status !== 'canceled' && (item.tipo === 'devolucao' || item.status !== 'completed'))
+    .filter(item => item.date === hoje && item.status !== 'canceled' && item.status !== 'completed')
     .sort((a, b) => a.time.localeCompare(b.time));
 
   if (doDia.length && dados.ultimoAviso !== hoje) {
@@ -156,7 +156,7 @@ async function verificarLembretes() {
   const antecedencia = 30 * 60 * 1000;
   const avisosEnviados = dados.avisosEnviados || {};
   const proximos = dados.agendamentos.filter(item => {
-    if (item.status === 'canceled' || (item.tipo !== 'devolucao' && item.status === 'completed')) return false;
+    if (item.status === 'canceled' || item.status === 'completed') return false;
     const horario = new Date(`${item.date}T${item.time}:00`).getTime();
     return horario >= agora && horario - agora <= antecedencia && !avisosEnviados[item.id];
   });
