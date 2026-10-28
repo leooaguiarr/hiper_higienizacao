@@ -201,6 +201,59 @@ async function main() {
   conferir('pagamento voltou para pendente', voltaPendente.pagamento === 'pending');
   conferir('receita correspondente removida', voltaPendente.receitaRemovida === true);
 
+  // --- Faturamento/Boleto: campo de vencimento e alerta no Início ---
+  const faturamento = await avaliar(`(async () => {
+    const id = '${viraPago.id}';
+    const abrir = async () => {
+      document.querySelector('.nav-item[data-view="ordens"]').click();
+      document.querySelector('[data-detail="' + id + '"]').click();
+      await new Promise(r => setTimeout(r, 300));
+      document.querySelector('[data-edit-appointment]').click();
+      await new Promise(r => setTimeout(r, 300));
+      return document.getElementById('appointmentForm');
+    };
+    const iso = dias => { const d = new Date(); d.setDate(d.getDate() + dias); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+    const alertas = () => document.getElementById('alertsList').textContent;
+    let form = await abrir();
+    const ocultoAntes = document.getElementById('billingDueGroup').hidden;
+    form.elements.paymentMethod.value = 'Faturamento/Boleto';
+    form.elements.paymentMethod.onchange();
+    const visivel = !document.getElementById('billingDueGroup').hidden;
+    const sugerido = form.elements.billingDueDate.value;
+    form.elements.billingDueDate.value = iso(3);
+    form.requestSubmit();
+    await new Promise(r => setTimeout(r, 800));
+    document.querySelector('.nav-item[data-view="dashboard"]').click();
+    await new Promise(r => setTimeout(r, 300));
+    const salvo = { ...window.__store.state.appointments.find(a => a.id === id) };
+    const alertaComBoleto = alertas().includes('a cobrar');
+    form = await abrir();
+    const reabreVisivel = !document.getElementById('billingDueGroup').hidden && form.elements.billingDueDate.value === iso(3);
+    form.elements.billingDueDate.value = iso(30);
+    form.requestSubmit();
+    await new Promise(r => setTimeout(r, 800));
+    document.querySelector('.nav-item[data-view="dashboard"]').click();
+    await new Promise(r => setTimeout(r, 300));
+    const semAlertaLonge = !alertas().includes('a cobrar');
+    form = await abrir();
+    form.elements.paymentMethod.value = 'PIX';
+    form.elements.paymentMethod.onchange();
+    const ocultouDepois = document.getElementById('billingDueGroup').hidden;
+    form.requestSubmit();
+    await new Promise(r => setTimeout(r, 800));
+    const limpo = window.__store.state.appointments.find(a => a.id === id);
+    return { ocultoAntes, visivel, sugerido, metodo: salvo.paymentMethod, vencimento: salvo.billingDueDate, esperado: iso(3), alertaComBoleto, reabreVisivel, semAlertaLonge, ocultouDepois, vencimentoLimpo: limpo.billingDueDate === '' };
+  })()`);
+  console.log('\n=== FATURAMENTO/BOLETO ===');
+  conferir('campo de vencimento começa oculto', faturamento.ocultoAntes === true);
+  conferir('campo aparece ao escolher Faturamento/Boleto', faturamento.visivel === true);
+  conferir('vencimento sugerido (30 dias)', !!faturamento.sugerido, faturamento.sugerido);
+  conferir('forma e vencimento gravados', faturamento.metodo === 'Faturamento/Boleto' && faturamento.vencimento === faturamento.esperado, `${faturamento.metodo} ${faturamento.vencimento}`);
+  conferir('alerta de boleto próximo no Início', faturamento.alertaComBoleto === true);
+  conferir('edição reabre com o vencimento', faturamento.reabreVisivel === true);
+  conferir('boleto distante não gera alerta', faturamento.semAlertaLonge === true);
+  conferir('trocar a forma oculta e limpa o vencimento', faturamento.ocultouDepois === true && faturamento.vencimentoLimpo === true);
+
   // --- Remarcar atendimento: nova data, volta para agendado e nova confirmação ---
   const remarcacao = await avaliar(`(async () => {
     const id = '${viraPago.id}';

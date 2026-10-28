@@ -78,8 +78,22 @@ function returnStatusFor(item) {
   if (item.status === 'canceled') return 'canceled';
   return item.returnStatus || 'scheduled';
 }
+const BILLING_METHOD = 'Faturamento/Boleto';
+const BILLING_ALERT_DAYS = 7;
+function isBilling(item) { return item.paymentMethod === BILLING_METHOD; }
 function receivableDueDate(item) {
+  if (isBilling(item) && item.billingDueDate) return item.billingDueDate;
   return item.returnDate || item.date;
+}
+// Faturamento/boleto em aberto que vence em até BILLING_ALERT_DAYS dias (ou já venceu).
+function billingDueSoon() {
+  const limit = localISO(addDays(new Date(), BILLING_ALERT_DAYS));
+  return state().appointments
+    .filter(item => isBilling(item) && item.billingDueDate && item.paymentStatus === 'pending' && item.status !== 'canceled' && item.billingDueDate <= limit)
+    .sort((a,b) => a.billingDueDate.localeCompare(b.billingDueDate));
+}
+function billingNote(item) {
+  return isBilling(item) && item.billingDueDate ? ` · vence ${dateFmt.format(parseDate(item.billingDueDate))}` : '';
 }
 function overdueReceivables() {
   const today = localISO(new Date());
@@ -113,7 +127,8 @@ function statusBadge(status) { const config = STATUS[status]; return `<span clas
 
 function buildAlerts() {
   const today = localISO(new Date());
-  const pending = overdueReceivables();
+  const pending = overdueReceivables().filter(item => !isBilling(item));
+  const billing = billingDueSoon();
   const nextReturn = upcomingReturns()[0];
   const overdue = state().clients.filter(client => client.nextRecommendation && client.nextRecommendation <= today);
   const unconfirmed = state().appointments.filter(item => item.date >= today && item.status === 'scheduled');
@@ -125,6 +140,12 @@ function buildAlerts() {
 
   const alerts = [];
   if (pending.length) alerts.push({ icon:'fa-money-bill-wave', tone:'warning', title:`${pending.length} recebimento(s) pendente(s)`, text:`Total ${brl.format(pending.reduce((sum,item) => sum + Number(item.value),0))}`, action: 'recebimentos' });
+  if (billing.length) {
+    const late = billing.filter(item => item.billingDueDate < today).length;
+    const first = billing[0];
+    const quando = first.billingDueDate < today ? 'vencido' : first.billingDueDate === today ? 'vence hoje' : `vence ${dateFmt.format(parseDate(first.billingDueDate))}`;
+    alerts.push({ icon:'fa-file-invoice-dollar', tone:'warning', title:`${billing.length} boleto(s)/faturamento(s) a cobrar`, text:`${late ? `${late} vencido(s) · ` : ''}${clientName(getClient(first.clientId))} ${quando} · ${brl.format(billing.reduce((sum,item) => sum + Number(item.value),0))}`, action:'recebimentos' });
+  }
   if (overdue.length) alerts.push({ icon:'fa-rotate', tone:'info', title:`${overdue.length} cliente(s) para reativar`, text:'Recomendação de nova higienização vencida', action: 'clientes' });
   if (unconfirmed.length) alerts.push({ icon:'fa-calendar-check', tone:'warning', title:`${unconfirmed.length} serviço(s) sem confirmação`, text:'Confirme a rota com os clientes', action: 'agenda' });
   if (nextReturn) alerts.push({ icon:'fa-truck-fast', tone:'info', title:'Próxima devolução', text:`${clientName(getClient(nextReturn.clientId))} · ${dateFmt.format(parseDate(nextReturn.returnDate))} às ${nextReturn.returnTime}`, action:'devolucoes' });
@@ -506,10 +527,10 @@ function showAppointmentDetail(id, detailType = 'service') {
     time: isReturn ? item.returnTime : item.time,
     duration: isReturn ? 30 : item.duration,
     address: item.address,
-    details: `Cliente: ${clientName(client)}\nTelefone: ${client?.phone || ''}\nServiço: ${service?.name || ''}\nResponsável: ${item.team || 'Não informado'}\nValor: ${brl.format(item.value)}\nPagamento: ${item.paymentStatus === 'paid' ? 'Pago' : 'A receber'} (${item.paymentMethod})\nEndereço: ${item.address}\nObservações: ${item.notes || 'Sem observações'}`
+    details: `Cliente: ${clientName(client)}\nTelefone: ${client?.phone || ''}\nServiço: ${service?.name || ''}\nResponsável: ${item.team || 'Não informado'}\nValor: ${brl.format(item.value)}\nPagamento: ${item.paymentStatus === 'paid' ? 'Pago' : 'A receber'} (${item.paymentMethod}${billingNote(item)})\nEndereço: ${item.address}\nObservações: ${item.notes || 'Sem observações'}`
   });
 
-  openDetail(isReturn ? 'DEVOLUÇÃO' : 'ORDEM DE SERVIÇO', isReturn ? `Devolução · ${dateFmt.format(parseDate(item.returnDate))}` : `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>${isReturn ? 'Atendimento original' : 'Data e horário'}</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div>${returnDetail}${returnRecDetail}<div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || 'Não informado')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" class="${activeStatus===key?'is-active':''}" style="--status:var(--${key})" aria-pressed="${activeStatus===key}" ${activeStatus===key?'disabled':''}>${activeStatus===key?'<i class="fa-solid fa-check"></i> ':''}${label}</button>`).join('')}</div><div class="detail-actions">${whatsButton}<a href="${gcalUrl}" target="_blank" rel="noopener noreferrer" class="secondary-button" style="color:var(--blue); border-color:#cfe4fb" title="Salvar no Google Agenda / Android"><i class="fa-solid fa-calendar-plus"></i> Salvar na Agenda</a><button type="button" class="secondary-button reschedule-button" data-reschedule-appointment="${item.id}"><i class="fa-regular fa-calendar-days"></i> Alterar data</button><button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
+  openDetail(isReturn ? 'DEVOLUÇÃO' : 'ORDEM DE SERVIÇO', isReturn ? `Devolução · ${dateFmt.format(parseDate(item.returnDate))}` : `OS #${item.id.split('-').pop().toUpperCase()}`, `<div class="detail-hero"><span class="initials"><i class="fa-solid ${ICONS[service?.icon] || 'fa-sparkles'}"></i></span><div><strong>${esc(clientName(client))}</strong><p>${esc(service?.name || '')}</p></div></div><div class="detail-grid"><div><span>${isReturn ? 'Atendimento original' : 'Data e horário'}</span><strong>${cap(fullDateFmt.format(parseDate(item.date)))} · ${item.time}</strong></div>${returnDetail}${returnRecDetail}<div><span>Duração e valor</span><strong>${item.duration} min · ${brl.format(item.value)}</strong></div><div><span>Responsável/equipe</span><strong>${esc(item.team || 'Não informado')}</strong></div><div><span>Pagamento</span><strong>${item.paymentStatus==='paid'?'Pago':'A receber'} · ${esc(item.paymentMethod)}${esc(billingNote(item))}</strong></div><div style="grid-column:1/-1"><span>Endereço</span><strong>${esc(item.address)}</strong></div><div style="grid-column:1/-1"><span>Observações</span><strong>${esc(item.notes || 'Sem observações')}</strong></div></div><div class="status-actions">${Object.entries(STATUS).map(([key,[label]]) => `<button data-set-status="${key}" class="${activeStatus===key?'is-active':''}" style="--status:var(--${key})" aria-pressed="${activeStatus===key}" ${activeStatus===key?'disabled':''}>${activeStatus===key?'<i class="fa-solid fa-check"></i> ':''}${label}</button>`).join('')}</div><div class="detail-actions">${whatsButton}<a href="${gcalUrl}" target="_blank" rel="noopener noreferrer" class="secondary-button" style="color:var(--blue); border-color:#cfe4fb" title="Salvar no Google Agenda / Android"><i class="fa-solid fa-calendar-plus"></i> Salvar na Agenda</a><button type="button" class="secondary-button reschedule-button" data-reschedule-appointment="${item.id}"><i class="fa-regular fa-calendar-days"></i> Alterar data</button><button type="button" class="secondary-button" data-edit-appointment="${item.id}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="danger-button" data-delete-appointment="${item.id}"><i class="fa-solid fa-trash"></i> Excluir</button></div>`);
   document.querySelectorAll('[data-set-status]').forEach(button => button.onclick = () => updateAppointmentStatus(item.id, button.dataset.setStatus, isReturn ? 'return' : 'service'));
   document.querySelector('[data-reschedule-appointment]').onclick = () => openAppointmentReschedule(item.id);
   document.querySelector('[data-edit-appointment]').onclick = () => openForm('appointment', item.id);
@@ -551,7 +572,7 @@ function promptWhatsAppConfirmation(id) {
     time: item.time,
     duration: item.duration,
     address: item.address,
-    details: `Cliente: ${clientName(client)}\nTelefone: ${client?.phone || ''}\nServiço: ${service?.name || ''}\nResponsável: ${item.team || 'Não informado'}\nValor: ${brl.format(item.value)}\nPagamento: ${item.paymentStatus === 'paid' ? 'Pago' : 'A receber'} (${item.paymentMethod})\nEndereço: ${item.address}\nObservações: ${item.notes || 'Sem observações'}`
+    details: `Cliente: ${clientName(client)}\nTelefone: ${client?.phone || ''}\nServiço: ${service?.name || ''}\nResponsável: ${item.team || 'Não informado'}\nValor: ${brl.format(item.value)}\nPagamento: ${item.paymentStatus === 'paid' ? 'Pago' : 'A receber'} (${item.paymentMethod}${billingNote(item)})\nEndereço: ${item.address}\nObservações: ${item.notes || 'Sem observações'}`
   });
 
   openDetail('WHATSAPP', 'Enviar confirmação?', `
@@ -704,6 +725,16 @@ function updateAppointmentReturnFields(form, suggestDate = false) {
   }
 }
 
+function updateBillingFields(form, suggestDate = false) {
+  const enabled = form.elements.paymentMethod.value === BILLING_METHOD;
+  const field = form.elements.billingDueDate;
+  document.getElementById('billingDueGroup').hidden = !enabled;
+  field.disabled = !enabled;
+  field.required = enabled;
+  if (!enabled) { field.value = ''; return; }
+  if (suggestDate && !field.value && form.elements.date.value) field.value = localISO(addDays(parseDate(form.elements.date.value), 30));
+}
+
 function updateServiceReturnFields(form) {
   const enabled = form.elements.requiresReturn.value === 'true';
   document.getElementById('serviceReturnDays').hidden = !enabled;
@@ -820,6 +851,8 @@ function openForm(type, id = null) {
       }
     };
     form.elements.returnInterval.onchange = () => updateAppointmentRecommendationPreview(form);
+    form.elements.paymentMethod.onchange = () => updateBillingFields(form, true);
+    updateBillingFields(form);
     form.elements.customReturnDate.onchange = () => updateAppointmentRecommendationPreview(form);
     form.elements.date.addEventListener('input', () => {
       updateAppointmentReturnFields(form, true);
@@ -873,6 +906,7 @@ function openForm(type, id = null) {
     }
     if (type === 'appointment') {
       updateAppointmentReturnFields(form, false);
+      updateBillingFields(form);
       if (registro.returnInterval) form.elements.returnInterval.value = registro.returnInterval;
       if (registro.customReturnDate) form.elements.customReturnDate.value = registro.customReturnDate;
       updateAppointmentRecommendationPreview(form);
@@ -963,6 +997,7 @@ async function handleAppointmentSubmit(event) {
     dados.returnDate = '';
     dados.returnTime = '';
   }
+  if (dados.paymentMethod !== BILLING_METHOD) dados.billingDueDate = '';
   const hasReturn = Boolean(dados.returnDate && dados.returnTime);
   const returnScheduleChanged = Boolean(appointmentBeforeEdit) && (appointmentBeforeEdit.returnDate !== dados.returnDate || appointmentBeforeEdit.returnTime !== dados.returnTime);
   dados.returnStatus = hasReturn ? (returnScheduleChanged ? 'scheduled' : appointmentBeforeEdit?.returnStatus || 'scheduled') : '';
